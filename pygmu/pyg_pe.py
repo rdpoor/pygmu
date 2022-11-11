@@ -18,6 +18,9 @@ class PygPE(object):
 
         [2] The caller may not request frames outside of the callee's extent,
         i.e. callee.extent().spans(requested) must be true.
+
+        [3] The `requested` argument may be a finite extent or None.  If it is
+        None, the callee doesn't need to produce any data.
         """
         return None
 

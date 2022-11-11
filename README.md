@@ -36,3 +36,17 @@ that?  Should all Extent() objects enforce it?
 
 I don't understand packages well enough to know how to put the
 example_01.py into the example directory.
+
+### Extent
+
+Rather than using None to signify "the null extent", it might be useful to have
+a special instance of Extent to represent it.  If that's the case:
+
+    NULL_EXTENT.intersects(x) => NULL_EXTENT
+    NULL_EXTENT.union(x) => x
+    any event precedes (or follows) the null extent
+    only the null extent equals the null extent
+
+Perhaps implement NullExtent as a subclass of Extent and tweak the methods
+accordingly.  And if we go that route, why not the same treatment for
+InfiniteExtent?
