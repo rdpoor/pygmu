@@ -11,8 +11,8 @@ class DelayPE(PygPE):
         self._pe = pe
         self._delay = delay
 
-    def render(self, requested):
-        return self._pe.render(-self._delay)
+    def render(self, requested, n_channels):
+        return self._pe.render(-self._delay, n_channels)
 
     def n_channels(self):
         return self._pe.n_channels()

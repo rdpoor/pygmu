@@ -11,11 +11,8 @@ class CropPE(PygPE):
         self._pe = pe
         self._extent = extent.intersect(pe.extent())
 
-    def render(self, requested):
-        return self._pe.render(requested)
-
-    def n_channels(self):
-        return self._pe.n_channels()
+    def render(self, requested, n_channels):
+        return self._pe.render(requested, n_channels)
 
     def extent(self):
         return self._extent

@@ -39,7 +39,7 @@ class Transport(object):
             requested = Extent.Extent(curr_frame, curr_frame + frames)
             if pe.extent().spans(requested):
                 # source data completely fills the request -- easy
-                outdata[:] = self.pe.render(requested)
+                outdata[:] = self.pe.render(requested, self._channel_count)
             else:
                 # source data does not span the request.
                 outdata.fill(0)
@@ -47,7 +47,7 @@ class Transport(object):
                 if available is not None:
                     # source has one or more frames of data available
                     delta = available.start() - requested.start()
-                    outdata[delta:] = self.pe.render(available)
+                    outdata[delta:] = self.pe.render(available, self._channel_count)
             curr_frame += frames
 
         try:

@@ -6,7 +6,7 @@ class PygPE(object):
     PygPE is the abstract base class for all Processing Elements.
     """
 
-    def render(self, requested: Extent) -> np.ndarray:
+    def render(self, requested:Extent, n_channels:int) -> np.ndarray:
         """
         Instructs this Processing ELement to return a Buffer of sample data
         with the given extent.  May return None if there is no overlap.
@@ -23,13 +23,6 @@ class PygPE(object):
         None, the callee doesn't need to produce any data.
         """
         return None
-
-    def channel_count(self) -> int:
-        """
-        Return the number of channels for this processing element's output.
-        This will usually be overridden.
-        """
-        return 1
 
     def extent(self) -> Extent:
         """
