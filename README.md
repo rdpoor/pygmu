@@ -37,6 +37,70 @@ that?  Should all Extent() objects enforce it?
 I don't understand packages well enough to know how to put the
 example_01.py into the example directory.
 
+## Who owns what?
+
+A PygMu "ensmble" is implemented as a Directed Acyclic Graph, with the root
+Processing Element as the source of data to be rendered by the transport.
+
+When a PE's render(requested:Extent, n_channels:int) method is called, its
+contract is to deliver any sample data that happens within the requested Extent.
+
+The current implementation requires the caller to call the callee's extent()
+method first, intersect that with the requested extent, pass the intersected
+extent to the callee, and (finally) align the resulting data with the actual
+requested data.  This is nuts.
+
+Better would be for the caller to simply pass the requested extent to the
+callee and let the callee return what it can.  The problem is that when the
+first sample produced by the callee doesn't align with the first sample of
+the requested data, there's no way for the caller to know how to align it.
+
+To make it concrete, assume we call:
+
+    callee.render(Extent(100, 200))
+
+... but the callee only has sample data between 150 and 175.  It could allocate
+a buffer of 100 elements, overlay its data from buffer[50:75], and return that
+to the caller.  But that would lead to a lot of extra allocation.
+
+### Approach A:
+
+A PE could return a Buffer object, which is a thin class that encapsulates a
+numpy array and the starting frame of that array.  This will tell the caller
+how to align the numpy array in its own internal buffer.
+
+Here's how the transport would handle this case:
+
+        src_data, offset = self.src_pe.render(requested)
+        output_data = src_data[offset:]
+        # anything not filled by input data needs to be zeroed
+        ouput_data[0:offset].fill(0)
+
+### Approach B:
+
+callee.render() return a duple containing the data and the callee's extent:
+
+    (data:np.array, available:Extent)
+
+When the caller receives the data, intersection = requested.intersect(available)
+will tell the caller how the data aligns.  In particular, if intersection.start
+equals requested.start, then the data aligns at element 0.  If intersection is
+empty, then there's no data available from the callee.
+
+Here's how the transport would handle this case:
+
+        src_data, src_extent = self.src_pe.render(requested)
+        intersection = requested.intersect(src_extent)
+        offset = intersection.start() - requested.start()
+        output_data = src_data[offset:]
+        # anything not filled by input data needs to be zeroed
+        ouput_data[0:offset].fill(0)
+
+### Conclusion:
+
+Approach A is simpler for the caller, Approach B may be simpler for the callee.
+Go with Approach A for now.
+
 ### Extent
 
 Rather than using None to signify "the null extent", it might be useful to have

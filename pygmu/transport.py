@@ -27,7 +27,7 @@ class Transport(object):
         self.pe = pe
         curr_frame = 0
 
-        def callback(outdata, frames, time, status):
+        def callback(outdata, n_frames, time, status):
             nonlocal curr_frame
             if status:
                 print(status)
@@ -36,19 +36,12 @@ class Transport(object):
             # available, the buffer should be filled with zeros (e.g. by using
             # outdata.fill(0))."
 
-            requested = Extent.Extent(curr_frame, curr_frame + frames)
-            if pe.extent().spans(requested):
-                # source data completely fills the request -- easy
-                outdata[:] = self.pe.render(requested, self._channel_count)
-            else:
-                # source data does not span the request.
-                outdata.fill(0)
-                available = pe.extent().intersect(requested)
-                if available is not None:
-                    # source has one or more frames of data available
-                    delta = available.start() - requested.start()
-                    outdata[delta:] = self.pe.render(available, self._channel_count)
-            curr_frame += frames
+            outdata.fill(0)
+            requested = Extent.Extent(curr_frame, curr_frame + n_frames)
+            (src_data, offset) = self.pe.render(requested, self._channel_count)
+            # https://stackoverflow.com/questions/74414680/replacing-full-rows-of-2d-numpy-data
+            outdata[offset:offset + src_data.shape[0], :] = src_data
+            curr_frame += n_frames
 
         try:
             with sd.OutputStream(

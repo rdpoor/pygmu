@@ -2,17 +2,12 @@ import pygmu as pg
 
 def sin_at(at_s, freq_hz, amp):
     """
-    Play a sine tone starting at the given # of seconds.  More accurately:
-    Create a Processing Element such that when you call render(), it produces
-    a sine tone.
-
-    This function is intended to show that it is easy to compose different PEs
-    together to create more complex (or more bespoke) functions.
+    Cartoon sounding version of example_01, using AbsPE to rectify sine tones.
     """
     # Create a sine generator with given frequency and ampltude
     sin = pg.SinPE(frequency = freq_hz, amplitude = amp)
     # Crop the output to start and the given time, but last forever...
-    return pg.CropPE(sin, pg.Extent(int(pg.Transport.FRAME_RATE * at_s)))
+    return pg.AbsPE(pg.CropPE(sin, pg.Extent(int(pg.Transport.FRAME_RATE * at_s))))
 
 freq_f = 174.614
 freq_b = 246.942

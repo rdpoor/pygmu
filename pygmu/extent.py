@@ -43,6 +43,9 @@ class Extent(object):
     def is_indefinite(self):
         return self.s == self.NINF or self.e == self.PINF
 
+    def is_empty(self):
+        return self.s == self.e
+
     def duration(self):
         if self.is_indefinite():
             return self.INDEFINITE_DURATION
@@ -107,6 +110,8 @@ class Extent(object):
     # ================================================================
     # operations on two extents
 
+    #  TODO: should accept a list of other Extents
+
     def union(self, other):
         """
         returns a new Extent whose start time is the earlier of a and b and
@@ -124,7 +129,7 @@ class Extent(object):
         if (s <= e):
             return Extent(s, e)
         else:
-            return None
+            return Extent(0, 0)
 
 import unittest
 import math
