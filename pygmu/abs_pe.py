@@ -11,8 +11,7 @@ class AbsPE(PygPE):
         self._src = src
 
     def render(self, requested:Extent, n_channels:int):
-        (srcbuf, offset) = self._src.render(requested, n_channels)
-        return (np.abs(srcbuf), offset)
+        return np.abs(self._src.render(requested, n_channels))
 
     def extent(self):
         return self._src.extent()

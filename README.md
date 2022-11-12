@@ -96,12 +96,18 @@ Here's how the transport would handle this case:
         # anything not filled by input data needs to be zeroed
         ouput_data[0:offset].fill(0)
 
+### Approach C:
+
+Don't optimize.  The callee always produces the requested frames, whether or
+not it has any data in them.
+
 ### Conclusion:
 
-Approach A is simpler for the caller, Approach B may be simpler for the callee.
-Go with Approach A for now.
+Try approach C.  If it needs optimization, then we'll do that later.  (One
+simple optimization is to return "no frames" if there really are none, but
+always produce the requested frames otherwise.)
 
-### Extent
+## Extent
 
 Rather than using None to signify "the null extent", it might be useful to have
 a special instance of Extent to represent it.  If that's the case:

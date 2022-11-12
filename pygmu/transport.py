@@ -24,7 +24,7 @@ class Transport(object):
         self._channel_count = channel_count
 
     def play(self, pe):
-        self.pe = pe
+        self._src_pe = pe
         curr_frame = 0
 
         def callback(outdata, n_frames, time, status):
@@ -36,11 +36,8 @@ class Transport(object):
             # available, the buffer should be filled with zeros (e.g. by using
             # outdata.fill(0))."
 
-            outdata.fill(0)
             requested = Extent.Extent(curr_frame, curr_frame + n_frames)
-            (src_data, offset) = self.pe.render(requested, self._channel_count)
-            # https://stackoverflow.com/questions/74414680/replacing-full-rows-of-2d-numpy-data
-            outdata[offset:offset + src_data.shape[0], :] = src_data
+            outdata[:] = self._src_pe.render(requested, self._channel_count)
             curr_frame += n_frames
 
         try:

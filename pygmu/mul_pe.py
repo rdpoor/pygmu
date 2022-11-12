@@ -13,34 +13,19 @@ class MulPE(PygPE):
         self._extent = self.compute_extent()
 
     def render(self, requested:Extent, n_channels:int):
-        dstbuf = np.ones([requested.duration(), n_channels], np.float32)
-        has_any_frames = False
-
+        dst_buf = np.ones([requested.duration(), n_channels], np.float32)
         for src_pe in self._pes:
-            (srcbuf, offset) = src_pe.render(requested, n_channels)
-            if (srcbuf.size > 0):
-                # src_pe has frames available in the requested range: multiply
-                # info dstbuf
-                x = min(dstbuf.shape[0], srcbuf.shape[0] - offset)
-                dstbuf[offset:offset + srcbuf.shape[0], :] *= srcbuf[0:x, :]
-                has_any_frames = True
-        if has_any_frames:
-            return (dstbuf, 0)
-        else:
-            # optimization so caller doesn't need to process empty frames
-            return (np.zeros([0,n_channels], np.float32), 0)
+            dst_buf *= src_pe.render(requested, n_channels)
+        return dst_buf
 
     def extent(self):
         return self._extent
 
     def compute_extent(self):
-        extent = None
-        for pe in self._pes:
-            # See note in extent.py: Extent.union() should accept *extents
-            # return Extent.union([pe.extent() for pe in self._pes])
-            if extent is None:
-                extent = pe.extent()    # inheret extent from first PE
-            else:
-                # extend extent to span each pe's extent
+        if len(self._pes) == 0:
+            return Extent()
+        else:
+            extent = self._pes[0].extent()
+            for pe in self._pes[1:]:
                 extent = extent.union(pe.extent())
-        return extent
+            return extent

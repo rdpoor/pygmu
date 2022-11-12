@@ -10,7 +10,7 @@ class PygPE(object):
         """
         Instructs this Processing ELement to return an np.ndarray of sample data
         that falls within the requested Extent, and an offset that aligns the
-        resulting data with the request.  May return 
+        resulting data with the request.  May return
 
         Rules of render:
 
