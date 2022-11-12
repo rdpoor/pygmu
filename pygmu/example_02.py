@@ -2,17 +2,17 @@ import pygmu as pg
 
 def sin_at(at_s, freq_hz, amp):
     """
-    Cartoon sounding version of example_01, using AbsPE to rectify sine tones.
+    example_01 using AbsPE to rectify sine tones.
     """
     # Create a sine generator with given frequency and ampltude
     sin = pg.SinPE(frequency = freq_hz, amplitude = amp)
     # Crop the output to start and the given time, but last forever...
     return pg.AbsPE(pg.CropPE(sin, pg.Extent(int(pg.Transport.FRAME_RATE * at_s))))
 
-freq_f = 174.614
-freq_b = 246.942
-freq_ds = 311.127
-freq_gs = 415.305
+freq_f = 174.614 / 2
+freq_b = 246.942 / 2
+freq_ds = 311.127 / 2
+freq_gs = 415.305 / 2
 
 # Mix the output of four sinewaves, each with its own frequency and start time.
 tristan = pg.MixPE(
