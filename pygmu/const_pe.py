@@ -12,4 +12,4 @@ class ConstPE(PygPE):
 
     def render(self, requested:Extent, n_channels:int):
         duration = requested.duration()
-        return np.ndarray([duration, n_channels], np.float32).fill(self._value)
+        return np.full([duration, n_channels], self._value, dtype=np.float32)

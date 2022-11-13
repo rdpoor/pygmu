@@ -15,10 +15,7 @@ class MulPE(PygPE):
     def render(self, requested:Extent, n_channels:int):
         dst_buf = np.ones([requested.duration(), n_channels], np.float32)
         for src_pe in self._pes:
-            src_buf = src_pe.render(requested, n_channels)
-            if src_buf is not None:
-                # Curious: every pe is supposed to return a non-null buffer...
-                dst_buf[:] *= src_buf
+            dst_buf[:] *= src_pe.render(requested, n_channels)
         return dst_buf
 
     def extent(self):
