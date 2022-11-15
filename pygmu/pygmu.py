@@ -5,8 +5,10 @@ from crop_pe import CropPE
 from delay_pe import DelayPE
 from extent import Extent
 from impulse_pe import ImpulsePE
+from linear_ramp_pe import LinearRampPE
 from mix_pe import MixPE
 from mul_pe import MulPE
+from print_pe import PrintPE
 from pyg_pe import PygPE
 from sin_pe import SinPE
 from transport import Transport
