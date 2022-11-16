@@ -8,6 +8,7 @@ class MixPE(PygPE):
     """
 
     def __init__(self, *pes):
+        super(MixPE, self).__init__()
         self._pes = pes
         self._has_extent = False
         self._extent = self.compute_extent()

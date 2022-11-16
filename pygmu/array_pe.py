@@ -8,6 +8,7 @@ class ArrayPE(PygPE):
     """
 
     def __init__(self, frames):
+        super(ArrayPE, self).__init__()
         self._frames = frames
         self._extent = Extent(start=0, end=frames.shape[0])
 

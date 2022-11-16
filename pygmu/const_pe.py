@@ -8,6 +8,7 @@ class ConstPE(PygPE):
     """
 
     def __init__(self, value:np.float32):
+        super(ConstPE, self).__init__()
         self._value = value
 
     def render(self, requested:Extent, n_channels:int):

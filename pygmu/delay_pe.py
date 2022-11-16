@@ -8,6 +8,7 @@ class DelayPE(PygPE):
     """
 
     def __init__(self, src_pe:PygPE, delay=0):
+        super(DelayPE, self).__init__()
         self._src_pe = src_pe
         self._delay = delay
         self._extent = src_pe.extent().offset(delay)

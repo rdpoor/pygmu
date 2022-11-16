@@ -8,6 +8,7 @@ class CropPE(PygPE):
     """
 
     def __init__(self, src_pe:PygPE, extent:Extent):
+        super(CropPE, self).__init__()
         self._src_pe = src_pe
         self._extent = extent.intersect(src_pe.extent())
 

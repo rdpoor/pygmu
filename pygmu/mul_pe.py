@@ -8,6 +8,7 @@ class MulPE(PygPE):
     """
 
     def __init__(self, *pes):
+        super(MulPE, self).__init__()
         self._pes = pes
         self._has_extent = False
         self._extent = self.compute_extent()

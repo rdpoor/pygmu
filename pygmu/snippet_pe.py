@@ -22,6 +22,7 @@ class SnippetPE(PygPE):
         read the data from a .wav file, a CropPE to limit what's played, and
         a DelayPE to offset according to the sync_point.
         """
+        super(SnippetPE, self).__init__()
         self._src_pe = WavReaderPE(filename)
         self._extent = self._src_pe.extent()
         if crop is not None:

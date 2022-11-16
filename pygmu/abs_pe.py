@@ -8,6 +8,7 @@ class AbsPE(PygPE):
     """
 
     def __init__(self, src:PygPE):
+        super(AbsPE, self).__init__()
         self._src = src
 
     def render(self, requested:Extent, n_channels:int):

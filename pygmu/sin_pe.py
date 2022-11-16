@@ -9,6 +9,7 @@ class SinPE(PygPE):
     """
 
     def __init__(self, frequency=440, amplitude=1.0, phase=0.0):
+        super(SinPE, self).__init__()
         self._omega = frequency * 2.0 * np.pi / Transport.FRAME_RATE
         self._amplitude = amplitude
         self._phase = phase    # in radians

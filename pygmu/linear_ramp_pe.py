@@ -8,6 +8,7 @@ class LinearRampPE(PygPE):
     """
 
     def __init__(self, start_v, end_v, extent:Extent):
+        super(LinearRampPE, self).__init__()
         self._start_v = start_v
         self._end_v = end_v
         self._extent = extent
