@@ -17,6 +17,10 @@ class SnippetPE(PygPE):
         @param sync_point The frame within the sound file that is considered
         to be the (perceptual) start, even though some data may precede it.
         @param crop If given, limits playback to a subset of the sound data.
+
+        Note that SnippetPE comprises upto three other PE's: a WavReader to
+        read the data from a .wav file, a CropPE to limit what's played, and
+        a DelayPE to offset according to the sync_point.
         """
         self._src_pe = WavReaderPE(filename)
         self._extent = self._src_pe.extent()

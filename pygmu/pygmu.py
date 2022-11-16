@@ -1,5 +1,6 @@
 import numpy as np
 from abs_pe import AbsPE
+from array_pe import ArrayPE
 from const_pe import ConstPE
 from crop_pe import CropPE
 from delay_pe import DelayPE
