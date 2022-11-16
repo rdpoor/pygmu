@@ -11,6 +11,7 @@ from mul_pe import MulPE
 from print_pe import PrintPE
 from pyg_pe import PygPE
 from sin_pe import SinPE
+from snippet_pe import SnippetPE
 from transport import Transport
 from unit_pe import UnitPE
 from wav_reader_pe import WavReaderPE
