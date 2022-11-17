@@ -16,3 +16,4 @@ from snippet_pe import SnippetPE
 from transport import Transport
 from unit_pe import UnitPE
 from wav_reader_pe import WavReaderPE
+from wav_writer_pe import WavWriterPE
