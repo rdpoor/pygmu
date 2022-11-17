@@ -22,7 +22,7 @@ class WavWriterPE(PygPE):
         if self._soundfile is None:
             print("opening", self._filename, "for writing")
             self._soundfile = sf.SoundFile(self._filename,
-                                           mode='x',
+                                           mode='w',
                                            samplerate=self._frame_rate,
                                            channels=self._n_channels,
                                            format='WAV',
