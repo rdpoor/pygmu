@@ -51,7 +51,7 @@ def soundPE(filename):
 
 #pg.Transport().play(flipper("../samples/04_Cat.wav"))
 
-#pg.Transport().play(InterpolatePE(pg.WavReaderPE("../samples/04_Cat.wav"), 0.5))
+#pg.Transport().play(InterpolatePE(pg.WavReaderPE("../samples/04_Cat.wav"), 0.25))
 
 fade_in = 11000
 fade_out = 70000
