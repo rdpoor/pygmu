@@ -4,6 +4,7 @@ from array_pe import ArrayPE
 from const_pe import ConstPE
 from crop_pe import CropPE
 from delay_pe import DelayPE
+from env2_pe import Env2PE
 from extent import Extent
 from impulse_pe import ImpulsePE
 from linear_ramp_pe import LinearRampPE
