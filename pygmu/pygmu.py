@@ -15,7 +15,9 @@ from pyg_pe import PygPE
 from reverse_pe import ReversePE
 from sin_pe import SinPE
 from snippet_pe import SnippetPE
+from tralfam_pe import TralfamPE
 from transport import Transport
 from unit_pe import UnitPE
+from utils import *
 from wav_reader_pe import WavReaderPE
 from wav_writer_pe import WavWriterPE

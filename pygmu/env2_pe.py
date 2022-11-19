@@ -87,7 +87,7 @@ g=0.0  ---+     +---
                     # some amount of unity gain between the two ramps.
                     max_g = 1.0   # clamp gain to 1.0 (we'll use g below)
                 else:
-                    # up ramp and down ramp intersect at t (with value = g), so
+                    # up ramp and down ramp collide at t (with value = g), so
                     # there won't be any unity gain between the two ramps
                     tu1 = t
                     td0 = t
