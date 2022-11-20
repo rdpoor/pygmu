@@ -12,7 +12,7 @@ def sin_at(at_s, freq_hz, amp):
     # Create a sine generator with given frequency and ampltude
     sin = pg.SinPE(frequency = freq_hz, amplitude = amp)
     # Crop the output to start and the given time, but last forever...
-    return pg.CropPE(sin, pg.Extent(int(pg.Transport.FRAME_RATE * at_s)))
+    return pg.CropPE(sin, pg.Extent(int(sin.frame_rate() * at_s)))
 
 freq_f = 174.614
 freq_b = 246.942
@@ -27,4 +27,4 @@ tristan = pg.MixPE(
     sin_at(2.0, freq_gs, 0.2))
 
 # Start calling render() on the "root" processing element.
-pg.Transport().play(tristan)
+pg.Transport(tristan).play()

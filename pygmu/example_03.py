@@ -11,7 +11,7 @@ def trem_sin_at(at_s, freq_hz, trem_freq, amp):
     # multiply the two
     trem_osc = pg.MulPE(sin_osc, tremolo)
     # Crop the output to start and the given time, but last forever...
-    return pg.CropPE(trem_osc, pg.Extent(int(pg.Transport.FRAME_RATE * at_s)))
+    return pg.CropPE(trem_osc, pg.Extent(int(sin_osc.frame_rate() * at_s)))
 
 freq_f = 174.614 / 2
 freq_b = 246.942  / 2
@@ -26,4 +26,4 @@ vib_tristan = pg.MixPE(
     trem_sin_at(2.0, freq_gs, 3.6, 0.2))
 
 # Start calling render() on the "root" processing element.
-pg.Transport().play(vib_tristan)
+pg.Transport(vib_tristan).play()

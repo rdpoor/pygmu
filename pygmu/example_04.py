@@ -12,19 +12,19 @@ yeah_offset = 7904
 
 mix = pg.MixPE(
     seq("../samples/Fox48.wav", 0 * q, 0.4),
-    seq("../samples/s06.wav", 1 * q - thump_offset, 0.5),
+    seq("../samples/s06_stereo.wav", 1 * q - thump_offset, 0.5),
     seq("../samples/Mew.wav", 3 * q - mew_offset, 1.5),
     seq("../samples/Fox48.wav", 4 * q, 0.4),
-    seq("../samples/s06.wav", 5 * q - thump_offset, 0.5),
+    seq("../samples/s06_stereo.wav", 5 * q - thump_offset, 0.5),
     seq("../samples/14_yeah_f.wav", 7 * q - yeah_offset, 1.0),
     seq("../samples/Fox48.wav", 8 * q, 0.4),
-    seq("../samples/s06.wav", 9 * q - thump_offset, 0.5),
+    seq("../samples/s06_stereo.wav", 9 * q - thump_offset, 0.5),
     seq("../samples/Mew.wav", 11 * q - mew_offset, 1.5),
     seq("../samples/Fox48.wav", 12 * q, 0.4),
-    seq("../samples/s06.wav", 13 * q - thump_offset, 0.5),
+    seq("../samples/s06_stereo.wav", 13 * q - thump_offset, 0.5),
     seq("../samples/14_yeah_f.wav", 15 * q - yeah_offset, 1.0),
-    seq("../samples/s06.wav", 17 * q - thump_offset, 0.5))
+    seq("../samples/s06_stereo.wav", 17 * q - thump_offset, 0.5))
 
 
 # Start calling render() on the "root" processing element.
-pg.Transport().play(mix)
+pg.Transport(mix).play()

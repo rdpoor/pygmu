@@ -2,7 +2,7 @@ import numpy as np
 import pygmu as pg
 import soundfile as sf
 from extent import Extent
-from envelope_pe import EnvelopePE
+from env2_pe import Env2PE
 from interpolate_pe import InterpolatePE
 
 
@@ -56,17 +56,17 @@ def soundPE(filename):
 fade_in = 11000
 fade_out = 70000
 
-pg.Transport().play(pg.MixPE(
-    pg.MulPE(pg.ReversePE(EnvelopePE(pg.WavReaderPE("../samples/Tamper_MagnifyingFrame1.wav"), fade_in, fade_out)), pg.ConstPE(0.15)),
-    pg.MulPE(pg.DelayPE(pg.ReversePE(EnvelopePE(pg.WavReaderPE("../samples/TamperClip38.wav"), fade_in, fade_out)), 22000), pg.ConstPE(0.5)),
-    pg.MulPE(pg.DelayPE(pg.ReversePE(EnvelopePE(pg.WavReaderPE("../samples/TamperClip38.wav"), fade_in, fade_out)), 80000), pg.ConstPE(0.5)),
-    pg.MulPE(pg.DelayPE(pg.ReversePE(EnvelopePE(pg.WavReaderPE("../samples/Tamper_MagnifyingFrame1.wav"), fade_in, fade_out)), 80000), pg.ConstPE(0.25)),
-    pg.MulPE(pg.ReversePE(pg.DelayPE(EnvelopePE(pg.CropPE(mogrify("../samples/TamperClip38.wav"), Extent(start=110000)), fade_in, fade_out), -110000)), pg.ConstPE(0.5)),
-    pg.MulPE(pg.DelayPE(pg.ReversePE(EnvelopePE(pg.WavReaderPE("../samples/Tamper_MagnifyingFrame1.wav"), fade_in * 6, fade_out * 6)), 120000), pg.ConstPE(0.5)),
-    pg.MulPE(pg.DelayPE(pg.ReversePE(EnvelopePE(pg.WavReaderPE("../samples/Tamper_MagnifyingFrame1.wav"), fade_in * 6, fade_out * 6)), 320000), pg.ConstPE(0.5)),
-    pg.MulPE(pg.DelayPE(pg.ReversePE(EnvelopePE(pg.WavReaderPE("../samples/Tamper_MagnifyingFrame1.wav"), fade_in * 6, fade_out * 6)), 720000), pg.ConstPE(0.5)),
-    pg.MulPE(pg.DelayPE(pg.ReversePE(EnvelopePE(pg.WavReaderPE("../samples/TamperClip38.wav"), fade_in, fade_out)), 160000), pg.ConstPE(0.35)),
-    pg.MulPE(pg.DelayPE(pg.ReversePE(EnvelopePE(pg.WavReaderPE("../samples/TamperClip38.wav"), fade_in, fade_out * 6)), 320000), pg.ConstPE(0.18)),
-    pg.MulPE(pg.DelayPE(EnvelopePE(pg.WavReaderPE("../samples/TamperClip38.wav"), fade_in * 6, fade_out * 2), 420000), pg.ConstPE(0.28)),
-    pg.MulPE(pg.DelayPE(pg.ReversePE(EnvelopePE(pg.WavReaderPE("../samples/Tamper_MagnifyingFrame1.wav"), fade_in, fade_out * 4)), 480000), pg.ConstPE(0.21)),
-))
+pg.Transport(pg.MixPE(
+    pg.MulPE(pg.ReversePE(Env2PE(pg.WavReaderPE("../samples/Tamper_MagnifyingFrame1.wav"), fade_in, fade_out)), pg.ConstPE(0.15)),
+    pg.MulPE(pg.DelayPE(pg.ReversePE(Env2PE(pg.WavReaderPE("../samples/TamperClip38.wav"), fade_in, fade_out)), 22000), pg.ConstPE(0.5)),
+    pg.MulPE(pg.DelayPE(pg.ReversePE(Env2PE(pg.WavReaderPE("../samples/TamperClip38.wav"), fade_in, fade_out)), 80000), pg.ConstPE(0.5)),
+    pg.MulPE(pg.DelayPE(pg.ReversePE(Env2PE(pg.WavReaderPE("../samples/Tamper_MagnifyingFrame1.wav"), fade_in, fade_out)), 80000), pg.ConstPE(0.25)),
+    pg.MulPE(pg.ReversePE(pg.DelayPE(Env2PE(pg.CropPE(mogrify("../samples/TamperClip38.wav"), Extent(start=110000)), fade_in, fade_out), -110000)), pg.ConstPE(0.5)),
+    pg.MulPE(pg.DelayPE(pg.ReversePE(Env2PE(pg.WavReaderPE("../samples/Tamper_MagnifyingFrame1.wav"), fade_in * 6, fade_out * 6)), 120000), pg.ConstPE(0.5)),
+    pg.MulPE(pg.DelayPE(pg.ReversePE(Env2PE(pg.WavReaderPE("../samples/Tamper_MagnifyingFrame1.wav"), fade_in * 6, fade_out * 6)), 320000), pg.ConstPE(0.5)),
+    pg.MulPE(pg.DelayPE(pg.ReversePE(Env2PE(pg.WavReaderPE("../samples/Tamper_MagnifyingFrame1.wav"), fade_in * 6, fade_out * 6)), 720000), pg.ConstPE(0.5)),
+    pg.MulPE(pg.DelayPE(pg.ReversePE(Env2PE(pg.WavReaderPE("../samples/TamperClip38.wav"), fade_in, fade_out)), 160000), pg.ConstPE(0.35)),
+    pg.MulPE(pg.DelayPE(pg.ReversePE(Env2PE(pg.WavReaderPE("../samples/TamperClip38.wav"), fade_in, fade_out * 6)), 320000), pg.ConstPE(0.18)),
+    pg.MulPE(pg.DelayPE(Env2PE(pg.WavReaderPE("../samples/TamperClip38.wav"), fade_in * 6, fade_out * 2), 420000), pg.ConstPE(0.28)),
+    pg.MulPE(pg.DelayPE(pg.ReversePE(Env2PE(pg.WavReaderPE("../samples/Tamper_MagnifyingFrame1.wav"), fade_in, fade_out * 4)), 480000), pg.ConstPE(0.21)),
+)).play()

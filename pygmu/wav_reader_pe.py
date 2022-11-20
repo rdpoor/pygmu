@@ -34,21 +34,10 @@ class WavReaderPE(PygPE):
     def filename(self):
         return self._filename
 
-    def channel_count(self):
-        return self.soundfile().channels
-
     def frame_count(self):
         return self.soundfile().frames
 
-    def frame_rate(self):
-        return self.soundfile().samplerate
-
-    def extent(self):
-        if self._extent is None:
-            self._extent = Extent(0, self.frame_count())
-        return self._extent
-
-    def render(self, requested:Extent, n_channels:int):
+    def render(self, requested:Extent):
         """
         Return sample data from the soundfile.
 
@@ -61,7 +50,7 @@ class WavReaderPE(PygPE):
         intersection = requested.intersect(self.extent())
         if intersection.is_empty():
             # no intersection
-            dst_buf = np.zeros([requested.duration(), n_channels], np.float32)
+            dst_buf = np.zeros([requested.duration(), self.channel_count()], np.float32)
         else:
             # the sound file overlaps with some or all of the request
 
@@ -80,8 +69,21 @@ class WavReaderPE(PygPE):
             else:
                 # partial overlap.  Allocate a buffer of zeros and replace some
                 # of them with sample data from the file.
-                dst_buf = np.zeros([requested.duration(), n_channels], np.float32)
+                dst_buf = np.zeros([requested.duration(), self.channel_count()], np.float32)
                 offset = intersection.start() - requested.start()
                 dst_buf[offset:offset + src_n_frames, :] = src_buf
 
         return dst_buf
+
+
+    def extent(self):
+        if self._extent is None:
+            self._extent = Extent(0, self.frame_count())
+        return self._extent
+
+    def frame_rate(self):
+        return self.soundfile().samplerate
+
+    def channel_count(self):
+        return self.soundfile().channels
+

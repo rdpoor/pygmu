@@ -33,4 +33,4 @@ mix = pg.MixPE(
 writer = pg.WavWriterPE(mix, "foxfoxfox.wav")
 
 # Start calling render() on the "root" processing element.
-pg.Transport().play(writer)
+pg.Transport(writer).play()

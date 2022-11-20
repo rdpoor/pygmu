@@ -12,21 +12,21 @@ class CropPE(PygPE):
         self._src_pe = src_pe
         self._extent = extent.intersect(src_pe.extent())
 
-    def render(self, requested:Extent, n_channels:int):
+    def render(self, requested:Extent):
 
         intersection = requested.intersect(self.extent())
         if intersection.is_empty():
             # no intersection
-            return np.zeros([requested.duration(), n_channels], np.float32)
+            return np.zeros([requested.duration(), self.channel_count()], np.float32)
         elif intersection.equals(requested):
             # full overlap: just return src_pe's frames
-            return self._src_pe.render(intersection, n_channels)
+            return self._src_pe.render(intersection)
         else:
             # Create dst_buf equal to the length of the request.  Ask src_pe
             # to produce frames that fall within the intersection, then lay
             # the frames into the dst_buf at the required offset
-            dst_buf = np.zeros([requested.duration(), n_channels], np.float32)
-            src_buf = self._src_pe.render(intersection, n_channels)
+            dst_buf = np.zeros([requested.duration(), self.channel_count()], np.float32)
+            src_buf = self._src_pe.render(intersection)
             offset = intersection.start() - requested.start()
             src_n_frames = intersection.duration()
             assert(src_n_frames == src_buf.shape[0])
@@ -35,3 +35,9 @@ class CropPE(PygPE):
 
     def extent(self):
         return self._extent
+
+    def frame_rate(self):
+        return self._src_pe.frame_rate()
+
+    def channel_count(self):
+        return self._src_pe.channel_count()

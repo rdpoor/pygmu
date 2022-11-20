@@ -5,14 +5,12 @@ import soundfile as sf
 
 class WavWriterPE(PygPE):
 
-    def __init__(self, src_pe:PygPE, filename="pygmu.wav", frame_rate=48000, n_channels=2):
+    def __init__(self, src_pe:PygPE, filename="pygmu.wav"):
         """
         Write frames to a file as they go whizzing by...
         """
         self._src_pe = src_pe
         self._filename = filename
-        self._frame_rate = frame_rate
-        self._n_channels = n_channels
         self._soundfile = None
 
     def open(self):
@@ -23,8 +21,8 @@ class WavWriterPE(PygPE):
             print("opening", self._filename, "for writing")
             self._soundfile = sf.SoundFile(self._filename,
                                            mode='w',
-                                           samplerate=self._frame_rate,
-                                           channels=self._n_channels,
+                                           samplerate=self.frame_rate(),
+                                           channels=self.channel_count(),
                                            format='WAV',
                                            subtype='FLOAT')
         return self._soundfile
@@ -38,8 +36,8 @@ class WavWriterPE(PygPE):
             self._soundfile.close()
             self._soundfile = None
 
-    def render(self, requested:Extent, n_channels:int):
-        src_frames = self._src_pe.render(requested, n_channels)
+    def render(self, requested:Extent):
+        src_frames = self._src_pe.render(requested)
         overlap = requested.intersect(self.extent())
         # Super special hack with possibly surprising consequences:
         if not overlap.is_empty():
@@ -54,3 +52,9 @@ class WavWriterPE(PygPE):
 
     def extent(self):
         return self._src_pe.extent()
+
+    def frame_rate(self):
+        return self._src_pe.frame_rate()
+
+    def channel_count(self):
+        return self._src_pe.channel_count()

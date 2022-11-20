@@ -7,24 +7,27 @@ class Transport(object):
     Transport is the abstract base class for controlling the system.
     """
 
-    FRAME_RATE = 48000
-    CHANNEL_COUNT = 2
-
-    def __init__(self, output_device=None,
-        frame_rate=FRAME_RATE,
+    def __init__(self, src_pe, output_device=None,
+        frame_rate=None,
         blocksize=None,
         dtype=np.float32,
         latency=None,
-        channel_count=CHANNEL_COUNT):
+        channel_count=None):
+        self._src_pe = src_pe
         self._output_device = output_device
-        self._frame_rate = frame_rate
+        if frame_rate is None:
+            self._frame_rate = src_pe.frame_rate()
+        else:
+            self._frame_rate = frame_rate
         self._blocksize = blocksize
         self._dtype = dtype
         self._latency = latency
-        self._channel_count = channel_count
+        if channel_count is None:
+            self._channel_count = src_pe.channel_count()
+        else:
+            self._channel_count = channel_count
 
-    def play(self, pe):
-        self._src_pe = pe
+    def play(self):
         curr_frame = 0
 
         def callback(outdata, n_frames, time, status):
@@ -37,7 +40,7 @@ class Transport(object):
             # outdata.fill(0))."
 
             requested = Extent.Extent(curr_frame, curr_frame + n_frames)
-            outdata[:] = self._src_pe.render(requested, self._channel_count)
+            outdata[:] = self._src_pe.render(requested)
             curr_frame += n_frames
 
         try:

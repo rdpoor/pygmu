@@ -11,8 +11,14 @@ class PrintPE(PygPE):
         super(PrintPE, self).__init__()
         self._src_pe = src_pe
 
-    def render(self, requested:Extent, n_channels:int):
-        buf = self._src_pe.render(requested, n_channels)
-        print("requested=", requested, "n_channels=", n_channels)
+    def render(self, requested:Extent):
+        buf = self._src_pe.render(requested)
+        print("requested=", requested, "self.channel_count()=", self.channel_count())
         print(buf)
         return buf
+
+    def frame_rate(self):
+        return self._src_pe.frame_rate()
+
+    def channel_count(self):
+        return self._src_pe.channel_count()

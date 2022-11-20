@@ -6,7 +6,10 @@ class PygPE(object):
     PygPE is the abstract base class for all Processing Elements.
     """
 
-    def render(self, requested:Extent, n_channels:int) -> (np.ndarray, int):
+    DEFAULT_FRAME_RATE = 48000
+    DEFAULT_CHANNEL_COUNT = 2
+
+    def render(self, requested:Extent) -> (np.ndarray, int):
         """
         Instructs this Processing ELement to return an np.ndarray of sample data
         that falls within the requested Extent, and an offset that aligns the
@@ -17,17 +20,30 @@ class PygPE(object):
         [1] The caller may not modify the data returned by render(): it is owned
         by the callee.
 
-        [2] The caller may not request frames outside of the callee's extent,
-        i.e. callee.extent().spans(requested) must be true.
-
-        [3] The `requested` argument may be a finite extent or None.  If it is
-        None, the callee doesn't need to produce any data.
+        [2] The caller MAY request frames outside of the callee's extent.  The
+        callee will normally return 0's for such frames.
         """
         return None
 
     def extent(self) -> Extent:
         """
-        Return the time span of this processing element.
-        This will usually be overridden.
+        Return the time span of this processing element.  Unless overridden,
+        subclasses of PygPE will return the indefinite extent.
         """
         return Extent()
+
+    def frame_rate(self):
+        """
+        Return the frame rate of this PE.  If the PE has an input, it will 
+        typically override this method and return the frame rate of its 
+        input, but it's free to override this method as needed.
+        """        
+        return PygPE.DEFAULT_FRAME_RATE
+
+    def channel_count(self):
+        """
+        Return the number of channels produced by this PE.  If the PE has an 
+        input, it will typically override this method and return the channel
+        count of its input, but it's free to override this method as needed.
+        """        
+        return PygPE.DEFAULT_CHANNEL_COUNT

@@ -41,4 +41,4 @@ all_snips = [seq(snips[s], i*q) for i,s in enumerate(composition)]
 mix = pg.MixPE(*all_snips)
 
 # And voila...
-pg.Transport().play(mix)
+pg.Transport(mix).play()

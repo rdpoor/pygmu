@@ -34,11 +34,11 @@ def mogrify(filename):
     mog_frames = sterofy(mog_frames)
     return pg.ArrayPE(mog_frames)
 
-pg.Transport().play(pg.WavReaderPE("../samples/044-n-2723_stero.wav"))
-pg.Transport().play(mogrify("../samples/044-n-2723_stero.wav"))
+pg.Transport(pg.WavReaderPE("../samples/044-n-2723_stero.wav")).play()
+pg.Transport(mogrify("../samples/044-n-2723_stero.wav")).play()
 
-pg.Transport().play(pg.WavReaderPE("../samples/04_Cat.wav"))
-pg.Transport().play(mogrify("../samples/04_Cat.wav"))
+pg.Transport(pg.WavReaderPE("../samples/04_Cat.wav")).play()
+pg.Transport(mogrify("../samples/04_Cat.wav")).play()
 
-pg.Transport().play(pg.WavReaderPE("../samples/11_uh_uh_f.wav"))
-pg.Transport().play(mogrify("../samples/11_uh_uh_f.wav"))
+pg.Transport(pg.WavReaderPE("../samples/11_uh_uh_f.wav")).play()
+pg.Transport(mogrify("../samples/11_uh_uh_f.wav")).play()

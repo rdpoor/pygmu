@@ -31,8 +31,14 @@ class SnippetPE(PygPE):
         if sync_point != 0:
             self._src_pe = DelayPE(self._src_pe, -sync_point)
 
-    def render(self, requested:Extent, n_channels:int):
-        return self._src_pe.render(requested, n_channels)
+    def render(self, requested:Extent):
+        return self._src_pe.render(requested)
 
     def extent(self):
         return self._extent
+
+    def frame_rate(self):
+        return self._src_pe.frame_rate()
+
+    def channel_count(self):
+        return self._src_pe.channel_count()

@@ -20,22 +20,22 @@ class TralfamPE(PygPE):
         self._src_pe = src_pe
         self.mangled_frames = None
 
-    def render(self, requested:Extent, n_channels:int):
+    def render(self, requested:Extent):
         intersection = requested.intersect(self.extent())
         r0 = requested.start()
         r1 = requested.end()
         t0 = self.extent().start()
         t1 = self.extent().end()
-        mogrified_frames = self.mogrify(n_channels)
+        mogrified_frames = self.mogrify(self.channel_count())
 
         if intersection.is_empty():
-            dst_frames = ut.const_frames(0.0, r1-r0, n_channels)
+            dst_frames = ut.const_frames(0.0, r1-r0, self.channel_count())
 
         elif self.extent().spans(requested):
             dst_frames = mogrified_frames[r0:r1,:]
 
         else:
-            dst_frames = ut.uninitialized_frames(r1-r0, n_channels)
+            dst_frames = ut.uninitialized_frames(r1-r0, self.channel_count())
             dst_index = 0
 
             s = r0
@@ -43,7 +43,7 @@ class TralfamPE(PygPE):
             n = max(0, e - s)
             # generate silence before t0 starts
             if n > 0:
-                dst_frames[dst_index:dst_index+n,:] = pg.const_frames(0.0, n, n_channels)
+                dst_frames[dst_index:dst_index+n,:] = pg.const_frames(0.0, n, self.channel_count())
                 dst_index += n
 
             s = max(r0, t0)
@@ -58,7 +58,7 @@ class TralfamPE(PygPE):
             e = r1
             n = max(0, e - s)
             if n > 0:
-                dst_frames[dst_index:dst_index+n,:] = ut.const_frames(0.0, n, n_channels)
+                dst_frames[dst_index:dst_index+n,:] = ut.const_frames(0.0, n, self.channel_count())
                 dst_index += n
 
         return dst_frames
@@ -66,10 +66,16 @@ class TralfamPE(PygPE):
     def extent(self):
         return self._src_pe.extent()
 
-    def mogrify(self, n_channels):
+    def frame_rate(self):
+        return self._src_pe.frame_rate()
+
+    def channel_count(self):
+        return self._src_pe.channel_count()
+
+    def mogrify(self):
         if self.mangled_frames is None:
             # slurp the entirety of src_pe's data (better not be infinite!)
-            frames = self._src_pe.render(self._src_pe.extent(), n_channels)
+            frames = self._src_pe.render(self._src_pe.extent(), self.channel_count())
             n_frames = self.extent().duration()
             analysis = np.fft.fft(frames.transpose())
             magnitudes = np.abs(analysis)

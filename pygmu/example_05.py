@@ -30,4 +30,4 @@ mix = pg.MixPE(
     seq(s4, 15*q))
 
 # Start calling render() on the "root" processing element.
-pg.Transport().play(mix)
+pg.Transport(mix).play()

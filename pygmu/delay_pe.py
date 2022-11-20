@@ -13,8 +13,14 @@ class DelayPE(PygPE):
         self._delay = delay
         self._extent = src_pe.extent().offset(delay)
 
-    def render(self, requested:Extent, n_channels:int):
-        return self._src_pe.render(requested.offset(-self._delay), n_channels)
+    def render(self, requested:Extent):
+        return self._src_pe.render(requested.offset(-self._delay))
 
     def extent(self):
         return self._extent
+
+    def frame_rate(self):
+        return self._src_pe.frame_rate()
+
+    def channel_count(self):
+        return self._src_pe.channel_count()

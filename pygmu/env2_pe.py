@@ -12,9 +12,10 @@ class Env2PE(PygPE):
         self._src_pe = src_pe
         self._up_dur = up_dur
         self._dn_dur = dn_dur
+        print(self.extent())
 
 
-    def render(self, requested:Extent, n_channels:int):
+    def render(self, requested:Extent):
         overlap = requested.intersect(self.extent())
         offset = int(requested.start())
         tu0 = self.extent().start()
@@ -25,11 +26,11 @@ class Env2PE(PygPE):
         # optimize common cases
         if overlap.precedes(self.extent()) or overlap.follows(self.extent()):
             # src_pe hasn't started or has already ended
-            dst_buf = np.zeros([requested.duration(), n_channels], dtype=np.float32)
+            dst_buf = np.zeros([requested.duration(), self.channel_count()], dtype=np.float32)
 
         elif Extent(tu1, td0).spans(overlap):
             # src is fully on (g=1.0) for the entire request.  dst_buf = src
-            dst_buf = self._src_pe.render(requested, n_channels)
+            dst_buf = self._src_pe.render(requested)
 
         else:
             """
@@ -89,17 +90,17 @@ g=0.0  ---+     +---
                 else:
                     # up ramp and down ramp collide at t (with value = g), so
                     # there won't be any unity gain between the two ramps
-                    tu1 = t
-                    td0 = t
+                    tu1 = int(t)
+                    td0 = int(t)
 
             r0 = requested.start()
             r1 = requested.end()
 
             # Generate the source frames we'll use and progressively replace
             # frames in dst_buf in five easy steps (see "Game Plan")
-            src_buf = self._src_pe.render(overlap, n_channels)
+            src_buf = self._src_pe.render(overlap)
             src_index = 0
-            dst_buf = gen_uninitialized_frames(requested.duration(), n_channels)
+            dst_buf = gen_uninitialized_frames(requested.duration(), self.channel_count())
             dst_index = 0
 
             # Game Plan
@@ -118,7 +119,7 @@ g=0.0  ---+     +---
             e = min(r1, tu0)
             n = max(0, e - s)
             if n > 0:
-                dst_buf[dst_index:dst_index+n,:] = gen_const_frames(0.0, n, n_channels)
+                dst_buf[dst_index:dst_index+n,:] = gen_const_frames(0.0, n, self.channel_count())
                 dst_index += n
 
             # 2. ramp up from tu0 to tu1 with values (0.0 ... max_g)
@@ -128,7 +129,8 @@ g=0.0  ---+     +---
             if n > 0:
                 g0 = lerp(s, tu0, tu1, 0, max_g)
                 g1 = lerp(e, tu0, tu1, 0, max_g)
-                dst_buf[dst_index:dst_index+n,:] = src_buf[0:n,:] * gen_ramp_frames(g0, g1, n, n_channels)
+                print(dst_index, s, e, n, r1, tu1)
+                dst_buf[dst_index:dst_index+n,:] = src_buf[0:n,:] * gen_ramp_frames(g0, g1, n, self.channel_count())
                 src_index += n
                 dst_index += n
 
@@ -148,7 +150,7 @@ g=0.0  ---+     +---
             if n > 0:
                 g0 = lerp(s, td0, td1, max_g, 0)
                 g1 = lerp(e, td0, td1, max_g, 0)
-                dst_buf[dst_index:dst_index+n,:] = src_buf[0:n,:] * gen_ramp_frames(g0, g1, n, n_channels)
+                dst_buf[dst_index:dst_index+n,:] = src_buf[0:n,:] * gen_ramp_frames(g0, g1, n, self.channel_count())
                 src_index += n
                 dst_index += n
 
@@ -157,7 +159,7 @@ g=0.0  ---+     +---
             e = r1
             n = max(0, e - s)
             if n > 0:
-                dst_buf[dst_index:dst_index+n,:] = gen_const_frames(0.0, n, n_channels)
+                dst_buf[dst_index:dst_index+n,:] = gen_const_frames(0.0, n, self.channel_count())
                 dst_index += n
 
             assert(dst_index == requested.duration())
@@ -167,8 +169,15 @@ g=0.0  ---+     +---
     def extent(self):
         return self._src_pe.extent()
 
+    def frame_rate(self):
+        return self._src_pe.frame_rate()
+
+    def channel_count(self):
+        return self._src_pe.channel_count()
+
 # ******************************************************************************
 # candidates for a utility module
+# TODO: use from utils module
 
 def lerp(x, x0, x1, y0, y1):
     return y0 + (x - x0) * (y1 - y0) / (x1 - x0)
