@@ -26,7 +26,7 @@ class TralfamPE(PygPE):
         r1 = requested.end()
         t0 = self.extent().start()
         t1 = self.extent().end()
-        mogrified_frames = self.mogrify(self.channel_count())
+        mogrified_frames = self.mogrify()
 
         if intersection.is_empty():
             dst_frames = ut.const_frames(0.0, r1-r0, self.channel_count())
@@ -75,7 +75,7 @@ class TralfamPE(PygPE):
     def mogrify(self):
         if self.mangled_frames is None:
             # slurp the entirety of src_pe's data (better not be infinite!)
-            frames = self._src_pe.render(self._src_pe.extent(), self.channel_count())
+            frames = self._src_pe.render(self._src_pe.extent())
             n_frames = self.extent().duration()
             analysis = np.fft.fft(frames.transpose())
             magnitudes = np.abs(analysis)

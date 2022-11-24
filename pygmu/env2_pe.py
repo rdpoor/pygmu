@@ -12,7 +12,7 @@ class Env2PE(PygPE):
         self._src_pe = src_pe
         self._up_dur = up_dur
         self._dn_dur = dn_dur
-        print(self.extent())
+        # print(self.extent())
 
 
     def render(self, requested:Extent):
@@ -129,7 +129,7 @@ g=0.0  ---+     +---
             if n > 0:
                 g0 = lerp(s, tu0, tu1, 0, max_g)
                 g1 = lerp(e, tu0, tu1, 0, max_g)
-                print(dst_index, s, e, n, r1, tu1)
+                # print(dst_index, s, e, n, r1, tu1)
                 dst_buf[dst_index:dst_index+n,:] = src_buf[0:n,:] * gen_ramp_frames(g0, g1, n, self.channel_count())
                 src_index += n
                 dst_index += n

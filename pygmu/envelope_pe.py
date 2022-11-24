@@ -36,7 +36,7 @@ class EnvelopePE(PygPE):
             # the frames into the dst_buf at the required offset
             dst_buf = np.zeros([requested.duration(), self.channel_count()], np.float32)
             src_extent = Extent(start=self._src_pe.extent().end() - intersection.end(), end=self._src_pe.extent().end() - intersection.start())
-            src_buf = self._src_pe.render(src_extent, self.channel_count())
+            src_buf = self._src_pe.render(src_extent)
             offset = intersection.start() - requested.start()
             dst_buf[offset:offset + intersection.duration(), :] = src_buf
             return np.flip(dst_buf, 0);

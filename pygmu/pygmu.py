@@ -5,6 +5,7 @@ from const_pe import ConstPE
 from crop_pe import CropPE
 from delay_pe import DelayPE
 from env2_pe import Env2PE
+from envelope_pe import EnvelopePE
 from extent import Extent
 from ganesh_pe import GaneshPE
 from impulse_pe import ImpulsePE

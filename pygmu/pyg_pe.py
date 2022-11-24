@@ -47,3 +47,37 @@ class PygPE(object):
         count of its input, but it's free to override this method as needed.
         """        
         return PygPE.DEFAULT_CHANNEL_COUNT
+
+    # is there a way to migrate these to a different file?
+
+    def abs(self):
+        return pg.AbsPE(self, delay)
+
+    def crop(self, extent):
+        return pg.CropPE(self, extent)
+
+    def delay(self, delay):
+        return pg.DelayPE(self, delay)
+
+    def env2(self, up_dur, dn_dur):
+        return pg.Env2PE(self, up_dur, dn_dur)
+
+    def envelope(self, up_dur, dn_dur):
+        return pg.EnvelopePE(self, up_dur, dn_dur)
+
+    def interpolate(self, speed_mult):
+        return pg.InterpolatePE(self, speed_mult)
+
+    def reverse(self):
+        return pg.ReversePE(self)
+
+    def tralfam(self):
+        return pg.TralfamPE(self)
+
+    def wav_writer(self):
+        return pg.WavWriterPE(self)
+
+    def play(self):
+        return pg.Transport(self).play()
+
+import pygmu as pg
