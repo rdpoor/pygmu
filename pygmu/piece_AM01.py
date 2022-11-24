@@ -37,36 +37,50 @@ def mogrify(filename):
     mog_frames = sterofy(mog_frames)
     return pg.ArrayPE(mog_frames)
 
-def flipper(filename):
-    frames, frame_rate = sf.read(filename)
-    return pg.ArrayPE(np.flip(frames))
-    #return pg.ReversePE(frames)
-
 def soundPE(filename):
     frames, frame_rate = sf.read(filename)
     return pg.ArrayPE(frames)
+
+def delays(src, secs, howmany = 1, decay = 1):
+    frame_rate = src.frame_rate()
+    delay_units = []
+    amp = 1
+    for i in range(1, howmany):
+        delay_units.append(src.delay(int(i * secs * frame_rate)).mulconst(amp))
+        amp *= decay
+    return pg.MixPE(src,*delay_units)
+
+def secs(s):
+    return int(s * sample_rate)
  
-    
-#pg.Transport().play(mogrify("../samples/PED_118_Em_Whistle_Flute.wav"))
 
-#pg.Transport().play(flipper("../samples/04_Cat.wav"))
+sample_rate = 48000
 
-#pg.Transport().play(InterpolatePE(pg.WavReaderPE("../samples/04_Cat.wav"), 0.25))
+fade_in = secs(0.3)
+fade_out = secs(2.1)
 
-fade_in = 11000
-fade_out = 70000
 
-pg.Transport(pg.MixPE(
-    pg.MulPE(pg.ReversePE(Env2PE(pg.WavReaderPE("../samples/Tamper_MagnifyingFrame1.wav"), fade_in, fade_out)), pg.ConstPE(0.15)),
-    pg.MulPE(pg.DelayPE(pg.ReversePE(Env2PE(pg.WavReaderPE("../samples/TamperClip38.wav"), fade_in, fade_out)), 22000), pg.ConstPE(0.5)),
-    pg.MulPE(pg.DelayPE(pg.ReversePE(Env2PE(pg.WavReaderPE("../samples/TamperClip38.wav"), fade_in, fade_out)), 80000), pg.ConstPE(0.5)),
-    pg.MulPE(pg.DelayPE(pg.ReversePE(Env2PE(pg.WavReaderPE("../samples/Tamper_MagnifyingFrame1.wav"), fade_in, fade_out)), 80000), pg.ConstPE(0.25)),
-    pg.MulPE(pg.ReversePE(pg.DelayPE(Env2PE(pg.CropPE(mogrify("../samples/TamperClip38.wav"), Extent(start=110000)), fade_in, fade_out), -110000)), pg.ConstPE(0.5)),
-    pg.MulPE(pg.DelayPE(pg.ReversePE(Env2PE(pg.WavReaderPE("../samples/Tamper_MagnifyingFrame1.wav"), fade_in * 6, fade_out * 6)), 120000), pg.ConstPE(0.5)),
-    pg.MulPE(pg.DelayPE(pg.ReversePE(Env2PE(pg.WavReaderPE("../samples/Tamper_MagnifyingFrame1.wav"), fade_in * 6, fade_out * 6)), 320000), pg.ConstPE(0.5)),
-    pg.MulPE(pg.DelayPE(pg.ReversePE(Env2PE(pg.WavReaderPE("../samples/Tamper_MagnifyingFrame1.wav"), fade_in * 6, fade_out * 6)), 720000), pg.ConstPE(0.5)),
-    pg.MulPE(pg.DelayPE(pg.ReversePE(Env2PE(pg.WavReaderPE("../samples/TamperClip38.wav"), fade_in, fade_out)), 160000), pg.ConstPE(0.35)),
-    pg.MulPE(pg.DelayPE(pg.ReversePE(Env2PE(pg.WavReaderPE("../samples/TamperClip38.wav"), fade_in, fade_out * 6)), 320000), pg.ConstPE(0.18)),
-    pg.MulPE(pg.DelayPE(Env2PE(pg.WavReaderPE("../samples/TamperClip38.wav"), fade_in * 6, fade_out * 2), 420000), pg.ConstPE(0.28)),
-    pg.MulPE(pg.DelayPE(pg.ReversePE(Env2PE(pg.WavReaderPE("../samples/Tamper_MagnifyingFrame1.wav"), fade_in, fade_out * 4)), 480000), pg.ConstPE(0.21)),
-)).play()
+sourceA = pg.WavReaderPE("../samples/Tamper_MagnifyingFrame1.wav")
+sourceB = pg.WavReaderPE("../samples/TamperClip38.wav")
+sourceC = mogrify("../samples/TamperClip38.wav").crop(Extent(start=140000)).delay(-140000)
+
+frag1 = pg.EnvelopePE(sourceA, fade_in, fade_out).reverse()
+frag2 = pg.EnvelopePE(sourceB, fade_in, fade_out).reverse()
+frag3 = pg.EnvelopePE(sourceC, fade_in * 4, fade_out).mulconst(2)
+
+frag4 = pg.MixPE(frag3,frag3.delay(20000).mulconst(0.8),frag3.delay(40000).mulconst(0.6))
+frag5 = delays(frag3, 0.7, 18, 0.76)
+
+elements = [frag5, frag1.delay(secs(3)), frag2.delay(secs(3)), frag1.delay(secs(8)), frag2.delay(secs(10)), frag5.delay(secs(18))]
+
+mosh = pg.MixPE(*elements)
+mosh2 = mosh.crop(Extent(start=0,end=720000)).envelope(fade_in, fade_out).reverse().envelope(secs(0.01),secs(7))
+
+mosh3 = pg.MixPE(mosh,mosh2.delay(secs(5.5)))
+
+wet_mix = delays(mosh3, 0.5, 4, 0.7)
+
+wet_mix.play()
+
+
+

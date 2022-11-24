@@ -59,6 +59,12 @@ class PygPE(object):
     def delay(self, delay):
         return pg.DelayPE(self, delay)
 
+    def mul(self, fac):
+        return pg.MulPE(self, fac)
+
+    def mulconst(self, fac):
+        return pg.MulPE(self, pg.ConstPE(fac))
+
     def env2(self, up_dur, dn_dur):
         return pg.Env2PE(self, up_dur, dn_dur)
 
