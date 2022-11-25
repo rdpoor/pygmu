@@ -80,8 +80,8 @@ class PygPE(object):
     def tralfam(self):
         return pg.TralfamPE(self)
 
-    def wav_writer(self):
-        return pg.WavWriterPE(self)
+    def wav_writer(self, filename):
+        return pg.WavWriterPE(self, filename)
 
     def play(self):
         return pg.Transport(self).play()
