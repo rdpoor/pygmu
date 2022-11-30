@@ -1,11 +1,10 @@
 import numpy as np
-from extent import Extent
-from pyg_pe import PygPE
-from transport import Transport
+from pygmu.extent import Extent
+from pygmu.pyg_pe import PygPE
 
-class UnitPE(PygPE):
+class IdentityPE(PygPE):
     """
-    The UnitPE is the function f(t) = t
+    The IdentityPE is the function f(t) = t
     """
 
     def __init__(self, channel_count=PygPE.DEFAULT_CHANNEL_COUNT):

@@ -1,6 +1,6 @@
 import numpy as np
-from extent import Extent
-from pyg_pe import PygPE
+from pygmu.extent import Extent
+from pygmu.pyg_pe import PygPE
 
 
 class ReversePE(PygPE):

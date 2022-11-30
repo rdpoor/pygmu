@@ -1,6 +1,6 @@
 import numpy as np
-from extent import Extent
-from pyg_pe import PygPE
+from pygmu.extent import Extent
+from pygmu.pyg_pe import PygPE
 
 def monofy(frames):
     # Convert stero frames (2 column, N rows) into mono (one row)
