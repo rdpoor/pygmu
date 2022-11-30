@@ -1,6 +1,6 @@
-from pyg_pe import PygPE
-from extent import Extent
-import utils
+from pygmu.pyg_pe import PygPE
+from pygmu.extent import Extent
+import pygmu.utils
 
 class ImpulsePE(PygPE):
     """

@@ -22,7 +22,7 @@ def uninitialized_frames(n_frames, n_channels):
     """
     Create an uninitialized array of frames.
     """
-    return np.ndarray([n_frames, n_channels], dtype=np.float32) # emtpy
+    return np.ndarray([n_frames, n_channels], dtype=np.float32) # empty
 
 def const_frames(value, n_frames, n_channels):
     """
@@ -36,7 +36,7 @@ def ramp_frames(v0, v1, n_frames, n_channels):
     v1 (exclusive).
     """
     ramp = np.linspace(v0, v1, num=n_frames, endpoint=False, dtype=np.float32)
-    return np.tile(ramp.reshape(-1, 1), (1, n_channels))
+    return ramp.repeat(n_frames).reshape(-1, n_frames)
 
 def complex_to_magphase(c):
     """

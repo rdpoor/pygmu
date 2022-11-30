@@ -22,101 +22,42 @@ Run an example
     $ cd pygmu
     $ python example_01.py
 
+Run the unit tests
+```
+    $ py -m pipenv run py -m unittest discover -f -s tests
+```
+The `-f` means stop on first error.  The `-s` means search in the `tests/` directory for files that start with `test_xxx`
+
 ## Todo
 
-There are lots of loose ends. The system is currently ambiguous as to who "owns"
-`frame_rate` and `n_channels`?  Best would be to have the Transport object offer
-`pg.Transport.frame_rate()` and `pg.Transport.n_channels()` so any modules that
-need to know could find out.
+* Create pyg_exceptions for channel mismatch, frame rate mismatch, perhaps others.
+* Flesh out unit tests.
+* Create "ASAP" transport that runs as fast as possible, e.g. for writing to a file.
+* Add auto-stop feature to Transport to halt on first buffer of all zeros.
+* Introduce "constant or PE" as arguments, e.g. to SinPE frequency, amplitude, phase.
 
-Need to create functions to map n channels into m channels.
+## To discuss
 
-Can frame indeces be non-integer?  If not, who is responsible for enforcing
-that?  Should all Extent() objects enforce it?
+### EMPTY_EXTENT
 
-I don't understand packages well enough to know how to put the
-example_01.py into the example directory.
+Consider creating a special "EMPTY_EXTENT" object to signify an extent of zero length.
 
-## Who owns what?
+Pro: Might be useful, if only for making code easier to understand.
+Con: Any Extent of zero length will behave as expected.
 
-A PygMu "ensmble" is implemented as a Directed Acyclic Graph, with the root
-Processing Element as the source of data to be rendered by the transport.
+Also, if we do create "EMPTY_EXTENT", shouldn't we then also create "INDEFINITE_EXTENT"?
 
-When a PE's render(requested:Extent, n_channels:int) method is called, its
-contract is to deliver any sample data that happens within the requested Extent.
+### Dynamic changes to the graph
 
-The current implementation requires the caller to call the callee's extent()
-method first, intersect that with the requested extent, pass the intersected
-extent to the callee, and (finally) align the resulting data with the actual
-requested data.  This is nuts.
+At present, the system assumes the graph will be fully built and constant before 
+processing starts.  Relaxing this assumption creates lots of possibilities and lots
+of potential issues.
 
-Better would be for the caller to simply pass the requested extent to the
-callee and let the callee return what it can.  The problem is that when the
-first sample produced by the callee doesn't align with the first sample of
-the requested data, there's no way for the caller to know how to align it.
+### Formalize a connection between two PEs
 
-To make it concrete, assume we call:
+Should connecting the output of one PE to the input of another go through a 
+special object?  This could buy us:
+* Automatic channel count fitting
+* Detection of circularity
+* Ability to notify a PE when connections change
 
-    callee.render(Extent(100, 200))
-
-... but the callee only has sample data between 150 and 175.  It could allocate
-a buffer of 100 elements, overlay its data from buffer[50:75], and return that
-to the caller.  But that would lead to a lot of extra allocation.
-
-### Approach A:
-
-A PE could return a Buffer object, which is a thin class that encapsulates a
-numpy array and the starting frame of that array.  This will tell the caller
-how to align the numpy array in its own internal buffer.
-
-Here's how the transport would handle this case:
-
-        src_data, offset = self.src_pe.render(requested)
-        output_data = src_data[offset:]
-        # anything not filled by input data needs to be zeroed
-        ouput_data[0:offset].fill(0)
-
-### Approach B:
-
-callee.render() return a duple containing the data and the callee's extent:
-
-    (data:np.array, available:Extent)
-
-When the caller receives the data, intersection = requested.intersect(available)
-will tell the caller how the data aligns.  In particular, if intersection.start
-equals requested.start, then the data aligns at element 0.  If intersection is
-empty, then there's no data available from the callee.
-
-Here's how the transport would handle this case:
-
-        src_data, src_extent = self.src_pe.render(requested)
-        intersection = requested.intersect(src_extent)
-        offset = intersection.start() - requested.start()
-        output_data = src_data[offset:]
-        # anything not filled by input data needs to be zeroed
-        ouput_data[0:offset].fill(0)
-
-### Approach C:
-
-Don't optimize.  The callee always produces the requested frames, whether or
-not it has any data in them.
-
-### Conclusion:
-
-Try approach C.  If it needs optimization, then we'll do that later.  (One
-simple optimization is to return "no frames" if there really are none, but
-always produce the requested frames otherwise.)
-
-## Extent
-
-Rather than using None to signify "the null extent", it might be useful to have
-a special instance of Extent to represent it.  If that's the case:
-
-    NULL_EXTENT.intersects(x) => NULL_EXTENT
-    NULL_EXTENT.union(x) => x
-    any event precedes (or follows) the null extent
-    only the null extent equals the null extent
-
-Perhaps implement NullExtent as a subclass of Extent and tweak the methods
-accordingly.  And if we go that route, why not the same treatment for
-InfiniteExtent?

@@ -1,7 +1,7 @@
-from pyg_pe import PygPE
-from extent import Extent
-from array_pe import ArrayPE
-import utils as ut
+from pygmu.pyg_pe import PygPE
+from pygmu.extent import Extent
+from pygmu.array_pe import ArrayPE
+import pygmu.utils as ut
 import numpy as np
 
 class GaneshPE(PygPE):

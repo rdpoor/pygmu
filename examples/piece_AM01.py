@@ -1,7 +1,7 @@
 import numpy as np
 import pygmu as pg
 import soundfile as sf
-from extent import Extent
+from pygmu.extent import Extent
 from env2_pe import Env2PE
 from interpolate_pe import InterpolatePE
 
