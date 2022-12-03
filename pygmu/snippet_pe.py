@@ -1,8 +1,8 @@
-from pygmu.crop_pe import CropPE
-from pygmu.delay_pe import DelayPE
-from pygmu.extent import Extent
-from pygmu.pyg_pe import PygPE
-from pygmu.wav_reader_pe import WavReaderPE
+from crop_pe import CropPE
+from delay_pe import DelayPE
+from extent import Extent
+from pyg_pe import PygPE
+from wav_reader_pe import WavReaderPE
 import numpy as np
 
 class SnippetPE(PygPE):

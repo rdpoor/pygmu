@@ -1,9 +1,11 @@
+import os
+import sys
+script_dir = os.path.dirname( __file__ )
+pygmu_dir = os.path.join( script_dir, '..', 'pygmu' )
+sys.path.append( pygmu_dir )
 import numpy as np
 import pygmu as pg
 import soundfile as sf
-from pygmu.extent import Extent
-from env2_pe import Env2PE
-from interpolate_pe import InterpolatePE
 
 
 # convert between complex and (magnitude, phase)
@@ -60,13 +62,13 @@ fade_in = secs(0.3)
 fade_out = secs(2.1)
 
 
-sourceA = pg.WavReaderPE("../samples/Tamper_MagnifyingFrame1.wav")
-sourceB = pg.WavReaderPE("../samples/TamperClip38.wav")
-sourceC = mogrify("../samples/TamperClip38.wav").crop(Extent(start=140000)).delay(-140000)
+sourceA = pg.WavReaderPE("samples/Tamper_MagnifyingFrame1.wav")
+sourceB = pg.WavReaderPE("samples/TamperClip38.wav")
+sourceC = mogrify("samples/TamperClip38.wav").crop(pg.Extent(start=140000)).delay(-140000)
 
-frag1 = pg.EnvelopePE(sourceA, fade_in, fade_out).reverse()
-frag2 = pg.EnvelopePE(sourceB, fade_in, fade_out).reverse()
-frag3 = pg.EnvelopePE(sourceC, fade_in * 4, fade_out).mulconst(2)
+frag1 = pg.Env2PE(sourceA, fade_in, fade_out).reverse()
+frag2 = pg.Env2PE(sourceB, fade_in, fade_out).reverse()
+frag3 = pg.Env2PE(sourceC, fade_in * 4, fade_out).mulconst(2)
 
 frag4 = pg.MixPE(frag3,frag3.delay(20000).mulconst(0.8),frag3.delay(40000).mulconst(0.6))
 frag5 = delays(frag3, 0.7, 18, 0.76)
@@ -74,7 +76,7 @@ frag5 = delays(frag3, 0.7, 18, 0.76)
 elements = [frag5, frag1.delay(secs(3)), frag2.delay(secs(3)), frag1.delay(secs(8)), frag2.delay(secs(10)), frag5.delay(secs(18))]
 
 mosh = pg.MixPE(*elements)
-mosh2 = mosh.crop(Extent(start=0,end=720000)).envelope(fade_in, fade_out).reverse().envelope(secs(0.01),secs(7))
+mosh2 = mosh.crop(pg.Extent(start=0,end=720000)).envelope(fade_in, fade_out).reverse().envelope(secs(0.01),secs(7))
 
 mosh3 = pg.MixPE(mosh,mosh2.delay(secs(5.5)))
 

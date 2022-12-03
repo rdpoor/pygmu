@@ -1,3 +1,8 @@
+import os
+import sys
+script_dir = os.path.dirname( __file__ )
+pygmu_dir = os.path.join( script_dir, '..', 'pygmu' )
+sys.path.append( pygmu_dir )
 import pygmu as pg
 
 def seq(snippet, at):
@@ -5,10 +10,10 @@ def seq(snippet, at):
 
 q = int(89576 / 4)     # quarter note duration
 
-s1 = pg.SnippetPE("../samples/Fox48.wav", 0*q, pg.Extent(0*q, 1*q))
-s2 = pg.SnippetPE("../samples/Fox48.wav", 1*q, pg.Extent(1*q, 2*q))
-s3 = pg.SnippetPE("../samples/Fox48.wav", 2*q, pg.Extent(2*q, 3*q))
-s4 = pg.SnippetPE("../samples/Fox48.wav", 3*q, pg.Extent(3*q, 4*q))
+s1 = pg.SnippetPE("samples/Fox48.wav", 0*q, pg.Extent(0*q, 1*q))
+s2 = pg.SnippetPE("samples/Fox48.wav", 1*q, pg.Extent(1*q, 2*q))
+s3 = pg.SnippetPE("samples/Fox48.wav", 2*q, pg.Extent(2*q, 3*q))
+s4 = pg.SnippetPE("samples/Fox48.wav", 3*q, pg.Extent(3*q, 4*q))
 
 # what does what does what does the fox the fox ...
 mix = pg.MixPE(

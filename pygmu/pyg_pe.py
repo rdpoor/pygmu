@@ -1,5 +1,5 @@
 import numpy as np
-from pygmu.extent import Extent
+from extent import Extent
 
 class PygPE(object):
     """

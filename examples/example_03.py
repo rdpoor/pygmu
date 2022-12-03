@@ -1,3 +1,8 @@
+import os
+import sys
+script_dir = os.path.dirname( __file__ )
+pygmu_dir = os.path.join( script_dir, '..', 'pygmu' )
+sys.path.append( pygmu_dir )
 import pygmu as pg
 
 def trem_sin_at(at_s, freq_hz, trem_freq, amp):

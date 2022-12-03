@@ -1,5 +1,5 @@
 import numpy as np
-import pygmu.extent as Extent
+import extent as Extent
 import sounddevice as sd
 
 class Transport(object):

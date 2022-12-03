@@ -1,9 +1,11 @@
+import os
+import sys
+script_dir = os.path.dirname( __file__ )
+pygmu_dir = os.path.join( script_dir, '..', 'pygmu' )
+sys.path.append( pygmu_dir )
 import numpy as np
 import pygmu as pg
 import soundfile as sf
-from extent import Extent
-from env2_pe import Env2PE
-from interpolate_pe import InterpolatePE
 
 
 # convert between complex and (magnitude, phase)
@@ -41,23 +43,23 @@ def mix_at(src, t, amp = 1):
 fade_in = secs(0.3)
 fade_out = secs(2.1)
 
-sourceA = pg.WavReaderPE("../samples/KeyboardSonatainECKPiano.wav").crop(Extent(start=0,end=secs(10))).envelope(secs(0.5),secs(0.5))
-sourceA2 = pg.WavReaderPE("../samples/KeyboardSonatainECKPiano.wav").crop(Extent(start=20,end=secs(10))).envelope(secs(0.5),secs(0.5))
-sourceB = pg.WavReaderPE("../samples/PrettyGirl_Gleason.wav").crop(Extent(start=20,end=secs(10))).envelope(secs(0.5),secs(0.5))
-sourceC = pg.WavReaderPE("../samples/TamperClip93.wav")
+sourceA = pg.WavReaderPE("samples/KeyboardSonatainECKPiano.wav").crop(pg.Extent(start=0,end=secs(10))).envelope(secs(0.5),secs(0.5))
+sourceA2 = pg.WavReaderPE("samples/KeyboardSonatainECKPiano.wav").crop(pg.Extent(start=20,end=secs(10))).envelope(secs(0.5),secs(0.5))
+sourceB = pg.WavReaderPE("samples/PrettyGirl_Gleason.wav").crop(pg.Extent(start=20,end=secs(10))).envelope(secs(0.5),secs(0.5))
+sourceC = pg.WavReaderPE("samples/TamperClip93.wav")
 
-frag1 = pg.EnvelopePE(sourceA, fade_in, fade_out).reverse()
+frag1 = pg.Env2PE(sourceA, fade_in, fade_out).reverse()
 frag1a = delays(frag1, 0.6,5,0.8).mulconst(0.3)
 frag1b = delays(frag1a, 0.16,7,0.88).mulconst(0.2)
 
-frag11 = pg.EnvelopePE(sourceA2, fade_in, fade_out).reverse()
+frag11 = pg.Env2PE(sourceA2, fade_in, fade_out).reverse()
 frag11a = delays(frag1, 0.6,5,0.8)
 frag11b = delays(frag1a, 0.16,5,0.88).mulconst(0.2)
 
-frag2 = pg.EnvelopePE(sourceB, fade_in, fade_out).reverse().mulconst(1.1)
+frag2 = pg.Env2PE(sourceB, fade_in, fade_out).reverse().mulconst(1.1)
 frag2a = delays(frag2, 0.36,7,0.78)
 
-frag3 = pg.EnvelopePE(sourceC, fade_in * 4, fade_out).mulconst(0.15)
+frag3 = pg.Env2PE(sourceC, fade_in * 4, fade_out).mulconst(0.15)
 frag3a = delays(frag3, 0.36,7,0.78)
 
 #frag1b.play()

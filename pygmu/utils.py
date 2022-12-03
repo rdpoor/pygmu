@@ -36,7 +36,7 @@ def ramp_frames(v0, v1, n_frames, n_channels):
     v1 (exclusive).
     """
     ramp = np.linspace(v0, v1, num=n_frames, endpoint=False, dtype=np.float32)
-    return ramp.repeat(n_frames).reshape(-1, n_frames)
+    return ramp.repeat(n_channels).reshape(-1, n_channels)
 
 def complex_to_magphase(c):
     """

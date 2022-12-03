@@ -1,7 +1,7 @@
 import numpy as np
-from pygmu.extent import Extent
-from pygmu.pyg_pe import PygPE
-from pygmu.linear_ramp_pe import LinearRampPE
+from extent import Extent
+from pyg_pe import PygPE
+from linear_ramp_pe import LinearRampPE
 
 
 class EnvelopePE(PygPE):
