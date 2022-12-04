@@ -15,6 +15,7 @@ from linear_ramp_pe import LinearRampPE
 from mix_pe import MixPE
 from mul_pe import MulPE
 from print_pe import PrintPE
+from pwm_pe import PwmPE
 from pyg_pe import PygPE
 from reverse_pe import ReversePE
 from sin_pe import SinPE
