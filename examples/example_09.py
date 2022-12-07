@@ -1,15 +1,15 @@
 import os
 import sys
+import numpy as np
 script_dir = os.path.dirname( __file__ )
 pygmu_dir = os.path.join( script_dir, '..', 'pygmu' )
 sys.path.append( pygmu_dir )
-import numpy as np
 import pygmu as pg
 """
 Test TimewarpPE
 """
 
-n_frames = 89576
+n_frames = 89576 / 4
 
 semitone = pow(2.0, 1/12)
 
@@ -38,7 +38,7 @@ warped = pg.TimewarpPE(source, timeline)
 pg.Transport(pg.MixPE(source, warped)).play()
 
 # just being silly...
-timeline = make_timeline([0, 2, 4, 5])
+timeline = make_timeline([0, 2, 4, 5, 7, 9, 11, 12, 12, 12, 12])
 source = pg.WavReaderPE("samples/Fox48.wav")
 pe = pg.TimewarpPE(source, timeline)
 pg.Transport(pe).play()
