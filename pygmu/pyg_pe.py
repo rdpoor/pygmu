@@ -77,6 +77,9 @@ class PygPE(object):
     def reverse(self):
         return pg.ReversePE(self)
 
+    def timewarp(self, timeline_pe):
+        return pg.TimewarpPE(self, timeline_pe)
+        
     def tralfam(self):
         return pg.TralfamPE(self)
 
