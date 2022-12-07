@@ -51,6 +51,7 @@ class MixPE(PygPE):
             extent = self._pes[0].extent()
             for pe in self._pes[1:]:
                 extent = extent.union(pe.extent())
+            print('mix extent',extent)
             return extent
 
  
