@@ -24,7 +24,10 @@ Run an example
 
 Run the unit tests
 ```
+    # Windows
     $ py -m pipenv run py -m unittest discover -f -s tests
+    # macOS, Linux
+    $ pipenv run python -m unittest discover -f -s tests
 ```
 The `-f` means stop on first error.  The `-s` means search in the `tests/` directory for files that start with `test_xxx`
 

@@ -58,5 +58,8 @@ class LinearRampPE(PygPE):
     def extent(self):
         return self._extent
 
+    def channel_count(self):
+        return self._channel_count
+
     def lerp(self, t):
         return self._start_v + self._dvdt * (t - self.extent().start())

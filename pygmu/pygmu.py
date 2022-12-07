@@ -20,6 +20,7 @@ from pyg_pe import PygPE
 from reverse_pe import ReversePE
 from sin_pe import SinPE
 from snippet_pe import SnippetPE
+from timewarp_pe import TimewarpPE
 from tralfam_pe import TralfamPE
 from transport import Transport
 import utils
