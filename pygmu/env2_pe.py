@@ -150,7 +150,7 @@ g=0.0  ---+     +---
                 ramp = ut.ramp_frames(g0, g1, n, self.channel_count())
                 # print("Step 4: s=", s, "e=", e, "n=", n)
                 # print("Step 4: ramp=", ramp)
-                dst_buf[dst_index:dst_index+n,:] = src_buf[0:n,:] * ramp
+                dst_buf[dst_index:dst_index+n,:] = src_buf[src_index:src_index+n,:] * ramp
                 src_index += n
                 dst_index += n
 
