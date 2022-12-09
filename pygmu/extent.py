@@ -20,7 +20,7 @@ class Extent(object):
 
     def __init__(self, start = NINF, end = PINF):
         self.s = start
-        self.e = end
+        self.e = max(end, start)
 
     def __repr__(self):
         st = str(self.s)

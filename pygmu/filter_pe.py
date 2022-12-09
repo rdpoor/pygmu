@@ -7,6 +7,10 @@ def monofy(frames):
     # Convert stero frames (2 column, N rows) into mono (one row)
     return np.dot(frames, [[0.5], [0.5]]).reshape(-1)
 
+def sterofy(frames):
+    # convert horizontal mono array into stero frames (2 columns, N rows)
+    return np.dot(frames.reshape(-1, 1), [[1.0, 1.0]])
+
 
 class FilterPE(PygPE):
     """
@@ -23,7 +27,9 @@ class FilterPE(PygPE):
 
     def render(self, requested:Extent):
         src_buf = self._src_pe.render(requested)
-        return scipy.signal.filtfilt(self._b, self._a, monofy(src_buf))
+        frames = scipy.signal.filtfilt(self._b, self._a, monofy(src_buf))
+        f2 =sterofy(frames)
+        return f2
        
     def extent(self):
         return self._extent

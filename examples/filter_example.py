@@ -41,6 +41,6 @@ def mix_at(src, t, amp = 1):
  
 
 clip = pg.WavReaderPE("samples/TamperClip93.wav")
-clip.play()
+# clip.play()
 filtered = pg.FilterPE(clip, 3, 400)
 filtered.play()
