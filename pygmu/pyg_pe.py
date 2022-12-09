@@ -71,8 +71,20 @@ class PygPE(object):
     def envelope(self, up_dur, dn_dur):
         return pg.EnvelopePE(self, up_dur, dn_dur)
 
+    def fts_play(self):
+        return pg.FtsTransport(self).play()
+
+    def gain(self, ratio):
+        return pg.GainPE(self, ratio)
+
     def interpolate(self, speed_mult):
         return pg.InterpolatePE(self, speed_mult)
+
+    def loop(self, loop_length):
+        return pg.LoopPE(self, loop_length)
+
+    def play(self):
+        return pg.Transport(self).play()
 
     def reverse(self):
         return pg.ReversePE(self)
@@ -85,8 +97,5 @@ class PygPE(object):
 
     def wav_writer(self, filename):
         return pg.WavWriterPE(self, filename)
-
-    def play(self):
-        return pg.Transport(self).play()
 
 import pygmu as pg

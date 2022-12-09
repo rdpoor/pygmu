@@ -8,12 +8,15 @@ from env2_pe import Env2PE
 from envelope_pe import EnvelopePE
 from extent import Extent
 from filter_pe import FilterPE
+from fts_transport import FtsTransport
+from gain_pe import GainPE
 from ganesh_pe import GaneshPE
 from identity_pe import IdentityPE
 from impulse_pe import ImpulsePE
 from interpolate_pe import InterpolatePE
 from limiter_pe import LimiterPE
 from linear_ramp_pe import LinearRampPE
+from loop_pe import LoopPE
 from mix_pe import MixPE
 from mul_pe import MulPE
 from print_pe import PrintPE
