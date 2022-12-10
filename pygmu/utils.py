@@ -79,5 +79,5 @@ def note_to_freq(note, tuning_system = "12TET", a_hz = 440.0):
             print("Uknown tuning system.",tuning_system," - sticking with 12TET.")
             freq = a_hz * pow(2.0, (note - 69) / 12.0)
 
-    print(a_hz)
+    # print(a_hz)
     return freq
