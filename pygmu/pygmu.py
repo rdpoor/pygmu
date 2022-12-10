@@ -1,6 +1,7 @@
 import numpy as np
 from abs_pe import AbsPE
 from array_pe import ArrayPE
+from biquad_pe import BiquadPE
 from const_pe import ConstPE
 from crop_pe import CropPE
 from delay_pe import DelayPE
@@ -19,6 +20,7 @@ from linear_ramp_pe import LinearRampPE
 from loop_pe import LoopPE
 from mix_pe import MixPE
 from mul_pe import MulPE
+from noise_pe import NoisePE
 from print_pe import PrintPE
 from pwm_pe import PwmPE
 from pyg_pe import PygPE
