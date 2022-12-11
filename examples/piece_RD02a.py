@@ -54,40 +54,54 @@ def tuned_snip(snip, beat, pitch, q):
 	return pe.delay(int(beat * q_note))
 
 mix = pg.MixPE(
-	beat.delay(beat_to_frame(4)).gain(0.2).crop(pg.Extent(0, int(24 * q_note))),
-	tuned_snip(typical, 0, 65, 128),
-	tuned_snip(typical, 1, 65, 128),
-	tuned_snip(typical, 2, 65, 128),
-	tuned_snip(typical, 3, 65, 128),
-	tuned_snip(typical, 4, 65, 128),
-	tuned_snip(typical, 5, 72, 126),
-	tuned_snip(typical, 6, 68, 128),
-	tuned_snip(typical, 7, 65, 128),
-	tuned_snip(typical, 8, 64, 128),
-	tuned_snip(fresh, 9, 65, 128),
-	tuned_snip(fresh, 9.5, 67, 128),
-	tuned_snip(mediterranean, 10, 68, 128),
-	tuned_snip(diet, 11.25, 70, 64),
-	tuned_snip(diet, 11.5, 68, 64),
-	tuned_snip(diet, 11.75, 67, 64),
+	beat.delay(beat_to_frame(4)).gain(0.2).crop(pg.Extent(0, int(32 * q_note))),
+	tuned_snip(typical, 0, 65, 256),
+	tuned_snip(typical, 1, 65, 256),
+	tuned_snip(typical, 2, 65, 256),
+	tuned_snip(typical, 3, 65, 256),
 
-	tuned_snip(typical, 12, 65, 128),
-	tuned_snip(typical, 13, 65, 32),
-	tuned_snip(typical, 14, 65, 32),
-	tuned_snip(typical, 15, 65, 32),
-	tuned_snip(typical, 16, 65, 32),
-	tuned_snip(typical, 17, 72, 32),
-	tuned_snip(typical, 18, 68, 32),
-	tuned_snip(typical, 19, 65, 32),
-	tuned_snip(typical, 20, 64, 32),
-	tuned_snip(fresh, 21, 65, 32),
-	tuned_snip(fresh, 21.5, 67, 32),
-	tuned_snip(mediterranean, 22, 68, 32),
-	tuned_snip(diet, 23.25, 70, 2),
-	tuned_snip(diet, 23.5, 68, 2),
-	tuned_snip(diet, 23.75, 67, 2),
+	tuned_snip(typical, 4, 65, 256),
+	tuned_snip(typical, 5, 65, 256),
+	tuned_snip(typical, 6, 65, 256),
+	tuned_snip(typical, 7, 65, 256),
 
-	tuned_snip(olive_oil, 24.0, 65-5, 128)
+	tuned_snip(typical, 8, 65, 256),
+	tuned_snip(typical, 9, 72, 256),
+	tuned_snip(typical, 10, 68, 256),
+	tuned_snip(typical, 11, 65, 256),
+
+	tuned_snip(typical, 12, 64, 256),
+	tuned_snip(fresh, 13, 65, 256),
+	tuned_snip(fresh, 13.5, 67, 256),
+	tuned_snip(mediterranean, 14, 68, 256),
+	tuned_snip(diet, 15.25, 70, 64),
+	tuned_snip(diet, 15.5, 68, 64),
+	tuned_snip(diet, 15.75, 67, 64),
+
+	tuned_snip(typical, 16, 65, 128),
+	tuned_snip(typical, 17, 65, 64),
+	tuned_snip(typical, 18, 65, 32),
+	tuned_snip(typical, 19, 65, 16),
+
+	tuned_snip(typical, 20, 65, 16),
+	tuned_snip(typical, 21, 65, 16),
+	tuned_snip(typical, 22, 65, 16),
+	tuned_snip(typical, 23, 65, 16),
+
+	tuned_snip(typical, 24, 65, 16),
+	tuned_snip(typical, 25, 72, 16),
+	tuned_snip(typical, 26, 68, 16),
+	tuned_snip(typical, 27, 65, 16),
+
+	tuned_snip(typical, 28, 64, 16),
+	tuned_snip(fresh, 29, 65, 16),
+	tuned_snip(fresh, 29.5, 67, 16),
+	tuned_snip(mediterranean, 30, 68, 16),
+	tuned_snip(diet, 31.25, 70, 2),
+	tuned_snip(diet, 31.5, 68, 2),
+	tuned_snip(diet, 31.75, 67, 2),
+
+	tuned_snip(olive_oil, 32.0, 60, 256)
 	)
 
 # Biquad2PE runs fast enough to render in real time...
