@@ -105,4 +105,6 @@ mix = pg.MixPE(
 	)
 
 # Biquad2PE runs fast enough to render in real time...
-pg.Transport(mix).play()
+# pg.Transport(mix).play()
+dst = pg.WavWriterPE(mix, "examples/piece_RD02a.wav")
+pg.Transport(dst).play()
