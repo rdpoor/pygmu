@@ -2,6 +2,7 @@ import numpy as np
 from abs_pe import AbsPE
 from array_pe import ArrayPE
 from biquad_pe import BiquadPE
+from biquad2_pe import Biquad2PE
 from const_pe import ConstPE
 from crop_pe import CropPE
 from delay_pe import DelayPE
