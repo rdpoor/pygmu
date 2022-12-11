@@ -89,6 +89,9 @@ mix = pg.MixPE(
 	tuned_snip(olive_oil, 24.0, 65, 2),
 	)
 
+# Tweaked biquad_pe and it *almost* renders in real time on my old Mac...
+# pg.Transport(mix).play()
+# ...but not quite
 dst = pg.WavWriterPE(mix, "test.wav")
 pg.FtsTransport(dst).play()
 pg.Transport(pg.WavReaderPE("test.wav")).play()

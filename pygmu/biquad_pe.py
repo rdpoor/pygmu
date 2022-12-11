@@ -39,10 +39,13 @@ class BiquadPE(PygPE):
         # self.set_coefficients(db_gain, f0, q)
 
     def render(self, requested:Extent):
-        src_frames = self._src_pe.render(requested)
+        overlap = self._src_pe.extent().intersect(requested)
+        if overlap.is_empty():
+            return ut.const_frames(0.0, requested.duration(), self.channel_count())
 
+        src_frames = self._src_pe.render(requested)
         # nb: Tricky code: src_frames.shape => (n_frames, n_channels), which 
-        # happens to be the two arguments needed by ut.uninitialized_frames()
+        # are the two arguments needed by ut.uninitialized_frames()
         dst_frames = ut.uninitialized_frames(*src_frames.shape)
 
         # optimize case for constant coefficients.
