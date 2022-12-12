@@ -15,12 +15,13 @@ class CropPE(PygPE):
     def render(self, requested:Extent):
 
         intersection = requested.intersect(self.extent())
+
         if intersection.is_empty():
             # no intersection
-            return np.zeros([requested.duration(), self.channel_count()], np.float32)
+            dst_buf = np.zeros([requested.duration(), self.channel_count()], np.float32)
         elif intersection.equals(requested):
             # full overlap: just return src_pe's frames
-            return self._src_pe.render(intersection)
+            dst_buf = self._src_pe.render(intersection)
         else:
             # Create dst_buf equal to the length of the request.  Ask src_pe
             # to produce frames that fall within the intersection, then lay
@@ -31,7 +32,7 @@ class CropPE(PygPE):
             src_n_frames = intersection.duration()
             assert(src_n_frames == src_buf.shape[0])
             dst_buf[offset:offset + src_n_frames, :] = src_buf
-            return dst_buf
+        return dst_buf
 
     def extent(self):
         return self._extent

@@ -23,6 +23,8 @@ class LoopPE(PygPE):
             if e < s:
                 e = self._loop_length
             n = min(e - s, dst_length - dst_idx)
+            if n <= 0:
+                break          # TODO: code smell.  
             # at this point
             # s = start time to render
             # e = end time to render
