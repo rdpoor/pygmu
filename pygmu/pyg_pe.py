@@ -80,8 +80,8 @@ class PygPE(object):
     def interpolate(self, speed_mult):
         return pg.InterpolatePE(self, speed_mult)
 
-    def loop(self, loop_length):
-        return pg.LoopPE(self, loop_length)
+    def loop(self, loop_start, loop_length):
+        return pg.LoopAPE(self, loop_start, loop_length)
 
     def play(self):
         return pg.Transport(self).play()

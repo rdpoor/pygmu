@@ -12,7 +12,7 @@ import utils as ut
 beat = pg.WavReaderPE("samples/BigBeat120bpm10.wav")
 beat_bpm = 120
 beat_duration = 176552  # eight beats
-beat_loop = beat.loop(beat_duration)
+beat_loop = beat.loop(0, int(beat_duration))
 
 q = beat_duration / 8  # 22069
 
@@ -286,7 +286,7 @@ bass_m12 = [
     ["c2", "h", 64],
 ]
 
-middle_8_beat = beat.delay(int(-7 * q)).crop(pg.Extent(0, int(q))).loop(q)
+middle_8_beat = beat.delay(int(-7 * q)).crop(pg.Extent(0, int(q))).loop(0, int(q))
 
 middle_8_motif = [
     ["g5", "q", 20],
