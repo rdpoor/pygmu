@@ -31,7 +31,7 @@ class LoopPE(PygPE):
             # n = # of frames in segment
             # dst_idx = index into dst_frames where first src_frame is written
             src_frames = self._src_pe.render(Extent(s, s+n))
-            dst_frames[dst_idx:dst_idx+n,:] = src_frames
+            dst_frames[int(dst_idx):int(dst_idx+n),:] = src_frames
             dst_idx += n
             s = (s + n) % self._loop_length
         return dst_frames

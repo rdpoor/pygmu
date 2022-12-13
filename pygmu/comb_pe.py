@@ -21,8 +21,8 @@ class CombPE(PygPE):
         fs = src_pe.frame_rate()
         # f0 must divide evenly into frame rate
         f0a = fs / round(fs / f0)
-        if f0 != f0a:
-            print('adjusting f0 from', f0, 'to', f0a)
+        # if f0 != f0a:
+        #     print('adjusting f0 from', f0, 'to', f0a)
         self._b, self._a = signal.iircomb(f0a, q, ftype=filter_type, fs=fs, pass_zero=pass_zero)
         # filter initial state (carried over between calls to render)
         self._zinit = np.zeros((self.channel_count(), max(len(self._b), len(self._a))-1), dtype=np.float32)
