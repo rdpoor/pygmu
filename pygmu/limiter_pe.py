@@ -23,7 +23,7 @@ class LimiterPE(PygPE):
         return src_buf * self._reduction
 
     def extent(self):
-        return self._extent
+        return self._src_pe.extent()
 
     def frame_rate(self):
         """
