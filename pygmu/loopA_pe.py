@@ -15,7 +15,6 @@ class LoopAPE(PygPE):
         self._dur = loop_duration
 
     def render(self, requested:Extent):
-    	#src_loop_extent = Extent(int(self._insk * self.frame_rate()), int((self._insk + self._dur) * self.frame_rate()))
     	src_loop_extent = Extent(self._insk, (self._insk + self._dur))
     	src_buf = self._src_pe.render(src_loop_extent)
     	dst_buf = ut.uninitialized_frames(requested.duration(), self.channel_count())
@@ -24,7 +23,7 @@ class LoopAPE(PygPE):
     	src_size = src_loop_extent.duration()
     	src_ndx = requested.start() % src_size
     	while dst_ndx < dst_size:
-    		src_cnt = min(dst_size - dst_ndx,min(src_size - src_ndx, dst_size))
+    		src_cnt = min(dst_size - dst_ndx,min(src_size - src_ndx, dst_size)) #limit the size of this pass to the smaller of remaining requested frames or remaining frames in the loop
     		dst_buf[dst_ndx:dst_ndx + src_cnt, :] = src_buf[src_ndx:src_ndx + src_cnt, :]
     		dst_ndx += src_cnt
     		src_ndx = 0
