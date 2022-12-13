@@ -11,27 +11,29 @@ import utils as ut
 
 beat = pg.WavReaderPE("samples/BigBeat120bpm10.wav")
 beat_bpm = 120
-beat_duration = 176552  # eight beats
-beat_loop = beat.loop(0, int(beat_duration))
+eight_beat_duration = 176552  # eight beats
+beat_duration = eight_beat_duration / 8
+beat_loop = beat.loop(0, int(eight_beat_duration))
 
-q = beat_duration / 8  # 22069
+def beats(b):
+    return int(b * beat_duration)
 
 durs = {
-    "w.": q * 4.5,  # dotted whole note
-    "w": q * 4,  # whole note
-    "h.": q * 2.5,  # dotted half note
-    "h": q * 2,  # half note
-    "q.": q * 1.5,  # dotted quarter note
-    "q": q * 1,  # quarter note
-    "e.": q * 0.75,  # dotted eighth note
-    "e": q * 0.5,  # eighth note
-    "s.": q * 0.375,  # dotted sixteenth note
-    "s": q * 0.25,  # sixteenth note
-    "tw": q * (4 / 3.0),  # whole note triplet
-    "th": q * (2 / 3.0),  # half note triplet
-    "tq": q * (1 / 3.0),  # quarter note triplet
-    "te": q * (0.5 / 3.0),  # eighth note triplet
-    "ts": q * (0.25 / 3.0),  # sixteenth note triplet
+    "w.": beats(4.5),  # dotted whole note
+    "w": beats(4),  # whole note
+    "h.": beats(2.5),  # dotted half note
+    "h": beats(2),  # half note
+    "q.": beats(1.5),  # dotted quarter note
+    "q": beats(1),  # quarter note
+    "e.": beats(0.75),  # dotted eighth note
+    "e": beats(0.5),  # eighth note
+    "s.": beats(0.375),  # dotted sixteenth note
+    "s": beats(0.25),  # sixteenth note
+    "tw": beats(4 / 3.0),  # whole note triplet
+    "th": beats(2 / 3.0),  # half note triplet
+    "tq": beats(1 / 3.0),  # quarter note triplet
+    "te": beats(0.5 / 3.0),  # eighth note triplet
+    "ts": beats(0.25 / 3.0),  # sixteenth note triplet
 }
 
 pits = {
@@ -176,7 +178,7 @@ def combify(notes):
     return pg.MixPE(*pes)
 
 
-def quadify(notes):
+def biquadify(notes):
     pes = []
     s = 0
     for pit, dur, Q in notes:
@@ -196,9 +198,9 @@ def quadify(notes):
 
 
 intro_motif = [
-    ["a5", "w", 230],
-    ["a5", "w", 230],
-    ["a5", "e", 230],
+    ["a5", "w", 230], # 0
+    ["a5", "w", 230], # 4
+    ["a5", "e", 230], # 8
     ["a5", "e", 165],
     ["a5", "e", 114],
     ["a5", "e", 80],
@@ -206,7 +208,7 @@ intro_motif = [
     ["a5", "e", 38],
     ["a5", "e", 26],
     ["a5", "e", 18],
-    ["a5", "e", 12],
+    ["a5", "e", 12], #12
     ["a5", "e", 8],
     ["a5", "e", 6],
     ["a5", "e", 4],
@@ -214,6 +216,7 @@ intro_motif = [
     ["a5", "e", 2],
     ["a5", "e", 1],
     ["a5", "e", 1],
+                     #16
 ]
 
 ostinato = beat_loop
@@ -232,16 +235,17 @@ motif = [
 ]
 
 motif12 = [
-    ["d6", "q", 20],
+    ["d6", "q", 20], # 0
     ["f6", "e", 20],
     ["e6", "e", 20],
     ["f6", "q", 20],
     ["d6", "q", 20],
-    ["d6", "q", 20],
+    ["d6", "q", 20], # 4
     ["f6", "e", 20],
     ["e6", "e", 20],
     ["f6", "q", 20],
     ["d6", "q", 20],
+                     # 8
 ]
 
 motif19 = [
@@ -286,7 +290,7 @@ bass_m12 = [
     ["c2", "h", 64],
 ]
 
-middle_8_beat = beat.delay(int(-7 * q)).crop(pg.Extent(0, int(q))).loop(0, int(q))
+middle_8_beat = beat.delay(beats(-7)).crop(pg.Extent(0, beats(1))).loop(0, beats(1))
 
 middle_8_motif = [
     ["g5", "q", 20],
@@ -315,79 +319,82 @@ middle_8_motif = [
 # rendered sections.
 
 intro = pg.MixPE(  # beats 0-24
-    combify(intro_motif).gain(0.25),
-    beat_loop.crop(pg.Extent(int(q * 12), int(q * 32))).gain(0.25),
-    combify(motif12).delay(int(q * 16)),
+    combify(intro_motif).gain(0.25),  # 0 - 16
+    beat_loop.crop(pg.Extent(beats(16), beats(32))).gain(0.25), # 16 - 32
+    combify(motif12).delay(beats(16)), # 16 - 24
 )
 
 v1 = pg.MixPE(  # beats 24-48
-    beat_loop.crop(pg.Extent(0, int(q * 16))).gain(0.25),
+    beat_loop.crop(pg.Extent(0, beats(16))).gain(0.25),
     combify(bass).gain(0.8),
     combify(motif),
-    combify(motif).delay(int(q * 8)),
+    combify(motif).delay(beats(8)),
 )
 
 v2 = pg.MixPE(  # beats 48-64
-    beat_loop.crop(pg.Extent(0, int(q * 16))).gain(0.25),
+    beat_loop.crop(pg.Extent(0, beats(16))).gain(0.25),
     combify(bass).gain(0.8),
-    quadify(bass_m12).gain(0.0625),
+    biquadify(bass_m12).gain(0.0625),
     combify(motif),
-    combify(motif).delay(int(q * 8)),
+    combify(motif).delay(beats(8)),
 )
 
 v3 = pg.MixPE(  # beats 64-80
-    beat_loop.crop(pg.Extent(0, int(q * 16))).gain(0.25),
+    beat_loop.crop(pg.Extent(0, beats(16))).gain(0.25),
     combify(bass).gain(0.8),
-    quadify(bass_m12).gain(0.0625),
+    biquadify(bass_m12).gain(0.0625),
     combify(motif19),
     combify(motif).gain(0.7),
-    combify(motif12).gain(0.7).delay(int(q * 0.25)),
-    combify(motif19).delay(int(q * 8)),
-    combify(motif).delay(int(q * 8)).gain(0.7),
-    combify(motif12).delay(int(q * 8)).gain(0.7).delay(int(q * 0.25)),
+    combify(motif12).gain(0.7).delay(beats(0.25)),
+    combify(motif19).delay(beats(8)),
+    combify(motif).delay(beats(8)).gain(0.7),
+    combify(motif12).delay(beats(8)).gain(0.7).delay(beats(0.25)),
 )
 
-bridge_snip = beat_loop.crop(pg.Extent(int(15.75 * q), int(16 * q))).delay(
-    int(-15.75 * q)
+bridge_snip = beat_loop.crop(pg.Extent(beats(15.75), beats(16))).delay(
+    beats(-15.75)
 )
 
 bridge = pg.MixPE(  # beats 80-96
-    middle_8_beat.crop(pg.Extent(int(0), int(q * 16))).gain(0.4),
+    middle_8_beat.crop(pg.Extent(int(0), beats(16))).gain(0.4),
     combify(middle_8_motif).gain(0.8),
 )
 
-outro_snip = v3.crop(pg.Extent(int(15.75 * q))).delay(int(-15.75 * q))
+outro_snip = v3.crop(pg.Extent(beats(15.75))).delay(beats(-15.75))
 
 outro = pg.MixPE(
-    outro_snip.delay(int(0 * q)),
-    outro_snip.delay(int(0.25 * q)).gain(0.9),
-    outro_snip.delay(int(0.50 * q)).gain(0.81),
-    outro_snip.delay(int(0.80 * q)).gain(0.729),
-    outro_snip.delay(int(1.15 * q)).gain(0.6561),
-    outro_snip.delay(int(1.55 * q)).gain(0.5905),
-    outro_snip.delay(int(2.00 * q)).gain(0.5314),
-    outro_snip.delay(int(2.50 * q)).gain(0.4783),
-    outro_snip.delay(int(3.00 * q)).gain(0.4305),
-    outro_snip.delay(int(3.55 * q)).gain(0.3874),
-    outro_snip.delay(int(4.15 * q)).gain(0.3487),
-    outro_snip.delay(int(4.80 * q)).gain(0.3138),
+    outro_snip.delay(beats(0)),
+    outro_snip.delay(beats(0.25)).gain(0.900000),
+    outro_snip.delay(beats(0.55)).gain(0.810000),
+    outro_snip.delay(beats(0.90)).gain(0.729000),
+    outro_snip.delay(beats(1.30)).gain(0.656100),
+    outro_snip.delay(beats(1.75)).gain(0.590490),
+    outro_snip.delay(beats(2.25)).gain(0.531441),
+    outro_snip.delay(beats(2.80)).gain(0.478297),
+    outro_snip.delay(beats(3.40)).gain(0.430467),
+    outro_snip.delay(beats(4.05)).gain(0.387420),
+    outro_snip.delay(beats(4.75)).gain(0.348678),
+    outro_snip.delay(beats(5.50)).gain(0.313811),
+    outro_snip.delay(beats(6.30)).gain(0.282430),
+    outro_snip.delay(beats(7.15)).gain(0.254187),
+    outro_snip.delay(beats(8.05)).gain(0.228768),
+    outro_snip.delay(beats(9.0)).gain(0.205891),
+    outro_snip.delay(beats(10.05)).gain(0.185302),
 )
 
 mix = pg.MixPE(
-    intro.delay(int(0 * q)),
-    v1.delay(int(32 * q)),
-    v2.delay(int(48 * q)),
-    v3.delay(int(64 * q)),
-    bridge.delay(int(80 * q)),
-    v3.delay(int(96 * q)),
-    v3.delay(int(112 * q)),
-    v3.delay(int(112.25 * q)).gain(0.5),
-    outro.delay(int(128 * q)),
+    intro.delay(beats(0)),
+    v1.delay(beats(32)),
+    v2.delay(beats(48)),
+    v3.delay(beats(64)),
+    bridge.delay(beats(80)),
+    v3.delay(beats(96)),
+    v3.delay(beats(112)),
+    v3.delay(beats(112.25)).gain(0.5),
+    outro.delay(beats(128)),
 )
-
-# mix = pg.MixPE(
-# 	bridge
-# )
 
 dst = pg.WavWriterPE(mix, "examples/wip_RD03.wav")
 pg.FtsTransport(dst).play()
+
+pg.Transport(pg.WavReaderPE("examples/wip_RD03.wav")).play()
