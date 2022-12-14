@@ -83,6 +83,9 @@ class PygPE(object):
     def loop(self, loop_start, loop_length):
         return pg.LoopPE(self, loop_start, loop_length)
 
+    def mono(self, attenuation=1.0):
+        return pg.MonoPE(self, attenuation=attenuation)
+
     def play(self):
         return pg.Transport(self).play()
 

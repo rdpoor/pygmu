@@ -21,6 +21,7 @@ from limiter_pe import LimiterPE
 from linear_ramp_pe import LinearRampPE
 from loop_pe import LoopPE
 from mix_pe import MixPE
+from mono_pe import MonoPE
 from mul_pe import MulPE
 from noise_pe import NoisePE
 from print_pe import PrintPE
@@ -29,6 +30,7 @@ from pyg_pe import PygPE
 from reverse_pe import ReversePE
 from sin_pe import SinPE
 from snippet_pe import SnippetPE
+from spatial_a_pe import SpatialAPE
 from timewarp_pe import TimewarpPE
 from tralfam_pe import TralfamPE
 from transport import Transport
