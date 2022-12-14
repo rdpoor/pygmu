@@ -165,7 +165,7 @@ def combify(notes):
     for pit, dur, Q in notes:
         e = s + durs[dur]
         if pit != "":
-            freq = ut.note_to_freq(pits[pit])
+            freq = ut.pitch_to_freq(pits[pit])
             snip = beat_loop.crop(pg.Extent(int(s), int(e)))
             if Q == 0:
                 pes.append(snip)
@@ -184,7 +184,7 @@ def biquadify(notes):
     for pit, dur, Q in notes:
         e = s + durs[dur]
         if pit != "":
-            freq = ut.note_to_freq(pits[pit])
+            freq = ut.pitch_to_freq(pits[pit])
             snip = beat_loop.crop(pg.Extent(int(s), int(e)))
             if Q == 0:
                 pes.append(snip)

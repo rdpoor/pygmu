@@ -19,8 +19,7 @@ from impulse_pe import ImpulsePE
 from interpolate_pe import InterpolatePE
 from limiter_pe import LimiterPE
 from linear_ramp_pe import LinearRampPE
-#from loop_pe import LoopPE
-from loopA_pe import LoopAPE
+from loop_pe import LoopPE
 from mix_pe import MixPE
 from mul_pe import MulPE
 from noise_pe import NoisePE

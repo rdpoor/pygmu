@@ -46,7 +46,7 @@ def choose_snip():
 
 
 def tuned_snip(snip, beat, pitch, q):
-	f0 = ut.note_to_freq(pitch)
+	f0 = ut.pitch_to_freq(pitch)
 	if q > 0:
 		pe = pg.BiquadPE(snip, 0, f0, q, "lowpass")
 	else:
