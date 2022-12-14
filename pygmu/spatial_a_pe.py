@@ -76,8 +76,8 @@ class SpatialAPE(PygPE):
         elif delay < 0:
             self._right_chain = self._right_chain.delay(int(-delay))
 
-        if gain_l != 0.0:
+        if gain_l != 1.0:
             self._left_chain = self._left_chain.gain(gain_l)
 
-        if gain_r != 0.0:
+        if gain_r != 1.0:
             self._right_chain = self._right_chain.gain(gain_r)
