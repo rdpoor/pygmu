@@ -80,8 +80,8 @@ class PygPE(object):
     def interpolate(self, speed_mult):
         return pg.InterpolatePE(self, speed_mult)
 
-    def loop(self, loop_start, loop_length):
-        return pg.LoopPE(self, loop_start, loop_length)
+    def loop(self, loop_length):
+        return pg.LoopPE(self, loop_length)
 
     def mono(self, attenuation=1.0):
         return pg.MonoPE(self, attenuation=attenuation)
@@ -89,8 +89,8 @@ class PygPE(object):
     def play(self):
         return pg.Transport(self).play()
 
-    def reverse(self):
-        return pg.ReversePE(self)
+    def reverse(self, infinite_end):
+        return pg.ReversePE(self, infinite_end)
 
     def timewarp(self, timeline_pe):
         return pg.TimewarpPE(self, timeline_pe)

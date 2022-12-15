@@ -8,14 +8,13 @@ class LoopPE(PygPE):
     Loop source from loop_start to loop_start + loop_duration
     """
 
-    def __init__(self, src_pe, loop_start:float, loop_duration:float):
+    def __init__(self, src_pe, loop_duration:float):
         super(LoopPE, self).__init__()
         self._src_pe = src_pe
-        self._insk = loop_start
         self._dur = loop_duration
 
     def render(self, requested:Extent):
-        src_buf = self._src_pe.render(Extent(self._insk, (self._insk + self._dur)))
+        src_buf = self._src_pe.render(Extent(0, self._dur))
         dst_buf = ut.uninitialized_frames(requested.duration(), self.channel_count())
         dst_ndx = 0
         dst_size = requested.duration()
