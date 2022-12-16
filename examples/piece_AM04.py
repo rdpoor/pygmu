@@ -5,6 +5,9 @@ pygmu_dir = os.path.join( script_dir, '..', 'pygmu' )
 sys.path.append( pygmu_dir )
 import pygmu as pg
 
+def loopWindow(src,insk,dur):
+    return pg.LoopPE(src.crop(pg.Extent(insk)).delay(-insk), dur)
+
 def secs(s):
     return int(s * 48000)
 
@@ -22,13 +25,13 @@ def delays(src, secs, howmany = 1, decay = 1):
 
 sourceA= pg.WavReaderPE("samples/ItsGonnaRain_Original.wav")
 noloopA= sourceA.crop(pg.Extent(start=0,end=secs(6))).env2(secs(.13),secs(3))
-loopA = pg.LoopPE(sourceA,secs(2.95),secs(.8)).crop(pg.Extent(start=0,end=secs(60))).env2(secs(.13),secs(5))
-loopA2 = pg.LoopPE(sourceA,secs(2.95),secs(.78)).crop(pg.Extent(start=0,end=secs(60))).env2(secs(.13),secs(15))
-loopB = pg.LoopPE(sourceA,secs(3.95),secs(.75)).crop(pg.Extent(start=0,end=secs(60))).env2(secs(3),secs(5))
-loopB2 = pg.LoopPE(sourceA,secs(3.95),secs(.72)).crop(pg.Extent(start=0,end=secs(60))).env2(secs(3),secs(15))
-loopC = pg.LoopPE(sourceA,secs(5.5),secs(.75)).crop(pg.Extent(start=0,end=secs(60))).env2(secs(3),secs(5))
-loopC2 = pg.LoopPE(sourceA,secs(5.5),secs(.71)).crop(pg.Extent(start=0,end=secs(60))).env2(secs(3),secs(10))
-loopC3 = pg.LoopPE(sourceA,secs(5.5),secs(.67)).crop(pg.Extent(start=0,end=secs(60))).env2(secs(3),secs(15))
+loopA = loopWindow(sourceA,secs(2.95),secs(.8)).crop(pg.Extent(start=0,end=secs(60))).env2(secs(.13),secs(5))
+loopA2 = loopWindow(sourceA,secs(2.95),secs(.78)).crop(pg.Extent(start=0,end=secs(60))).env2(secs(.13),secs(15))
+loopB = loopWindow(sourceA,secs(3.95),secs(.75)).crop(pg.Extent(start=0,end=secs(60))).env2(secs(3),secs(5))
+loopB2 = loopWindow(sourceA,secs(3.95),secs(.72)).crop(pg.Extent(start=0,end=secs(60))).env2(secs(3),secs(15))
+loopC = loopWindow(sourceA,secs(5.5),secs(.75)).crop(pg.Extent(start=0,end=secs(60))).env2(secs(3),secs(5))
+loopC2 = loopWindow(sourceA,secs(5.5),secs(.71)).crop(pg.Extent(start=0,end=secs(60))).env2(secs(3),secs(10))
+loopC3 = loopWindow(sourceA,secs(5.5),secs(.67)).crop(pg.Extent(start=0,end=secs(60))).env2(secs(3),secs(15))
 
 elements = []
 gain = 1.85
