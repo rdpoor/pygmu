@@ -13,12 +13,12 @@ beat = pg.WavReaderPE("samples/BigBeat120bpm10.wav")
 beat_bpm = 120
 eight_beat_duration = 176552  # eight beats
 beat_duration = eight_beat_duration / 8
-beat_loop = beat.loop(0, int(eight_beat_duration))
+beat_loop = beat.loop(int(eight_beat_duration))
 
 def beats(b):
     return int(b * beat_duration)
 
-middle_8_beat = beat.delay(beats(-7)).crop(pg.Extent(0, beats(1))).loop(0, beats(1))
+middle_8_beat = beat.delay(beats(-7)).crop(pg.Extent(0, beats(1))).loop(beats(1))
 
 middle_8_motif = [
     ["g5", "q", 20],
@@ -107,8 +107,8 @@ motif_bass = [
     (62-12, beats(4)),
     (59-12, beats(4)),
     (60-12, beats(4)),
-    (65-12, beats(1)),
-    (60-12, beats(3)),
+    (65-12, beats(2.5)),
+    (60-12, beats(1.5)),
     ]
 
 def gen_intro():
@@ -156,7 +156,8 @@ def gen_verse_1():
         e = s + n_frames
         snip = beat_loop.mono().crop(pg.Extent(s, e))
         freq = ut.pitch_to_freq(pitch)
-        pes.append(pg.CombPE(snip, f0=freq, q=50).gain(0.5))
+        snip = pg.CombPE(snip, f0=freq, q=50).gain(0.5)
+        pes.append(snip)
         s = e
     return pg.MixPE(*pes)
 
@@ -215,11 +216,11 @@ def gen_verse_3():
         pes.append(pg.CombPE(snip, f0=freq, q=20))
 
         freq = ut.pitch_to_freq(pitch+24+2)
-        snip = pg.SpatialAPE(beat_snip, degree = 85).gain(0.85).delay(beats(0.25))
+        snip = pg.SpatialAPE(beat_snip, degree = 85).gain(0.75).delay(beats(0.5))
         pes.append(pg.CombPE(snip, f0=freq, q=40))
 
         freq = ut.pitch_to_freq(pitch+12+7)
-        snip = pg.SpatialAPE(beat_snip, degree = -75).gain(0.80).delay(beats(0.25))
+        snip = pg.SpatialAPE(beat_snip, degree = -75).gain(0.72).delay(beats(0.25))
         pes.append(pg.CombPE(snip, f0=freq, q=40))
         s = e
 
@@ -236,17 +237,107 @@ def gen_verse_3():
 
     return pg.MixPE(*pes)
 
-## TODO: flange only the pitched components, not the pure drums
-def gen_verse_4():
-    v3 = gen_verse_3()
+motif_bridge = [
+    (79, beats(1.0)),  # tricky, since orignal sample has two hits
+    (79, beats(0.5)),
+    (79, beats(1.0)),
+    (79, beats(0.5)),
+    (79, beats(0.5)),
+    (78, beats(0.5)),
+
+    (79, beats(0.5)),
+    (79, beats(0.25)),
+    (79, beats(0.75)),
+    (79, beats(1.0)),
+    (79, beats(1.0)),
+    (81, beats(0.5)),
+    ]
+
+
+def gen_bridge():
+    bridge_snip = beat_loop.delay(beats(1))
     pes = []
-    pes.append(v3)
-    timeline = pg.MixPE(pg.IdentityPE(channel_count=1), 
-                        pg.SinPE(frequency=0.125, amplitude=50, channel_count=1))
-    timeline = timeline.crop(pg.Extent(0, beats(16)))
-    warped = pg.TimewarpPE(v3, timeline)
-    pes.append(warped)
+    s = 0
+    for pitch, n_frames in motif_bridge + motif_bridge + motif_bridge + motif_bridge:
+        e = s + n_frames
+        freq = ut.pitch_to_freq(pitch)
+        snip = bridge_snip.crop(pg.Extent(0, n_frames)).delay(s).gain(0.5)
+        pes.append(pg.CombPE(snip, f0=freq, q=40))
+        s = e
+    # kick enters partway through the bridge
+    s = beats(8)
+    for i in range(24):
+        kick = beat_loop.crop(pg.Extent(0, beats(0.25))).delay(s + beats(i)).gain(0.1)
+        pes.append(kick)
     return pg.MixPE(*pes)
+
+BRIDGE_PITCHES = [
+    60, 62, 64, 65, 67, 69, 71, 
+    72, 74, 76, 77, 79, 81, 83,
+    84, 86, 88, 89, 91, 93, 95,
+    96, 98, 100, 101, 103, 105, 107,
+    108
+]
+
+random.seed(12)
+
+
+def gen_bridge_melody():
+    """
+    Generate "note ramps".  Each ramp has a starting pitch (p0) and an ending pitch (p1),
+    and a fixed duration for each intervening note.
+
+    Main characters:
+    s0: starting time of a pitch ramp
+    s1: ending time of a pitch ramp
+    p0: starting pitch
+    p1: ending pitch
+    ramp_dur: time it takes to get from s0 to s1
+    note_dur: the duration of each note in the ramp
+    """
+    pes = []
+    t0 = 0                   # start time of pitch ramp
+    p0 = select_pitch()      # starting pitch of pitch ramp
+    while t0 < beats(32-8):
+        # ramp_dur = select_ramp_dur()   # choose a duration for this pitch ramp
+        ramp_dur = beats(4)
+        t1 = min(beats(32-8), t0 + ramp_dur)  # ending time for this pitch ramp
+        p1 = select_pitch()  # choose an ending pitch for this pitch ramp
+        note_dur = select_note_dur()
+        t = t0
+        while t < t1:
+            u = t/beats(32-8)   # ramp from 0 to 1.  could be useful
+            p = ut.lerp(t, t0, t1, p0, p1)
+            p = closest(p, BRIDGE_PITCHES)  # filter to permissable pitches
+            pes.append(gen_bridge_note(t, p, note_dur, 0.2))
+            t += note_dur
+        t0 = t1
+        p0 = p1
+    return pg.MixPE(*pes)
+
+def select_ramp_dur():
+    return random.choice([beats(4), beats(2), beats(2), beats(1), beats(1)])
+
+def select_pitch():
+    return random.randrange(60, 108)
+
+def select_note_dur():
+    return random.choice([beats(1), beats(0.5), beats(0.25), beats(0.125), beats(0.5/3)])
+
+def closest(x, values):
+    values = np.asarray(values)
+    idx = (np.abs(values - x)).argmin()
+    return values[idx]
+
+def gen_bridge_note(at, pitch, duration, legato):
+    bridge_snip = beat_loop.delay(beats(1))
+    freq = ut.pitch_to_freq(pitch)
+    # snip = pg.CombPE(bridge_snip, f0=freq, q=180).crop(pg.Extent(0, int(duration * legato)))
+    # snip = pg.ReversePE(snip)
+    snip = pg.SinPE(frequency=freq).crop(pg.Extent(0, int(duration * legato))).gain(0.1)
+    snip = snip.env2(10, 1000)
+    snip = snip.delay(at)
+    return snip
 
 def gen_verse_4():
     # regenerate just the pitched components
@@ -265,11 +356,11 @@ def gen_verse_4():
         pes.append(pg.CombPE(snip, f0=freq, q=20))
 
         freq = ut.pitch_to_freq(pitch+24+2)
-        snip = pg.SpatialAPE(beat_snip, degree = 85).gain(0.85).delay(beats(0.25))
+        snip = pg.SpatialAPE(beat_snip, degree = 85).gain(0.75).delay(beats(0.5))
         pes.append(pg.CombPE(snip, f0=freq, q=40))
 
         freq = ut.pitch_to_freq(pitch+12+7)
-        snip = pg.SpatialAPE(beat_snip, degree = -75).gain(0.80).delay(beats(0.25))
+        snip = pg.SpatialAPE(beat_snip, degree = -75).gain(0.72).delay(beats(0.25))
         pes.append(pg.CombPE(snip, f0=freq, q=40))
         s = e
 
@@ -304,32 +395,24 @@ def gen_outro():
     outro_snip = v3.crop(pg.Extent(beats(15.75))).delay(beats(-15.75))
     dt = 0.25
     g = 1.0
-    for i in range(13):
+    for i in range(17):
         pes.append(outro_snip.delay(beats(s)).gain(g))
-        g = g * 0.85
-        dt += 0.08
+        g = g * 0.8
+        dt += 0.07
         s += dt
     return pg.MixPE(*pes)
-
-# bridge_snip = beat_loop.crop(pg.Extent(beats(15.75), beats(16))).delay(
-#     beats(-15.75)
-# )
-
-# bridge = pg.MixPE(  # beats 80-96
-#     middle_8_beat.crop(pg.Extent(int(0), beats(16))).gain(0.4),
-#     combify(middle_8_motif).gain(0.8),
-# )
-
 
 mix = pg.MixPE(
     gen_fade_in().delay(beats(0)),
     gen_intro().delay(beats(16)),
     gen_verse_1().delay(beats(56)),
     gen_verse_2().delay(beats(72)),
-    # bridge goes here...
     gen_verse_3().delay(beats(88)),
-    gen_verse_4().delay(beats(104)),
-    gen_outro().delay(beats(120)),
+    gen_bridge().delay(beats(104)),
+    gen_bridge_melody().delay(beats(104+8)),
+    gen_verse_4().delay(beats(136)),
+    gen_verse_4().delay(beats(152)),
+    gen_outro().delay(beats(168)),
     )
 
 # For testing the individual sections in isolation, uncomment one at a time.
@@ -338,6 +421,9 @@ mix = pg.MixPE(
 # mix = gen_verse_1() 
 # mix = gen_verse_2() 
 # mix = gen_verse_3() 
+# mix = gen_bridge()
+# mix = gen_bridge_melody()
+# mix = pg.MixPE(gen_bridge(), gen_bridge_melody().delay(beats(8)))
 # mix = gen_verse_4()
 # mix = gen_outro()
 dst = pg.WavWriterPE(mix, "examples/wip_RD03.wav")

@@ -32,7 +32,7 @@ class FilterPE(PygPE):
         return f2
        
     def extent(self):
-        return self._extent
+        return self._src_pe.extent()
 
     def frame_rate(self):
         """
