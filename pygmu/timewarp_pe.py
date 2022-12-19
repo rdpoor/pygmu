@@ -20,6 +20,11 @@ class TimewarpPE(PygPE):
         tmax = int(np.ceil(np.max(times)))
         # fetch src_pe's frames between tmin and tmax
         extent = Extent(tmin, tmax+2)
+
+        overlap = extent.intersect(requested)
+        if overlap.is_empty():
+            return ut.const_frames(0.0, requested.duration(), self.channel_count())
+
         # print(extent, extent.duration())
         src_frames = self._src_pe.render(extent)
         # allocate resulting frames

@@ -309,7 +309,7 @@ def gen_bridge_melody():
             u = t/beats(32-8)   # ramp from 0 to 1.  could be useful
             p = ut.lerp(t, t0, t1, p0, p1)
             p = closest(p, BRIDGE_PITCHES)  # filter to permissable pitches
-            pes.append(gen_bridge_note(t, p, note_dur, 0.2))
+            pes.append(gen_bridge_note(t, p, note_dur, 0.3))
             t += note_dur
         t0 = t1
         p0 = p1
@@ -337,7 +337,9 @@ def gen_bridge_note(at, pitch, duration, legato):
     snip = pg.SinPE(frequency=freq).crop(pg.Extent(0, int(duration * legato))).gain(0.1)
     snip = snip.env2(10, 1000)
     snip = snip.delay(at)
-    return snip
+    degree = ut.lerp(pitch, 60, 108, -90, 90)
+    panned = pg.SpatialAPE(snip, degree=degree)
+    return pg.MixPE(snip.gain(0.4).delay(beats(0.2)), panned.gain(0.4))
 
 def gen_verse_4():
     # regenerate just the pitched components
