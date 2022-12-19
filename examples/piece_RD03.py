@@ -279,7 +279,7 @@ BRIDGE_PITCHES = [
     108
 ]
 
-random.seed(12)
+random.seed(14)
 
 
 def gen_bridge_melody():
@@ -428,7 +428,7 @@ mix = pg.MixPE(
 # mix = pg.MixPE(gen_bridge(), gen_bridge_melody().delay(beats(8)))
 # mix = gen_verse_4()
 # mix = gen_outro()
-dst = pg.WavWriterPE(mix, "examples/wip_RD03.wav")
+dst = pg.WavWriterPE(mix, "examples/piece_RD03.wav")
 pg.FtsTransport(dst).play()
 
-pg.Transport(pg.WavReaderPE("examples/wip_RD03.wav")).play()
+pg.Transport(pg.WavReaderPE("examples/piece_RD03.wav")).play()
