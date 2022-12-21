@@ -12,9 +12,9 @@ class GravyPE(PygPE):
 		super(GravyPE, self).__init__()
 		self._src_pe = src_pe
 		self._insk = window_start
+		self._flip_flag = flip_flag
 		self._dur = window_duration
 		self._walk_rate = walk_rate
-		self._flip_flag = flip_flag
 
 	def render(self, requested:Extent):
 		dst_buf = ut.uninitialized_frames(requested.duration(), self.channel_count())

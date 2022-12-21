@@ -12,14 +12,14 @@ def secs(s):
     return int(s * 48000)
 
 def mix_at(src, t, amp = 1):
-    return pg.DelayPE(src,t).mulconst(amp)
+    return pg.DelayPE(src,t).gain(amp)
 
 def delays(src, secs, howmany = 1, decay = 1):
     frame_rate = 48000
     delay_units = []
     amp = 1
     for i in range(1, howmany):
-        delay_units.append(src.delay(int(i * secs * frame_rate)).mulconst(amp))
+        delay_units.append(src.delay(int(i * secs * frame_rate)).gain(amp))
         amp *= decay
     return pg.MixPE(src,*delay_units)
 

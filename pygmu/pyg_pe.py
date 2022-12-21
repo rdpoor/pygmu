@@ -62,7 +62,7 @@ class PygPE(object):
     def mul(self, fac):
         return pg.MulPE(self, fac)
 
-    def mulconst(self, fac):
+    def gain(self, fac):
         return pg.MulPE(self, pg.ConstPE(fac))
 
     def env2(self, up_dur, dn_dur):
