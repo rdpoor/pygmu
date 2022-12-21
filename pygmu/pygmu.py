@@ -3,6 +3,7 @@ from abs_pe import AbsPE
 from array_pe import ArrayPE
 from biquad_pe import BiquadPE
 from biquad2_pe import Biquad2PE
+from blitsig_pe import BlitsigPE
 from comb_pe import CombPE
 from const_pe import ConstPE
 from crop_pe import CropPE
