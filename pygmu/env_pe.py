@@ -3,13 +3,13 @@ from extent import Extent
 from pyg_pe import PygPE
 import utils as ut
 
-class Env2PE(PygPE):
+class EnvPE(PygPE):
     """
     Ramp up, play src, ramp down.
     """
 
     def __init__(self, src_pe, up_dur=0, dn_dur=0):
-        super(Env2PE, self).__init__()
+        super(EnvPE, self).__init__()
         self._src_pe = src_pe
         self._up_dur = up_dur
         self._dn_dur = dn_dur

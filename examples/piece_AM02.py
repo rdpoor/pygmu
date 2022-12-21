@@ -48,18 +48,18 @@ sourceA2 = pg.WavReaderPE("samples/KeyboardSonatainECKPiano.wav").crop(pg.Extent
 sourceB = pg.WavReaderPE("samples/PrettyGirl_Gleason.wav").crop(pg.Extent(start=20,end=secs(30))).envelope(secs(0.5),secs(0.5))
 sourceC = pg.WavReaderPE("samples/TamperClip93.wav")
 
-frag1 = pg.Env2PE(sourceA, fade_in, fade_out).reverse(10)
+frag1 = pg.EnvPE(sourceA, fade_in, fade_out).reverse(10)
 frag1a = delays(frag1, 0.6,5,0.8).gain(0.3)
 frag1b = delays(frag1a, 0.16,7,0.88).gain(0.2)
 
-frag11 = pg.Env2PE(sourceA2, fade_in, fade_out).reverse(10)
+frag11 = pg.EnvPE(sourceA2, fade_in, fade_out).reverse(10)
 frag11a = delays(frag1, 0.6,5,0.8)
 frag11b = delays(frag1a, 0.16,5,0.88).gain(0.2)
 
-frag2 = pg.Env2PE(sourceB, fade_in, fade_out).reverse(10).gain(1.1)
+frag2 = pg.EnvPE(sourceB, fade_in, fade_out).reverse(10).gain(1.1)
 frag2a = delays(frag2, 0.36,7,0.78)
 
-frag3 = pg.Env2PE(sourceC, fade_in * 4, fade_out).gain(0.15)
+frag3 = pg.EnvPE(sourceC, fade_in * 4, fade_out).gain(0.15)
 frag3a = delays(frag3, 0.36,7,0.78)
 
 #frag1b.play()

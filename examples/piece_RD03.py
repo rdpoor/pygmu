@@ -335,7 +335,7 @@ def gen_bridge_note(at, pitch, duration, legato):
     # snip = pg.CombPE(bridge_snip, f0=freq, q=180).crop(pg.Extent(0, int(duration * legato)))
     # snip = pg.ReversePE(snip)
     snip = pg.SinPE(frequency=freq).crop(pg.Extent(0, int(duration * legato))).gain(0.1)
-    snip = snip.env2(10, 1000)
+    snip = snip.env(10, 1000)
     snip = snip.delay(at)
     degree = ut.lerp(pitch, 60, 108, -90, 90)
     panned = pg.SpatialAPE(snip, degree=degree)

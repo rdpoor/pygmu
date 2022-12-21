@@ -66,9 +66,9 @@ sourceA = pg.WavReaderPE("samples/Tamper_MagnifyingFrame1.wav")
 sourceB = pg.WavReaderPE("samples/TamperClip38.wav")
 sourceC = mogrify("samples/TamperClip38.wav").crop(pg.Extent(start=140000)).delay(-140000)
 
-frag1 = pg.Env2PE(sourceA, fade_in, fade_out).reverse(5)
-frag2 = pg.Env2PE(sourceB, fade_in, fade_out).reverse(5)
-frag3 = pg.Env2PE(sourceC, fade_in * 4, fade_out).gain(2)
+frag1 = pg.EnvPE(sourceA, fade_in, fade_out).reverse(5)
+frag2 = pg.EnvPE(sourceB, fade_in, fade_out).reverse(5)
+frag3 = pg.EnvPE(sourceC, fade_in * 4, fade_out).gain(2)
 
 frag4 = pg.MixPE(frag3,frag3.delay(20000).gain(0.8),frag3.delay(40000).gain(0.6))
 frag5 = delays(frag3, 0.7, 18, 0.76)

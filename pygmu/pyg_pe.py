@@ -65,11 +65,8 @@ class PygPE(object):
     def gain(self, fac):
         return pg.MulPE(self, pg.ConstPE(fac))
 
-    def env2(self, up_dur, dn_dur):
-        return pg.Env2PE(self, up_dur, dn_dur)
-
-    def envelope(self, up_dur, dn_dur):
-        return pg.EnvelopePE(self, up_dur, dn_dur)
+    def env(self, up_dur, dn_dur):
+        return pg.EnvPE(self, up_dur, dn_dur)
 
     def fts_play(self):
         return pg.FtsTransport(self).play()
@@ -101,4 +98,4 @@ class PygPE(object):
     def wav_writer(self, filename):
         return pg.WavWriterPE(self, filename)
 
-import pygmu as pg
+import pygmu as pg #down here to avoid a circular dependency
