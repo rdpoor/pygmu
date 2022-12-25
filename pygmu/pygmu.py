@@ -9,6 +9,7 @@ from comp_lim_pe import CompLimPE
 from const_pe import ConstPE
 from crop_pe import CropPE
 from delay_pe import DelayPE
+from env_detect_pe import EnvDetectPE
 from env_pe import EnvPE
 from extent import Extent
 from filter_pe import FilterPE
