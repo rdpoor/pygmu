@@ -10,7 +10,7 @@ class ArrayPE(PygPE):
     def __init__(self, frames, channel_count=PygPE.DEFAULT_CHANNEL_COUNT):
         super(ArrayPE, self).__init__()
         self._frames = frames
-        self._extent = Extent(start=0, end=frames.shape[0])
+        self._extent = Extent(start=0, end=len(frames))
         self._channel_count = channel_count
 
     def render(self, requested:Extent):

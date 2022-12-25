@@ -22,7 +22,7 @@ Run an example
     $ cd pygmu
     $ python example_01.py
 
-Run the unit tests
+## Runbing the unit tests
 ```
     # Windows
     $ py -m pipenv run py -m unittest discover -f -s tests

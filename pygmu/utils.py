@@ -50,6 +50,14 @@ def magphase_to_complex(mag, phase):
     """
     return mag * np.exp(1j*phase)
 
+def db_to_ratio(db):
+    pass
+
+def ratio_to_db(ratio):
+    return 20 * np.log10(ratio)
+
+def db_to_ratio(ratio):
+    return np.power(10, ratio / 20)
 
 class ansicodes:
     HEADER = '\033[95m'
