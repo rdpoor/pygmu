@@ -11,9 +11,11 @@ from pygmu import (ArrayPE, CompLimPE, ConstPE, Extent, PygPE)
 class TestCompLimPE(unittest.TestCase):
 
     def setUp(self):
-        self.env_pe = ArrayPE(np.array([
+        self.env_pe = ArrayPE(
+            ut.db_to_ratio(
+            np.array([
             -65, -60, -55, -50, -45, -40, -35, -30,
-            -25, -20, -15, -10, -5, 0, 5, 10]).reshape(-1, 1), 
+            -25, -20, -15, -10, -5, 0, 5, 10])).reshape(-1, 1), 
             channel_count=1)
         self.extent = self.env_pe.extent()
         self.src_pe = (
@@ -123,7 +125,7 @@ class TestCompLimPE(unittest.TestCase):
                                    [1.0, 0.1],
                                    [1.0, 0.1],
                                    [1.0, 0.1]]))
-        env_pe = ArrayPE(np.array([[-65, -65],
+        env_pe = ArrayPE(ut.db_to_ratio(np.array([[-65, -65],
                                    [-60, -60],
                                    [-55, -55],
                                    [-50, -50],
@@ -138,7 +140,7 @@ class TestCompLimPE(unittest.TestCase):
                                    [-5, -5],
                                    [0, 0],
                                    [5, 5],
-                                   [10, 10]]))
+                                   [10, 10]])))
         self.extent = env_pe.extent()
         pe = CompLimPE(src_pe, env_pe)
         # compression ratio = 2:1, squelch with slope 10db below 50 db,

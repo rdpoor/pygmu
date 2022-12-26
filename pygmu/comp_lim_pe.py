@@ -21,7 +21,7 @@ class CompLimPE(PygPE):
         Compressor / Limiter
 
         src_pe: Sound source
-        env_pe: output of envelope detector, in db (0db is full scale)
+        env_pe: output of envelope detector, 1.0 is nominal full-scale
         ratio: compression ratio when squelch_db <= env_pe <= limit_db
         limit_db: ouput is hard limited to stay below limit_db.
         squelch_db: When env_pe <= squelch_db, output is attenuated.
@@ -71,7 +71,7 @@ y0 = m * (x0 - x1) + y1
             return ut.const_frames(0.0, requested.duration(), self.channel_count())
         
         src = self._src_pe.render(requested)
-        db_env = self._env_pe.render(requested)
+        db_env = ut.ratio_to_db(self._env_pe.render(requested))
         gain_env = self.compute_gain(db_env)
         dst = src * gain_env
         # print("==== render:")

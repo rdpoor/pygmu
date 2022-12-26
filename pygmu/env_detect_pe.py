@@ -10,7 +10,7 @@ class EnvDetectPE(PygPE):
     Simple envelope detector.
     """
 
-    def __init__(self, src_pe, attack=0.5, release=0.5):
+    def __init__(self, src_pe, attack=0.9, release=1.0):
         self._src_pe = AbsPE(src_pe)
         self._attack = attack
         self._release = release
