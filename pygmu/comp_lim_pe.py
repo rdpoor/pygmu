@@ -90,7 +90,8 @@ y0 = m * (x0 - x1) + y1
         return self._src_pe.frame_rate()
 
     def compute_gain(self, db_env):
-        return ut.db_to_ratio(self.output_db(db_env))
+        gain_db = self.output_db(db_env) - db_env
+        return ut.db_to_ratio(gain_db)
 
     def output_db(self, x):
         """
