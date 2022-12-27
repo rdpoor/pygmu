@@ -6,6 +6,7 @@ from biquad2_pe import Biquad2PE
 from blitsig_pe import BlitsigPE
 from comb_pe import CombPE
 from comp_lim_pe import CompLimPE
+from compressor_pe import CompressorPE
 from const_pe import ConstPE
 from crop_pe import CropPE
 from delay_pe import DelayPE
