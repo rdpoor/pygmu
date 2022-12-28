@@ -10,6 +10,8 @@ sounddevice = "*"
 scipy = "*"
 
 [dev-packages]
+jupyter = "*"
+notebook = "*"
 
 [requires]
 python_version = "3.10"

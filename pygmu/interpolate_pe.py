@@ -1,14 +1,7 @@
 import numpy as np
 from extent import Extent
 from pyg_pe import PygPE
-
-def monofy(frames):
-    # Convert stero frames (2 column, N rows) into mono (one row)
-    return np.dot(frames, [[0.5], [0.5]]).reshape(-1)
-
-def sterofy(frames):
-    # convert horizontal mono array into stero frames (2 columns, N rows)
-    return np.dot(frames.reshape(-1, 1), [[1.0, 1.0]])
+import utils as ut
 
 class InterpolatePE(PygPE):
     """
@@ -20,43 +13,29 @@ class InterpolatePE(PygPE):
         self._src_pe = src_pe
         self._speed_mult = speed_mult
 
-    def render(self, requested:Extent):
-
-        intersection = requested.intersect(self.extent())
-        if intersection.is_empty():
-            # no intersection
-            return np.zeros([requested.duration(), self.channel_count()], np.float32)
-        elif intersection.equals(requested):
-            # full overlap: just grab the corresponding samples and reverse them
-            src_extent = Extent(start=int(intersection.start() * self._speed_mult), end=int(intersection.end() * self._speed_mult))
-            src_dur = np.round(src_extent.duration()).astype(int)
-            src_x = np.linspace(0, src_dur, src_dur)
-            src_buf = monofy(self._src_pe.render(src_extent))
-            dst_dur = np.round(intersection.duration()).astype(int)
-            dst_x = np.linspace(0, dst_dur, dst_dur)
-            return sterofy(np.interp(dst_x, src_x, src_buf))
-        else:
-            # Create dst_buf equal to the length of the request.
-            # src frames will come from an extent mirrored around the center of the src extent
-            # to produce frames that fall within the intersection, then lay
-            # the frames into the dst_buf at the required offset
-
-            dst_buf = np.zeros([requested.duration()], np.float32)
-            print(dst_buf)
-            src_extent = Extent(start=int(intersection.start() * self._speed_mult), end=int(intersection.end() * self._speed_mult))
-            src_dur = np.round(src_extent.duration()).astype(int)
-            src_x = np.linspace(0, src_dur, src_dur)
-            src_buf = monofy(self._src_pe.render(src_extent))
-            dst_dur = np.round(intersection.duration()).astype(int)
-            dst_x = np.linspace(0, dst_dur, dst_dur)
-            dst_buf = np.interp(dst_x, src_x, src_buf)
-            offset = intersection.start() - requested.start()
-            dst_buf[offset:int(offset + intersection.duration())] = src_buf
-            return sterofy(dst_buf)
+    def render(self, requested):
+        extent = self.extent()
+        overlap = extent.intersect(requested)
+        if overlap.is_empty():
+            return ut.const_frames(0.0, requested.duration(), self.channel_count())
+        # request the relevant extent of the source, grab an extra frame at end for interpolation of the last frame(s)        
+        interp_requested = Extent(round(requested.start() * self._speed_mult), round((requested.end()) * self._speed_mult) + self.channel_count()) 
+        src_frames = self._src_pe.render(interp_requested)
+        dst_frames = ut.uninitialized_frames(requested.duration(), self.channel_count())
+        #dst_frames[0] = self._prev_frame_kludge
+        for i in range(round(overlap.duration())):
+            # idx_f is fractional index into src_frames.  linear interpolate...
+            idx_f = i * self._speed_mult
+            idx_i = int(np.floor(idx_f))
+            idx_rem = idx_f - idx_i  # 0.0 <= idx_rem < 1.0
+            frame = src_frames[idx_i] + idx_rem * (src_frames[idx_i + 1] - src_frames[idx_i])
+            dst_frames[i] = frame
+        return dst_frames
 
     def extent(self):
-        return Extent(start=self._src_pe.extent().start(), end=self._src_pe.extent().start() + (self._speed_mult * self._src_pe.extent().duration()))
-
+        # our extent is simply the source's extent, divided by our speed multiplier
+        # for example, if our speed_mult is 2, then our extent will be half as long as the source
+        return Extent(round(self._src_pe.extent().start()) / self._speed_mult,round(self._src_pe.extent().end() / self._speed_mult))
 
     def frame_rate(self):
         return self._src_pe.frame_rate()

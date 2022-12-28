@@ -23,6 +23,10 @@ def make_timeline(pitches):
         timeline = np.concatenate((timeline, ramp))
     return pg.ArrayPE(timeline, channel_count=1)
 
+def make_timeline2(mult, nframes=44000):
+    timeline = np.tile(np.linspace(0, nframes,mult).reshape(-1, 1), (1, 2))
+    return pg.ArrayPE(timeline, channel_count=2)
+
 print("hit return after each example to hear the next")
 
 # plain warping

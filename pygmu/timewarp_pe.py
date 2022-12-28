@@ -15,7 +15,7 @@ class TimewarpPE(PygPE):
         self._timeline = timeline
 
     def render(self, requested):
-        times = self._timeline.render(requested)
+        times = self._timeline.render(requested)  
         tmin = int(np.floor(np.min(times)))
         tmax = int(np.ceil(np.max(times)))
         # fetch src_pe's frames between tmin and tmax
