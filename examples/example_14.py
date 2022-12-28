@@ -8,9 +8,11 @@ import pygmu as pg
 source = pg.WavReaderPE("samples/Sine440_Stereo.wav")
 #source = pg.WavReaderPE("samples/Tamper_MagnifyingFrame1.wav").env(100,42000)
 speed = float(input('enter speed:'))
-if speed < 0:
+if speed <= 0:
     print('postive numbers are better')
-warped = pg.InterpolatePE(source, speed)
+timeline = pg.IdentityPE(channel_count=1).gain(speed)
+
+warped = pg.TimewarpPE(source, timeline)
 
 x = pg.WavWriterPE(warped, "example_14.wav")
 pg.Transport(x).play()
