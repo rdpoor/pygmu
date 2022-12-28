@@ -139,8 +139,8 @@ def boop(t, snip, g, degree):
 	return snip.delay(t).gain(g).pan(degree)
 
 def doop(t, snip, g, degree, speed_mult):
-	#return snip.env(2000,2000).gain(g).pan(degree).interpolate(speed_mult).delay(t)
-	return snip.env(2000,2000).gain(g).interpolate(speed_mult).delay(t)
+	return snip.env(2000,2000).gain(g).pan(degree).delay(t)
+	#return snip.env(2000,2000).gain(g).interpolate(speed_mult).delay(t)
 
 
 def ostinato(s, dur):
