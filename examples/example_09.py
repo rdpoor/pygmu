@@ -41,6 +41,11 @@ source = pg.WavReaderPE("samples/Tamper_MagnifyingFrame1.wav")
 warped = pg.TimewarpPE(source, timeline)
 pg.Transport(pg.MixPE(source, warped)).play()
 
+# plain interpolation
+timeline = pg.IdentityPE(channel_count=1).gain(1.5)
+warped = pg.TimewarpPE(source, timeline)
+pg.Transport(warped).play()
+
 # just being silly...
 timeline = make_timeline([0, 2, 4, 5, 7, 9, 11, 12, 12, 12, 12])
 source = pg.WavReaderPE("samples/Fox48.wav")

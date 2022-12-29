@@ -20,12 +20,8 @@ class TimewarpPE(PygPE):
         tmax = int(np.ceil(np.max(times)))
         # fetch src_pe's frames between tmin and tmax
         extent = Extent(tmin, tmax+2)
-
-        overlap = extent.intersect(requested)
-        if overlap.is_empty():
+        if extent.is_empty():
             return ut.const_frames(0.0, requested.duration(), self.channel_count())
-
-        # print(extent, extent.duration())
         src_frames = self._src_pe.render(extent)
         # allocate resulting frames
         dst_frames = ut.uninitialized_frames(requested.duration(), self.channel_count())
@@ -35,15 +31,21 @@ class TimewarpPE(PygPE):
             idx_f = times[i] - tmin
             idx_i = int(np.floor(idx_f))
             idx_rem = idx_f - idx_i  # 0.0 <= idx_rem < 1.0
-            # print(i, times[i], idx_f, idx_i, idx_rem)
-            frame = src_frames[idx_i] + idx_rem * (src_frames[idx_i + 1] - src_frames[idx_i])
-            dst_frames[i] = frame
+            #print(i, times[i], idx_f, idx_i, idx_rem)
+            # Andy has remove the fractional interpolation here because it can create discontinuities aka clicks at frame rendering boundaries TBD
+            #frame = src_frames[idx_i] + idx_rem * (src_frames[idx_i + 1] - src_frames[idx_i])
+            #dst_frames[i] = frame
+            dst_frames[i] = src_frames[idx_i]
         return dst_frames
 
 
     def extent(self):
-        """Assume that timeline defines the extent, not src_pe"""
-        return self._timeline.extent()
+        """Assume that timeline defines the extent unless the timeline is infinite (an IdentityPE for example)"""
+        if self._timeline.extent().is_indefinite:
+            return self._src_pe.extent()
+        else:
+            return self._timeline.extent()
+        
 
     def channel_count(self):
         return self._src_pe.channel_count()
