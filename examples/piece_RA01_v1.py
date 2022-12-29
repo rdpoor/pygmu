@@ -139,8 +139,8 @@ def boop(t, snip, g, degree):
 	return snip.delay(t).gain(g).pan(degree)
 
 def doop(t, snip, g, degree, speed_mult):
-	return snip.env(2000,2000).gain(g).pan(degree).delay(t)
-	#return snip.env(2000,2000).gain(g).interpolate(speed_mult).delay(t)
+	#return snip.env(2000,2000).gain(g).pan(degree).delay(t)
+	return snip.env(2000,2000).gain(g).interpolate(speed_mult).delay(t)
 
 
 def ostinato(s, dur):
@@ -315,9 +315,9 @@ def m1(s, snip):
 
 	return pg.MixPE(*pes)
 
-# troubled.play()
-# troubled.interpolate(0.5).play()
-# doop(0, troubled, 1, 22, 0.5).play()
+troubled.play()
+troubled.interpolate(0.5).play()
+doop(0, troubled, 1, 22, 0.5).play()
 
 
 explore_seed = input("Enter seed: ")

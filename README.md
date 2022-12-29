@@ -22,7 +22,7 @@ Run an example
     $ cd pygmu
     $ python example_01.py
 
-## Runbing the unit tests
+## Running the unit tests
 ```
     # Windows
     $ py -m pipenv run py -m unittest discover -f -s tests
@@ -67,20 +67,12 @@ Sun Dec 18 17:57:06 2022    profile.txt
 
 * Create pyg_exceptions for channel mismatch, frame rate mismatch, perhaps others.
 * Flesh out unit tests.
-* -Create "ASAP" transport that runs as fast as possible, e.g. for writing to a file.-
 * Add auto-stop feature to Transport to halt on first buffer of all zeros.
-* Introduce "constant or PE" as arguments, e.g. to SinPE frequency, amplitude, phase.
+* Write up discursis on array shapes, frames, buffers, samplers, monofy, sterofy, reshape(-1,1) et al
+ 
 
 ## To discuss
 
-### EMPTY_EXTENT
-
-Consider creating a special "EMPTY_EXTENT" object to signify an extent of zero length.
-
-Pro: Might be useful, if only for making code easier to understand.
-Con: Any Extent of zero length will behave as expected.
-
-Also, if we do create "EMPTY_EXTENT", shouldn't we then also create "INDEFINITE_EXTENT"?
 
 ### Dynamic changes to the graph
 
