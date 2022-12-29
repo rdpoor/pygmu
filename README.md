@@ -11,7 +11,8 @@ There are three fundamental objects upon which all of pygmu is built:
 
 ## A taste of pygmu
 
-Here is an annotated exmple of a pygmu-based compositions.
+Here is an annotated exmple of a pygmu-based composition that plays Wagner's famous opening
+chord to _Tristan und Isolde_:
 
 ```
 # This bit of boilerplate allows Python to find the pygmu library
@@ -82,7 +83,7 @@ processing element connected to its input, which in this case is the `mix` proce
 
 In computer science terms, a pygmu composition is a _directed acyclic graph_ in which the root node (Transport) "pulls" frames from the rest of the network.
 
-## Installing pygmu
+## Install pygmu, run an example
 
 Download `pipenv` unless you already have it:
 
@@ -94,7 +95,7 @@ Clone the pygmu repository and ask pipenv to install the required libraries:
     $ cd pygmu
     $ pipenv sync
 
-Start the environment:
+Start a shell running the pygmu environment:
 
     $ pipenv shell
 
@@ -103,7 +104,9 @@ Run an example:
     $ cd pygmu
     $ python examples/sin_example.py
 
-## Running the unit tests
+## Developer's Corner
+
+### Running the unit tests
 ```
     # On Windows
     $ py -m pipenv run py -m unittest discover -f -s tests
@@ -112,7 +115,7 @@ Run an example:
 ```
 The `-f` means stop on first error.  The `-s` means search in the `tests/` directory for files that start with `test_xxx`
 
-## Profiling
+### Profiling
 Python has built-in profiling tools.  To use it:
 * Run the python script with the cProfile module, as shown below
 * Run `tools/analyze_profile.py` to find the most CPU hungry functions.
@@ -144,7 +147,7 @@ Sun Dec 18 17:57:06 2022    profile.txt
 
 ```
 
-## Todo
+### Todo
 
 * Create pyg_exceptions for channel mismatch, frame rate mismatch, perhaps others.
 * Flesh out unit tests.
@@ -152,7 +155,7 @@ Sun Dec 18 17:57:06 2022    profile.txt
 * Write up discursis on array shapes, frames, buffers, samplers, monofy, sterofy, reshape(-1,1) et al
  
 
-## To discuss
+### For future consideration
 
 
 ### Dynamic changes to the graph
