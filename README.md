@@ -1,32 +1,113 @@
 # pygmu
-Python  Generative Music framework
 
-## Installing
+pygmu is a Python Generative Music framework.  It comprises a collection of _processing elements_ that you connect together to create works of music.  Unlike most other frameworks, pygmu does not make a strong distinction between voices and notes: everything is computed at the sampling rate.
 
-Download pipenv unless you already have it
+## Fundamental concepts
+
+There are three fundamental objects upon which all of pygmu is built:
+* **Extent:** An Extent encapsulates a starting time (measured in samples) and an ending time (also measured in samples).
+* **Processing Element:**: Each processing element has a constructor, where you specificy parameters, and a `render(extent)` function which, when invoked, asks the processing element to produce sample data between `extent.start()` and `extent.end()`.  
+* **frames:** Sample data is passed around as a two-dimensional array, where each column is a channel (e.g. stereo frames will have two columns) and each row is an individual sample (mono, stereo or multi-channel).
+
+## A taste of pygmu
+
+Here is an annotated exmple of a pygmu-based compositions.
+
+```
+# This bit of boilerplate allows Python to find the pygmu library
+import os
+import sys
+script_dir = os.path.dirname( __file__ )
+pygmu_dir = os.path.join( script_dir, '..', 'pygmu' )
+sys.path.append( pygmu_dir )
+import pygmu as pg
+import utils as ut
+
+def gen_sin(at_s, dur_s, freq_hz, amp):
+    """
+    Return a Processing Element such that when you call render(), it produces
+    a sine tone at the desired time, frequency and amplitude.
+
+    This gen_sin() function is intended to show that it is easy to compose 
+    different PEs together to create more complex (or more bespoke) functions.
+    """
+    # Exploit Python's support of nested functions
+    def s_to_f(seconds):
+        '''Convert seconds to frames (samples)'''
+        # In addition to a render() method, every processing element provides a
+        # frame_rate() method that advertises its frame rate.  Here, we use this
+        # to convert seconds to frames.
+        return int(seconds * sin_pe.frame_rate())
+
+    # Create a sine generator with given frequency and ampltude
+    sin_pe = pg.SinPE(frequency = freq_hz, amplitude = amp)
+    # Crop the output to to start and end at the desired times.
+    return pg.CropPE(sin_pe, pg.Extent(s_to_f(at_s), s_to_f(at_s + dur_s)))
+
+# Generate Wagner's famous opening chord...
+# Mix the output of four sinewaves, each with its own frequency and start time.
+mix = pg.MixPE(
+    gen_sin(0.5, 3.5, ut.pitch_to_freq(53), 0.2),
+    gen_sin(1.0, 3.0, ut.pitch_to_freq(59), 0.2),
+    gen_sin(1.5, 2.5, ut.pitch_to_freq(63), 0.2),
+    gen_sin(2.0, 2.0, ut.pitch_to_freq(68), 0.2))
+
+# Start calling render() on the "mix" processing element to play in real-time
+pg.Transport(mix).play()
+
+```
+
+The example above has nine processing elements, connected as shown below.  The important thing to notice is that each processing element is a black box that will produce frames whenever its `render()` method is called.  A graphical representation of the above looks like this:
+
+```
+      +---------------+ +---------------+ +---------------+ +---------------+ 
+      | sin(174, 0.2) | | sin(246, 0.2) | | sin(311, 0.2) | | sin(415, 0.2) | 
+      +-------v-------+ +-------v-------+ +-------v-------+ +-------v-------+ 
+              |                 |                 |                 |
+      +-------v-------+ +-------v-------+ +-------v-------+ +-------v-------+ 
+      | crop(0.5,4.0) | | crop(1.0,4.0) | | crop(1.5,4.0) | | crop(2.0,4.0) | 
+      +-------v-------+ +-------v-------+ +-------v-------+ +-------v-------+
+              |                 |                 |                 |
+      +-------v-----------------v-----------------v-----------------v-------+
+      | mix(          ,                  ,                ,                )|
+      +----------------------------------v----------------------------------+
+                                         |
+                                 +-------v-------+ 
+                                 |  Transport()  |
+                                 +---------------+
+```
+
+The `Transport` object is not a processing element itself: it doesn't provide a render() function.  Instead, when its play() method is called, it starts calling render() on the
+processing element connected to its input, which in this case is the `mix` processing element.  The `mix` PE in turn calls each of its inputs (the `crop` PEs), which in turn call _their_ inputs, which generate the sine tones.
+
+In computer science terms, a pygmu composition is a _directed acyclic graph_ in which the root node (Transport) "pulls" frames from the rest of the network.
+
+## Installing pygmu
+
+Download `pipenv` unless you already have it:
 
     $ pip install pipenv
 
-Clone the pygmu repository
+Clone the pygmu repository and ask pipenv to install the required libraries:
 
     $ git clone git@github.com:rdpoor/pygmu.git
     $ cd pygmu
     $ pipenv sync
 
-Start the environment
+Start the environment:
 
     $ pipenv shell
 
-Run an example
+Run an example:
 
     $ cd pygmu
-    $ python example_01.py
+    $ python examples/sin_example.py
 
 ## Running the unit tests
 ```
-    # Windows
+    # On Windows
     $ py -m pipenv run py -m unittest discover -f -s tests
-    # macOS, Linux
+    # On macOS, Linux
     $ pipenv run python -m unittest discover -f -s tests
 ```
 The `-f` means stop on first error.  The `-s` means search in the `tests/` directory for files that start with `test_xxx`
