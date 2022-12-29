@@ -40,11 +40,9 @@ class TimewarpPE(PygPE):
 
 
     def extent(self):
-        """Assume that timeline defines the extent unless the timeline is infinite (an IdentityPE for example)"""
-        if self._timeline.extent().is_indefinite:
-            return self._src_pe.extent()
-        else:
-            return self._timeline.extent()
+        """Assume that timeline defines the extent"""
+        return self._timeline.extent()
+
         
 
     def channel_count(self):
