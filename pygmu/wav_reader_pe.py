@@ -61,8 +61,7 @@ class WavReaderPE(PygPE):
             # read the frames from the source file.
             src_n_frames = int(intersection.duration())
             src_buf = self.soundfile().read(frames=src_n_frames, dtype=np.float32, always_2d=True)
-            # use np.mean to remove any dcbias
-            src_buf =  src_buf - np.mean(src_buf) 
+
             if intersection.equals(requested):
                 # full overlap: we can return frames directly from the soundfile
                 dst_buf = src_buf

@@ -320,7 +320,7 @@ This tells us that `b` is five frames long and has two channels (stereo).
 * [done] Create pyg_exceptions for channel mismatch, frame rate mismatch, perhaps others.
 * Flesh out unit tests.
 * Add auto-stop feature to Transport to halt on first buffer of all zeros.
-* Write up discursis on array shapes, frames, buffers, samplers, monofy, sterofy, reshape(-1,1) et al
+* add explanation of reshape(-1,1) to All about frames section
  
 
 ### For future consideration

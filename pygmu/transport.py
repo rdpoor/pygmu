@@ -54,7 +54,7 @@ class Transport(object):
                 callback=callback):
 
                 print('press return to quit')
-                input()
+                return input()
         except KeyboardInterrupt:
             exit('')
         except Exception as e:
