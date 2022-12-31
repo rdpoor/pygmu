@@ -11,7 +11,7 @@ class TestAbsPE(unittest.TestCase):
 
     def setUp(self):
         self.a = np.array([[-2, -1], [0, 1], [2, 3]], dtype=np.float32)
-        array_pe = ArrayPE(self.a, channel_count=self.a.shape[1])
+        array_pe = ArrayPE(self.a)
         self.pe = AbsPE(array_pe)
 
     def test_init(self):

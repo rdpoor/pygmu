@@ -16,5 +16,5 @@ class TestEnvDetectPE(unittest.TestCase):
         pe = EnvDetectPE(src_pe, attack=0.9, release=0.5)
         dst = pe.render(extent)
         # print(np.hstack((src_pe.render(extent), dst)))
-        print(dst)
+        # print(dst)
         self.assertTrue(True)

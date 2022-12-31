@@ -8,6 +8,7 @@ from comb_pe import CombPE
 from comp_lim_pe import CompLimPE
 from compressor_pe import CompressorPE
 from const_pe import ConstPE
+from convolve_pe import ConvolvePE
 from crop_pe import CropPE
 from delay_pe import DelayPE
 from env_detect_pe import EnvDetectPE
@@ -30,6 +31,7 @@ from mul_pe import MulPE
 from noise_pe import NoisePE
 from print_pe import PrintPE
 from pwm_pe import PwmPE
+from pyg_exceptions import *
 from pyg_pe import PygPE
 from reverse_pe import ReversePE
 from sin_pe import SinPE

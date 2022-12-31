@@ -7,11 +7,11 @@ class ArrayPE(PygPE):
     A Processing Element with a fixed array of source data.
     """
 
-    def __init__(self, frames, channel_count=PygPE.DEFAULT_CHANNEL_COUNT):
+    def __init__(self, frames):
         super(ArrayPE, self).__init__()
         self._frames = frames
-        self._extent = Extent(start=0, end=len(frames))
-        self._channel_count = channel_count
+        self._extent = Extent(start=0, end=len(frames)) # assumed to always start at t=0
+        self._channel_count = frames.shape[1]  # # of columns determines channel count
 
     def render(self, requested:Extent):
         intersection = requested.intersect(self.extent())

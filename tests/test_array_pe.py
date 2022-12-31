@@ -11,7 +11,7 @@ class TestArrayPE(unittest.TestCase):
 
     def setUp(self):
         self.a = np.array([[0, 1], [2, 3], [4, 5]], dtype=np.float32)
-        self.pe = ArrayPE(self.a, channel_count=self.a.shape[1])
+        self.pe = ArrayPE(self.a)
 
     def test_init(self):
         self.assertIsInstance(self.pe, ArrayPE)
