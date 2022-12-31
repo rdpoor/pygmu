@@ -150,7 +150,7 @@ Sun Dec 18 17:57:06 2022    profile.txt
 ### All about `frames`
 
 In pygmu, buffers of sample data are exchanged using `frames`, which are implemented using 
-two-dimensional (numpy arrrays)[https://numpy.org/doc/stable/reference/generated/numpy.array.html] of 32 bit floating point values.  Every call to `pe.render()` will return a frames object.
+two-dimensional [numpy arrrays](https://numpy.org/doc/stable/reference/generated/numpy.array.html) of 32 bit floating point values.  Every call to `pe.render()` will return a frames object.
 
 `numpy` provides a truly dazziling assortment of functions that operate on arrays.  Here are some of the more common ones you might encounter as a pygmu developer.
 
