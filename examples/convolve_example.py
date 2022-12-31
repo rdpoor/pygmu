@@ -11,10 +11,10 @@ import utils as ut
 
 filename = "examples/convolve_example.wav"
 
-src = pg.WavReaderPE("samples/F9_TH_Live_Hat_60bpm_B.wav").mono()
-# impulse = pg.WavReaderPE("samples/IR/480_Fat Plate.wav").mono()
-impulse = pg.WavReaderPE("samples/IR/Five Columns.wav").mono()
-# impulse = pg.WavReaderPE("samples/IR/Bottle Hall.wav").mono()
+src = pg.WavReaderPE("samples/F9_TH_Live_Hat_60bpm_B.wav")
+# impulse = pg.WavReaderPE("samples/IR/480_Fat Plate.wav")
+impulse = pg.WavReaderPE("samples/IR/Five Columns.wav")
+# impulse = pg.WavReaderPE("samples/IR/Bottle Hall.wav")
 convolved = pg.ConvolvePE(src, impulse)
 convolved = pg.WavWriterPE(convolved, filename)
 pg.FtsTransport(convolved).play()
