@@ -152,7 +152,8 @@ Sun Dec 18 17:57:06 2022    profile.txt
 In pygmu, buffers of sample data are exchanged using `frames`, which are implemented using 
 two-dimensional (numpy arrrays)[https://numpy.org/doc/stable/reference/generated/numpy.array.html] of 32 bit floating point values.  Every call to `pe.render()` will return a frames object.
 
-If you are developing pygmu functions (notably processing elements), the following functions may be useful.
+`numpy` provides a truly dazziling assortment of functions that operate on arrays.  Here are some of the more common ones you might encounter as a pygmu developer.
+
 
 A buffer of single-channel (mono) data is represented by a single column of samples:
 
@@ -175,9 +176,6 @@ array([[0., 1.],
        [6., 7.],
        [8., 9.]], dtype=float32)
 ```
-
-`numpy` provides a truly dazziling assortment of functions that operate on arrays.  Here are some of the more common ones you might encounter as a pygmu developer.
-
 To convert mono frames into stereo (with no gain change):
 ```
 >>> a.repeat(2, axis=1)
@@ -209,11 +207,11 @@ array([[0.],
        [8.]], dtype=float32)
 ```
 
-This is an example of `slicing`.  The general synctax is:
+This is an example of `slicing`.  The general syntax is:
 
     <array>[<row indexes>,<column indexes>]
 
-If \<row indeces\> has the form `j:k`, that's interpreted as starting at row k (inclusive) and ending at row k (exclusive).  If j is omitted, it is interpreted as 0.  If k is omitted, it is interpreted as the end of the axis.  And if either j or k are negative, they index from the end of the array.  So:
+If \<row indeces\> has the form `j:k`, that's interpreted as starting at row j (inclusive) and ending at row k (exclusive).  If j is omitted, it is interpreted as 0.  If k is omitted, it is interpreted as the end of the axis.  And if either j or k are negative, they index from the end of the array.  So:
 
 ```
 >>> b[1:3]
@@ -224,7 +222,6 @@ array([[2., 3.],
        [4., 5.]], dtype=float32)
 
 ``` 
-
 Column indeces work the same.  If you want slice that returns just the left or right channels as columns:
 
 ```
@@ -242,7 +239,7 @@ array([[1.],
        [9.]], dtype=float32)
 ```
 
-Sometimes you'd like to extact a channel of data as a row rather than a column.  This is true for many library functions like `scipy.signal.convolve()`, etc.  You do this by passing a scalar rather than an `a:b` range:
+Sometimes you'd like to extact a channel of data as a row rather than a column as required by many library functions like `scipy.signal.convolve()`, etc.  You do this by passing a scalar rather than a `j:k` range:
 
 ```
 >>> b[:,0]
@@ -250,7 +247,6 @@ array([0., 2., 4., 6., 8.], dtype=float32)
 >>> b[:,1]
 array([1., 3., 5., 7., 9.], dtype=float32)
 ```
-
 numpy arrays support scalar operations which are "broadcast" over all the elements.  Therefore:
 ```
 >>> a += 100
@@ -261,7 +257,6 @@ array([[100.],
        [103.],
        [104.]], dtype=float32)
 ```
-
 Slices can almost always appear on the left hand side of an assignment.  If you wanted to modify the left channel of a frames object:
 ```
 >>> b[:,0:1] = a
