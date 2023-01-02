@@ -315,6 +315,14 @@ A numpy array has a `shape` property, so:
 
 This tells us that `b` is five frames long and has two channels (stereo).
 
+### Utilities
+
+Command to print out info about all the soundfiles in the current directory (must have sox installed):
+
+    Windows:    find . -name "*.wav" -print0 | xargs -0 sox.exe --i
+    OXS/Linux:  find . -name "*.wav" -print0 | xargs -0 sox --i
+
+
 ### Todo
 
 * [done] Create pyg_exceptions for channel mismatch, frame rate mismatch, perhaps others.
