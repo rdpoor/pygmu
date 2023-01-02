@@ -39,6 +39,8 @@ class TestConvolvePE(unittest.TestCase):
         pe = ConvolvePE(self.sig_1, self.win_1)
         got = pe.render(requested)
         expect = self.flt_1.render(requested)
+        for i, _ in enumerate(got):
+            print(got[i], expect[i], got[i]-expect[i])
         np.testing.assert_array_almost_equal(got, expect)
 
         # verify that successive slices are correct

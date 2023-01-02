@@ -321,6 +321,8 @@ This tells us that `b` is five frames long and has two channels (stereo).
 * Flesh out unit tests.
 * Add auto-stop feature to Transport to halt on first buffer of all zeros.
 * add explanation of reshape(-1,1) to All about frames section
+* Add autoscale=n parameter to WavReaderPE to normalize amplitude, and/or create a batch
+  file to normalize all files in samples/
  
 
 ### For future consideration

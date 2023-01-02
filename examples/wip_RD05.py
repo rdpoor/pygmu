@@ -1,10 +1,11 @@
+import argparse
+import json
 import numpy as np
 import os
-import sys
-import soundfile as sf
-import argparse
+import random
 import re
-import json
+import soundfile as sf
+import sys
 
 script_dir = os.path.dirname(__file__)
 pygmu_dir = os.path.join(script_dir, "..", "pygmu")
@@ -12,7 +13,12 @@ sys.path.append(pygmu_dir)
 import pygmu as pg
 import utils as ut
 
+"""
+Find all sound files in the samples/ directory that have the word "loop" and
+"bpm" in their filename.  From those files, extract the frame rate, channel
+count and duration, saving all the info in a python dict structure.
 
+"""
 
 SAMPLES_DIR = "samples"
 LOOP_FILE_RE = re.compile(".*loop.*", re.IGNORECASE)
@@ -39,7 +45,7 @@ def loop_file_bpm(filename):
 	if m is None:
 		return 0           # unknown BPM
 	else:
-		return m[1]
+		return int(m[1])
 
 def collect_loop_file_details(loop_dict, loop_filename):
 	"""Gather frame rate, channel count, duration and bpm for loop file"""
@@ -49,13 +55,13 @@ def collect_loop_file_details(loop_dict, loop_filename):
 	  'frame_rate': info.samplerate,
 	  'channel_count': info.channels,
 	  'duration_s': info.duration,
-	  'bpm': bpm}
+	  'beats_per_minute': bpm}
 
 def build_loop_file_dict():
 	"""
-	grovel over the samples directory to find filenames with "loop" as a substring.
-	Print filename, beats per minute, sampling rate, # of channels and duration for
-	inclusion as the SOURCE_LIBRARY dict.
+	grovel over the samples directory for filenames with "loop" as a substring.
+	Collect filename, beats per minute, sampling rate, number of channels 
+	and duration to build the a dictionary with an entry for each file.
 	"""
 	loop_filenames = find_loop_files(SAMPLES_DIR)
 	loop_dict = {}
@@ -63,22 +69,26 @@ def build_loop_file_dict():
 		collect_loop_file_details(loop_dict, loop_filename)
 	return loop_dict
 
-def assay():
-	loop_dict = build_loop_file_dict()
+def print_dict(loop_dict):
 	# pretty print the loop dict
 	print(json.dumps(loop_dict, indent=4))
 
 
-def process(args):
-	if (args.assay):
-		assay()
-
 # =============================================================================
 # Top level starts here
 
+def top_level(args):
+	loop_dict = build_loop_file_dict()
+	if args.print or args.verbose:
+		print_dict(loop_dict)
+	if (args.seed):
+		random.seed(args.seed)
+
+
 parser = argparse.ArgumentParser(prog="wip_RD05", description="Percussion Madness")
-parser.add_argument('-a', '--assay', action='store_true', help='Search for sound samples')
+parser.add_argument('-p', '--print', action='store_true', help='Print loop files (only)')
+parser.add_argument('-s', '--seed', type=int, help='Set random seed')
 parser.add_argument('-v', '--verbose', action='store_true')
 
 args = parser.parse_args()
-process(args)
+top_level(args)
