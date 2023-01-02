@@ -77,6 +77,9 @@ class PygPE(object):
     def interpolate(self, speed_mult):
         return pg.InterpolatePE(self, speed_mult)
 
+    def limit_a(self, threshold_db=-10, headroom_db=3):
+        return pg.LimiterAPE(self, threshold_db=threshold_db, headroom_db=headroom_db)
+
     def loop(self, loop_length):
         return pg.LoopPE(self, loop_length)
 

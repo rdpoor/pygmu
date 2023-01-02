@@ -14,7 +14,7 @@ class EnvDetectPE(PygPE):
         self._src_pe = AbsPE(src_pe)
         self._attack = attack
         self._release = release
-        self._env = ut.const_frames(0.0, src_pe.channel_count(), 1)
+        self._env = ut.const_frames(0.0, 1, src_pe.channel_count())
 
     def render(self, requested:Extent):
         overlap = self._src_pe.extent().intersect(requested)
@@ -38,7 +38,7 @@ class EnvDetectPE(PygPE):
         return self._src_pe.frame_rate()
 
     def track(self, state, sample):
-        delta = sample - state
+        delta = np.max(sample - state)
         if delta > 0:
             return state + delta * self._attack
         else:

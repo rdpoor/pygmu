@@ -24,6 +24,7 @@ from identity_pe import IdentityPE
 from impulse_pe import ImpulsePE
 from interpolate_pe import InterpolatePE
 from limiter_pe import LimiterPE
+from limiter_a_pe import LimiterAPE
 from linear_ramp_pe import LinearRampPE
 from loop_pe import LoopPE
 from mix_pe import MixPE
