@@ -315,6 +315,59 @@ A numpy array has a `shape` property, so:
 
 This tells us that `b` is five frames long and has two channels (stereo).
 
+#### The ubiquitous `reshape()` function
+
+If you delve into pygmu code, you'll see frequent use of the `reshape()` 
+function.  Here's how it works.
+
+Assume that you have a numpy array of 12 elements:
+```
+>>> a = np.arange(12, dtype=np.float32)
+>>> a 
+array([ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10., 11.], dtype=float32)   
+```
+
+The `reshape()` function lets you reshape an array to a given number of rows
+and columns, as long as rows * columns equals the length of the array.  The
+simplified form is `<array>.reshape(n_rows, n_columns)`:
+
+```
+>>> a.reshape(3, 4)
+array([[ 0.,  1.,  2.,  3.],
+       [ 4.,  5.,  6.,  7.],
+       [ 8.,  9., 10., 11.]], dtype=float32)
+>>> a.reshape(6, 2)
+array([[ 0.,  1.],
+       [ 2.,  3.],
+       [ 4.,  5.],
+       [ 6.,  7.],
+       [ 8.,  9.],
+       [10., 11.]], dtype=float32)
+```
+Note that the following two calls produce different results.  The first results
+in a 1-D array of 12 elements, the second a 2-D array with one row and 12 
+columns:
+```
+>>> a.reshape(12)
+array([ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10., 11.], dtype=float32)
+>>> a.reshape(1, 12)
+array([[ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10., 11.]], dtype=float32)
+```
+To simplify things, `reshape()` lets you specify -1 as one of the arguments.  It
+will infer what that should be based on the other argument and the length of the
+underlying array.  In numpy, you'll often see the construct like this:
+```
+>>> a.reshape(-1, 2)
+array([[ 0.,  1.],
+       [ 2.,  3.],
+       [ 4.,  5.],
+       [ 6.,  7.],
+       [ 8.,  9.],
+       [10., 11.]], dtype=float32)
+```
+This can be interpreted as 'take whatever data is in a and return a frames
+object with two channels' (i.e. two columns), regardless of its original length.
+
 ### Utilities
 
 Command to print out info about all the soundfiles in the current directory (must have sox installed):
@@ -328,7 +381,7 @@ Command to print out info about all the soundfiles in the current directory (mus
 * [done] Create pyg_exceptions for channel mismatch, frame rate mismatch, perhaps others.
 * Flesh out unit tests.
 * Add auto-stop feature to Transport to halt on first buffer of all zeros.
-* add explanation of reshape(-1,1) to All about frames section
+* [done] add explanation of reshape(-1,1) to All about frames section
 * Add autoscale=n parameter to WavReaderPE to normalize amplitude, and/or create a batch
   file to normalize all files in samples/
  
