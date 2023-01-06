@@ -107,11 +107,19 @@ Run an example:
 ## Developer's Corner
 
 ### Running the unit tests
+If you haven't launched the pygmu shell:
 ```
     # On Windows
     $ py -m pipenv run py -m unittest discover -f -s tests
     # On macOS, Linux
     $ pipenv run python -m unittest discover -f -s tests
+```
+If you are already running the pygmu shell:
+```
+    # On Windows
+    $ py -m unittest discover -f -s tests
+    # On macOS, Linux
+    $ python -m unittest discover -f -s tests
 ```
 The `-f` means stop on first error.  The `-s` means search in the `tests/` directory for files that start with `test_xxx`
 

@@ -14,3 +14,7 @@ class IndefiniteExtent(PygException):
 	"""Raised when a processing element is handed an indefinite extent"""
 	pass
 
+
+class ArgumentError(PygException):
+	"""Raised when an illegal argument is passed"""
+	pass

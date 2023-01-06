@@ -36,6 +36,7 @@ from pwm_pe import PwmPE
 from pyg_exceptions import *
 from pyg_pe import PygPE
 from reverse_pe import ReversePE
+from sequence_pe import SequencePE
 from sin_pe import SinPE
 from snippet_pe import SnippetPE
 from spatial_a_pe import SpatialAPE

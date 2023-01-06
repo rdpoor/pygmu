@@ -9,8 +9,6 @@ class CompressorPE(PygPE):
     Compressor / Limiter
     """
 
-    SQUELCH_SLOPE = 10   # how fast input falls off below squelch_db
-
     def __init__(self,
                  src_pe,
                  env_pe,

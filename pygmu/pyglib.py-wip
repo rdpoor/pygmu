@@ -1,0 +1,79 @@
+"""
+ClipLib: sound file library manager
+"""
+
+class ClipInfo(object):
+	'''
+	ClipInfo contains information about individual sound clips.
+	'''
+
+	def __init__(self, filename, channel_count, frame_rate, duration, checksum):
+		self._filename = filename           # name of clip relative to CLIP_DIR
+		self._channel_count = channel_count # number of channels
+		self._frame_rate = frame_rate       # frames per second
+		self._duration = duration           # duration of clip (seconds)
+		self._checksum = checksum           # checksum of file
+
+
+class ClipLib(object):
+	'''
+	ClipLib maintains a collection of Clips.  The original clips may be stored
+	on a remote server.  Methods are provided to find, filter and cache clips
+	locally.
+	'''
+
+	CLIP_DIR = 'clips'
+
+	def __init__(self, clip_list_filename, sample_dir=SAMPLE_DIR):
+		self.load_clip_list(clip_list_filename)
+		self._sample_dir = sample_dir
+
+
+	def is_clip_local(self, filename):
+		'''
+		Return true if the named clip file is available locally
+	 	'''
+	 	pass
+
+	def is_clip_remote(self, filename):
+		'''
+		Consult the clip list to see if the name clip is available
+		on the remote server.
+		'''
+		pass
+
+	def load_clip(self, filename, if_needed=True):
+		'''
+		If clip is present locally, return filename.  Else if if_needed
+		is true and clip is available on the remote server, fetch it and return the
+		filename.  Otherwise raise a FileNotFound error.
+		'''
+		pass
+
+	def load_clip_list(self, clip_list_filename):
+		'''
+		Load clip_list from a file (presumably fetched from github)
+		'''
+		pass
+
+	def select_clips(self, filter_function):
+		'''
+		Return a subset of ClipList, filtered by user-supplied filter.
+		'''
+		pass
+
+	def load_clips(self, clip_list, if_needed=True):
+		'''
+		Load a collection of clips as specified by clip_list.
+		clip_list is generally created by a call to select_clips().
+		'''
+		pass
+
+	def rebuild_clip_list(self, clip_list_filename):
+		'''
+		Utility function.  Recursively load each file from the remote server,
+		extract the ClipInfo for each file, write the results to 
+		clip_list_filename.  (Presumably you run this when the remote
+		sound library changes and push the resulting clip_list_file to github.)
+		'''
+		pass
