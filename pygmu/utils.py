@@ -117,6 +117,7 @@ def pitch_to_freq(note, tuning_system = "12TET", a_hz = 440.0):
                         https://en.xen.wiki/w/833_Cent_Golden_Scale_(Bohlen)
 
     """
+    
 
     et_freq = a_hz * pow(2.0, (note - 69) / 12.0)
 

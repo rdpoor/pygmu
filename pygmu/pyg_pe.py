@@ -53,6 +53,12 @@ class PygPE(object):
     def abs(self):
         return pg.AbsPE(self, delay)
 
+    def biquad(self,gain,freq,q,type):
+        return pg.BiquadPE(self, gain, freq, q, type)
+
+    def lowpass(self, freq):
+        return pg.BiquadPE(self, 0.0, freq, 6, "lowpass")
+
     def crop(self, extent):
         return pg.CropPE(self, extent)
 
