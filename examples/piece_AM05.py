@@ -141,11 +141,11 @@ mix = pg.MixPE(*elements)
 # syrup_mix1 = delays(mix, 0.3, 5, 0.5)
 # pg.Transport(syrup_mix1).play()
 
-# st_mix = pg.SpatialAPE(mix, degree=90, curve='linear')
-# pg.Transport(st_mix).play()
-# impulse = pg.WavReaderPE('samples/IR/Small Prehistoric Cave.wav')
-# syrup_mix2 = pg.ConvolvePE(st_mix, impulse)
-# pg.Transport(syrup_mix2).play()
+st_mix = pg.SpatialAPE(mix, degree=90, curve='linear')
+pg.Transport(st_mix).play()
+impulse = pg.WavReaderPE('samples/IR/Small Prehistoric Cave.wav')
+syrup_mix2 = pg.ConvolvePE(st_mix, impulse)
+pg.Transport(syrup_mix2).play()
 
 
 pg.Transport(mix).play()
