@@ -392,7 +392,9 @@ Command to print out info about all the soundfiles in the current directory (mus
 * [done] add explanation of reshape(-1,1) to All about frames section
 * Add autoscale=n parameter to WavReaderPE to normalize amplitude, and/or create a batch
   file to normalize all files in samples/
- 
+* TimewarpPE needs help.  see examples/example_09.py.  enfoce single-channel timeline
+* BiQuadPE needs help.  see examples/example_11.py
+* FilterPE needs help.  see examples/filter_example.py 
 
 ### For future consideration
 

@@ -75,7 +75,7 @@ class TestGainPE(unittest.TestCase):
         self.assertEqual(pe.frame_rate(), 1234)
 
     def test_channel_count(self):
-        src = SinPE(channel_count = 3)
+        src = IdentityPE(channel_count = 3)
         pe = GainPE(src, 1.0)
         self.assertEqual(pe.channel_count(), 3)
 

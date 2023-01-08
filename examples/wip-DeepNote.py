@@ -52,7 +52,8 @@ https://www.thx.com/wp-content/uploads/2020/03/Deepnote-Panel-A-1024x490.jpg (sc
 FRAME_RATE = 48000
 PIECE_DURATION = 28.0 # seconds
 
-N_HARMONICS = 12   # number of harmonics in each BlitsigPE
+# N_HARMONICS = 12   # number of harmonics in each BlitsigPE
+N_HARMONICS = 0   # maximum number of harmonics in each BlitsigPE
 
 TONIC = 50.2         # midi style pitch: not quite 150 Hz, not quite D...
 PITCH_EPSILON = 0.1  # how close we get to our target pitch
@@ -157,11 +158,25 @@ def gen_pitch_sequence(final_pitch):
 
 	return pg.SequencePE([[t*FRAME_RATE, ut.mtof(v)] for t, v in bpts])
 
+def stof(seconds):
+	return int(seconds * FRAME_RATE)
+
 def gen_note(final_pitch):
 	freq_pe = gen_pitch_sequence(final_pitch)
-	blit_pe = pg.BlitSigPE(frequency=freq_pe, 12, channel_count=1, frame_rate=FRAME_RATE)
+	blit_pe = pg.BlitSawPE(frequency=freq_pe, n_harmonics=12, frame_rate=FRAME_RATE).crop(pg.Extent(0, stof(28)))
+	print(final_pitch, blit_pe.extent())
 	return blit_pe
 
-def 
-gen_pitch_sequence(25)
+def gen_piece():
+	pes = []
+	for p in FINAL_PITCHES:
+		pes.append(gen_note(p))
+	return pg.MixPE(*pes)
+
+output_filename = "examples/deep_note.wav"
+mix = gen_piece().gain(0.05)
+mix = pg.WavWriterPE(mix, output_filename).crop(pg.Extent(0, mix.extent().duration()))
+pg.FtsTransport(mix).play()
+pg.Transport(pg.WavReaderPE(output_filename)).play()
+
 

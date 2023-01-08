@@ -5,14 +5,16 @@ pygmu_dir = os.path.join( script_dir, '..', 'pygmu' )
 sys.path.append( pygmu_dir )
 import pygmu as pg
 
+FRAME_RATE = 48000
+
 def trem_sin_at(at_s, freq_hz, trem_freq, amp):
     """
     example_02 with different tremolo on each note
     """
     # Create a rectified sine generator with given frequency and ampltude
-    sin_osc = pg.AbsPE(pg.SinPE(frequency = freq_hz, amplitude = amp))
+    sin_osc = pg.AbsPE(pg.SinPE(frequency = freq_hz, amplitude = amp, frame_rate = FRAME_RATE))
     # Create a tremolo oscillator.
-    tremolo = pg.SinPE(frequency = trem_freq, amplitude = 1.0)
+    tremolo = pg.SinPE(frequency = trem_freq, amplitude = 1.0, frame_rate = FRAME_RATE)
     # multiply the two
     trem_osc = pg.MulPE(sin_osc, tremolo)
     # Crop the output to start and the given time, but last forever...
