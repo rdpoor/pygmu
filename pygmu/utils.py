@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 def lerp(x, x0, x1, y0, y1):
     """
@@ -49,9 +50,6 @@ def magphase_to_complex(mag, phase):
     Convert magnitude and phase into a complex.
     """
     return mag * np.exp(1j*phase)
-
-def db_to_ratio(db):
-    pass
 
 def ratio_to_db(ratio):
     return 20 * np.log10(ratio)
@@ -140,3 +138,15 @@ def pitch_to_freq(note, tuning_system = "12TET", a_hz = 440.0):
             freq = a_hz * pow(2.0, (note - 69) / 12.0)
 
     return freq
+
+def mtof(midi_pitch):
+    """
+    Convert a midi pitch to a frequency
+    """
+    return 440 * math.pow(2, (midi_pitch-69) / 12)
+
+def ftom(frequency):
+    """
+    Convert a frequency to a midi pitch
+    """
+    return 69 + 12 * math.log(frequency / 440.0)/math.log(2.0)

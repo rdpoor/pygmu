@@ -393,8 +393,14 @@ def gen_verse_4():
 def gen_outro():
     v3 = gen_verse_3()
     pes = []
-    s = 0
+    # add one kick on the downbeat of the outro
+    kick = beat_loop.crop(pg.Extent(0, beats(0.5))).gain(0.3)
+    pes.append(kick)
+    # "clock running down" effect with increasing delay and decreasing gain
+    # use the last sixteenth note of the previous section as the snip to
+    # repeat.  Note that we delay it by -15.75 so it (now) starts at t=0.
     outro_snip = v3.crop(pg.Extent(beats(15.75))).delay(beats(-15.75))
+    s = 0
     dt = 0.25
     g = 1.0
     for i in range(17):
@@ -428,7 +434,8 @@ mix = pg.MixPE(
 # mix = pg.MixPE(gen_bridge(), gen_bridge_melody().delay(beats(8)))
 # mix = gen_verse_4()
 # mix = gen_outro()
-dst = pg.WavWriterPE(mix, "examples/piece_RD03.wav")
+filename = "examples/piece_RD03v2.wav"
+dst = pg.WavWriterPE(mix, filename)
 pg.FtsTransport(dst).play()
 
-pg.Transport(pg.WavReaderPE("examples/piece_RD03.wav")).play()
+pg.Transport(pg.WavReaderPE(filename)).play()
