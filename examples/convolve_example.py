@@ -19,8 +19,9 @@ src_gain_adjust = 0.4
 # src_name = "samples/100_Radiator_Rattle.wav"
 # src_gain_adjust = 0
 
-#src_name = "samples/PED_95_BapBeat_Full_Drums.wav"
-# src_name = "samples/AcousticDrumLoopsSiggi_Track47_104bpm.wav"
+# src_name = "samples/PED_95_BapBeat_Full_Drums.wav"
+src_name = "samples/AcousticDrumLoopsSiggi_Track47_104bpm.wav"
+src_gain_adjust = 0.1
 # src_name = "samples/BigBeat4_BigBeat5drumloops120bpm.wav"
 # src_name = "samples/TamperClip93.wav"
 # src_name = "samples/TamperClip93.wav"

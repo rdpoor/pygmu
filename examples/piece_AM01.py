@@ -76,7 +76,7 @@ frag5 = delays(frag3, 0.7, 18, 0.76)
 elements = [frag5, frag1.delay(secs(3)), frag2.delay(secs(3)), frag1.delay(secs(8)), frag2.delay(secs(10)), frag5.delay(secs(18))]
 
 mosh = pg.MixPE(*elements)
-mosh2 = mosh.crop(pg.Extent(start=0,end=720000)).envelope(fade_in, fade_out).reverse(16).envelope(secs(0.01),secs(7))
+mosh2 = mosh.crop(pg.Extent(start=0,end=720000)).env(fade_in, fade_out).reverse(16).env(secs(0.01),secs(7))
 
 mosh3 = pg.MixPE(mosh,mosh2.delay(secs(5.5)))
 

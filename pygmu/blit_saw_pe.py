@@ -3,6 +3,7 @@ import numpy as np
 from scipy import signal
 from extent import Extent
 from pyg_pe import PygPE
+import pyg_exceptions as px
 import utils as ut
 
 """
@@ -64,7 +65,7 @@ class BlitSawPE(PygPE):
 
     SAWTOOTH = 'sawtooth'
 
-    def __init__(self, frequency=440.0, n_harmonics=0, frame_rate=PygPE.DEFAULT_FRAME_RATE):
+    def __init__(self, frequency=440.0, n_harmonics=0, frame_rate=None):
         """
         Band-limited Impulse Train (BLIT) Sawtooth
         frequency sets the frequency (in conjunction with frame rate)
@@ -72,6 +73,8 @@ class BlitSawPE(PygPE):
         """
         super(BlitSawPE, self).__init__()
         self._n_harmonics = 0
+        if frame_rate is None:
+            raise pyx.ArgumentError("frame_rate must be specified")
         self._frame_rate = frame_rate
         self._frequency = frequency
         self.reset()

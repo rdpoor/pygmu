@@ -15,7 +15,7 @@ for w in ['sawtooth', 'pulse']:
         for pitch in [57, 61, 64, 68, 69]:
             f = ut.pitch_to_freq(pitch)
             period = 48000 / f
-            src = pg.BlitsigPE(frequency=f, n_harmonics=h, channel_count=1, frame_rate=48000, waveform=w)
+            src = pg.BlitsigPE(frequency=f, n_harmonics=h, frame_rate=48000, waveform=w)
             pes.append(src.crop(pg.Extent(0, 12000)).delay(t))
             t += 13000
 mix = pg.MixPE(*pes)

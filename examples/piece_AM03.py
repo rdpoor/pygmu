@@ -50,7 +50,7 @@ def make_timeline(pitches, n_frames = 90000):
         ramp_dur = int(n_frames / freq)
         ramp = pg.utils.ramp_frames(0, n_frames, ramp_dur, 1)
         timeline = np.concatenate((timeline, ramp))
-    return pg.ArrayPE(timeline, channel_count=1)
+    return pg.ArrayPE(timeline)
 
 
 

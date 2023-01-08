@@ -23,7 +23,7 @@ def delays(src, secs, howmany = 1, decay = 1):
         delay_units.append(src.delay(int(i * secs * frame_rate)).gain(amp))
         amp *= decay
     return pg.MixPE(src,*delay_units)
-sourceA= pg.WavReaderPE("/Users/andy/Dev/python/pygmu/samples/ItsGonnaRain_Original.wav")
+sourceA= pg.WavReaderPE("samples/ItsGonnaRain_Original.wav")
 noloopA= sourceA.crop(pg.Extent(start=0,end=secs(6))).env(secs(.13),secs(3))
 loopA = loopWindow(sourceA,secs(2.95),secs(.8)).crop(pg.Extent(start=0,end=secs(60))).env(secs(.13),secs(5))
 loopA2 = loopWindow(sourceA,secs(2.95),secs(.78)).crop(pg.Extent(start=0,end=secs(60))).env(secs(.13),secs(15))

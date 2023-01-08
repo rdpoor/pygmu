@@ -9,11 +9,14 @@ sys.path.append(pygmu_dir)
 import pygmu as pg
 import utils as ut
 
+
 beat = pg.WavReaderPE("samples/BigBeat120bpm10.wav")
 beat_bpm = 120
 eight_beat_duration = 176552  # eight beats
 beat_duration = eight_beat_duration / 8
 beat_loop = beat.loop(int(eight_beat_duration))
+
+FRAME_RATE = beat.frame_rate()
 
 def beats(b):
     return int(b * beat_duration)
@@ -334,12 +337,14 @@ def gen_bridge_note(at, pitch, duration, legato):
     freq = ut.pitch_to_freq(pitch)
     # snip = pg.CombPE(bridge_snip, f0=freq, q=180).crop(pg.Extent(0, int(duration * legato)))
     # snip = pg.ReversePE(snip)
-    snip = pg.SinPE(frequency=freq).crop(pg.Extent(0, int(duration * legato))).gain(0.1)
+    snip = pg.SinPE(frequency=freq, frame_rate=FRAME_RATE).crop(pg.Extent(0, int(duration * legato))).gain(0.1)
     snip = snip.env(10, 1000)
     snip = snip.delay(at)
     degree = ut.lerp(pitch, 60, 108, -90, 90)
+    unpanned = pg.SpatialAPE(snip, degree=0)
     panned = pg.SpatialAPE(snip, degree=degree)
-    return pg.MixPE(snip.gain(0.4).delay(beats(0.2)), panned.gain(0.4))
+    return pg.MixPE(unpanned.gain(0.4).delay(beats(0.2)), 
+                    panned.gain(0.4))
 
 def gen_verse_4():
     # regenerate just the pitched components
@@ -380,7 +385,7 @@ def gen_verse_4():
     # flange all the pitched components
     pitched_pes = pg.MixPE(*pes)
     timeline = pg.MixPE(pg.IdentityPE(channel_count=1), 
-                        pg.SinPE(frequency=1.0, amplitude=100, channel_count=1))
+                        pg.SinPE(frequency=1.0, amplitude=100, frame_rate=FRAME_RATE))
     timeline = timeline.crop(pg.Extent(0, beats(16)))
     warped_pes = pg.TimewarpPE(pitched_pes, timeline)
     # mix plain, flanged and original drum track
