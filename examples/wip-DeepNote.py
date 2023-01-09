@@ -52,8 +52,8 @@ https://www.thx.com/wp-content/uploads/2020/03/Deepnote-Panel-A-1024x490.jpg (sc
 FRAME_RATE = 48000
 PIECE_DURATION = 28.0 # seconds
 
-# N_HARMONICS = 12   # number of harmonics in each BlitsigPE
-N_HARMONICS = 0   # maximum number of harmonics in each BlitsigPE
+# N_HARMONICS = 12   # number of harmonics in each BlitSigPE
+N_HARMONICS = 0   # maximum number of harmonics in each BlitSigPE
 
 TONIC = 50.2         # midi style pitch: not quite 150 Hz, not quite D...
 PITCH_EPSILON = 0.1  # how close we get to our target pitch

@@ -5,7 +5,7 @@ from extent import Extent
 from pyg_pe import PygPE
 import utils as ut
 
-class BlitsigPE(PygPE):
+class BlitSigPE(PygPE):
     """
     Band Limited Impulse Train, generating bandlimited pulse or sawtooth waves
     """
@@ -19,7 +19,7 @@ class BlitsigPE(PygPE):
         frequency sets the frequency (in conjunction with frame rate)
         n_harmonics is the number of harmonics / 2.  Defaults to frame_rate / freq.
         """
-        super(BlitsigPE, self).__init__()
+        super(BlitSigPE, self).__init__()
         self._n_harmonics = n_harmonics
         if frame_rate is None:
             raise pyx.ArgumentError("frame_rate must be specified")
@@ -69,7 +69,7 @@ class BlitsigPE(PygPE):
 
     def set_frequency(self, frequency):
         self._period = self._frame_rate / frequency
-        if self._n_harmonics is None:
+        if self._n_harmonics == 0:
             self._m = 2 * int(np.floor(0.5 * self._period)) + 1
         else:
             self._m = 2 * int(self._n_harmonics) + 1

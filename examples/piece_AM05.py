@@ -32,8 +32,8 @@ def delays(src, secs, howmany = 1, decay = 1):
 
 def blit_note(pitch,t,dur,gain,harmonics):
     f = ut.pitch_to_freq(pitch)    
-    return pg.BlitsigPE(frequency=f, n_harmonics=harmonics, channel_count=1, frame_rate=48000, waveform=pg.BlitsigPE.PULSE).crop(pg.Extent(0, secs(dur))).gain(gain).delay(secs(t)).env(500,1000)
-    #return pg.BlitsigPE(frequency=f, n_harmonics=harmonics, channel_count=1, frame_rate=48000, waveform=pg.BlitsigPE.SAWTOOTH).crop(pg.Extent(0, secs(dur))).gain(gain).delay(secs(t)).env(500,1000)
+    return pg.BlitSigPE(frequency=f, n_harmonics=harmonics, channel_count=1, frame_rate=48000, waveform=pg.BlitSigPE.PULSE).crop(pg.Extent(0, secs(dur))).gain(gain).delay(secs(t)).env(500,1000)
+    #return pg.BlitSigPE(frequency=f, n_harmonics=harmonics, channel_count=1, frame_rate=48000, waveform=pg.BlitSigPE.SAWTOOTH).crop(pg.Extent(0, secs(dur))).gain(gain).delay(secs(t)).env(500,1000)
 
 def render_cycle(pitches, pulses, dur, gain, harmonics, transpose=0, big_start=0):
     pi = 0
