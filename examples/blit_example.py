@@ -8,16 +8,21 @@ sys.path.append( pygmu_dir )
 import pygmu as pg
 import utils as ut
 
+def stof(seconds):
+    return int(seconds * FRAME_RATE)
+
+dur = 0.5
+FRAME_RATE = 48000
+
 t = 0
 pes = []
-for w in ['sawtooth', 'pulse']:
-    for h in range(2, 20, 4):
-        for pitch in [57, 61, 64, 68, 69]:
+for h in [4, 9, 0]:
+    for pitch in [38, 45, 52, 59, 66, 73]:
+        for w in ['sawtooth', 'pulse']:
             f = ut.pitch_to_freq(pitch)
-            period = 48000 / f
-            src = pg.BlitsigPE(frequency=f, n_harmonics=h, channel_count=1, frame_rate=48000, waveform=w)
-            pes.append(src.crop(pg.Extent(0, 12000)).delay(t))
-            t += 13000
-mix = pg.MixPE(*pes)
-# mix = pg.WavWriterPE(mix, "examples/blit_example.wav").crop(pg.Extent(0, mix.extent().duration()))
+            src = pg.BlitSigPE(frequency=f, n_harmonics=h, frame_rate=FRAME_RATE, waveform=w)
+            pes.append(src.crop(pg.Extent(0, stof(dur))).delay(stof(t)))
+            t += dur
+mix = pg.MixPE(*pes).gain(0.3)
+# mix = pg.WavWriterPE(mix, "examples/blit_example.wav")
 pg.Transport(mix).play()

@@ -92,12 +92,12 @@ class SpatialAPE(PygPE):
         self._left_chain = MonoPE(self._src_pe)
         self._right_chain = MonoPE(self._src_pe)
 
-        # delay = self.intra_aural_delay_frames(theta)
+        delay = self.intra_aural_delay_frames(theta)
 
-        # if delay > 0:
-        #     self._left_chain = self._left_chain.delay(int(delay))
-        # elif delay < 0:
-        #     self._right_chain = self._right_chain.delay(int(-delay))
+        if delay > 0:
+            self._left_chain = self._left_chain.delay(int(delay))
+        elif delay < 0:
+            self._right_chain = self._right_chain.delay(int(-delay))
 
         if curve == 'linear':
             # norm_angle goes from 0.0 to 1.0 as theta goes from hard left to hard right 

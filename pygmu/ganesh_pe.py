@@ -27,7 +27,7 @@ class GaneshPE(PygPE):
 		body_frames = body_pe.render(body_pe.extent())
 		ganesh_frames = self.ganeshify(head_frames, body_frames, extend)
 		# Create an ArrayPE to render the results.
-		self._array_pe = ArrayPE(ganesh_frames, self.channel_count())
+		self._array_pe = ArrayPE(ganesh_frames)
 
 	def render(self, requested:Extent):
 		return self._array_pe.render(requested)

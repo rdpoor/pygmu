@@ -7,6 +7,12 @@ sys.path.append( pygmu_dir )
 import pygmu as pg
 import utils as ut
 
+FRAME_RATE = 48000
+
+def stof(seconds):
+    '''Convert seconds to frames (samples)'''
+    return int(seconds * FRAME_RATE)
+
 def sin_at(at_s, dur_s, freq_hz, amp):
     """
     Play a sine tone starting at the given # of seconds.  More accurately:
@@ -16,15 +22,10 @@ def sin_at(at_s, dur_s, freq_hz, amp):
     This function is intended to show that it is easy to compose different PEs
     together to create more complex (or more bespoke) functions.
     """
-    # Exploit Python's support of nested functions
-    def s_to_f(seconds):
-    	'''Convert seconds to frames (samples)'''
-    	return int(seconds * sin_pe.frame_rate())
-
     # Create a sine generator with given frequency and ampltude
-    sin_pe = pg.SinPE(frequency = freq_hz, amplitude = amp)
+    sin_pe = pg.SinPE(frequency = freq_hz, amplitude = amp, frame_rate = FRAME_RATE)
     # Crop the output to to start and end at the desired times.
-    return pg.CropPE(sin_pe, pg.Extent(s_to_f(at_s), s_to_f(at_s + dur_s)))
+    return pg.CropPE(sin_pe, pg.Extent(stof(at_s), stof(at_s + dur_s)))
 
 # Generate Wagner's famous opening chord...
 # Mix the output of four sinewaves, each with its own frequency and start time.

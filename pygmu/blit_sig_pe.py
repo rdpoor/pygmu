@@ -5,23 +5,24 @@ from extent import Extent
 from pyg_pe import PygPE
 import utils as ut
 
-class BlitsigPE(PygPE):
+class BlitSigPE(PygPE):
     """
-    Comb filter, peaking or notching
+    Band Limited Impulse Train, generating bandlimited pulse or sawtooth waves
     """
 
     PULSE = 'pulse'
     SAWTOOTH = 'sawtooth'
 
-    def __init__(self, frequency=440.0, n_harmonics=None, channel_count=1, frame_rate=PygPE.DEFAULT_FRAME_RATE, waveform='pulse'):
+    def __init__(self, frequency=440.0, n_harmonics=None, frame_rate=None, waveform='pulse'):
         """
         Band-limited Impulse Train (BLIT) Sawtooth
         frequency sets the frequency (in conjunction with frame rate)
         n_harmonics is the number of harmonics / 2.  Defaults to frame_rate / freq.
         """
-        super(BlitsigPE, self).__init__()
+        super(BlitSigPE, self).__init__()
         self._n_harmonics = n_harmonics
-        self._channel_count = channel_count
+        if frame_rate is None:
+            raise pyx.ArgumentError("frame_rate must be specified")
         self._frame_rate = frame_rate
         self._waveform = waveform
         self.set_frequency(frequency)
@@ -58,19 +59,17 @@ class BlitsigPE(PygPE):
             # normalize amplitude.  TODO: what is the correct normalization factor?
             y *= self._m / self._period
 
-        # Distribute the waveform to the desired number of channels.
-        y = y.repeat(self._channel_count).reshape(-1, self._channel_count)
         return y
 
     def channel_count(self):
-        return self._channel_count
+        return 1
 
     def frame_rate(self):
         return self._frame_rate
 
     def set_frequency(self, frequency):
         self._period = self._frame_rate / frequency
-        if self._n_harmonics is None:
+        if self._n_harmonics == 0:
             self._m = 2 * int(np.floor(0.5 * self._period)) + 1
         else:
             self._m = 2 * int(self._n_harmonics) + 1
