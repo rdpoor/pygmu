@@ -31,4 +31,4 @@ vib_tristan = pg.MixPE(
     trem_sin_at(2.0, freq_gs, 3.6, 0.2))
 
 # Start calling render() on the "root" processing element.
-pg.Transport(vib_tristan).play()
+pg.Transport(vib_tristan).play(True)

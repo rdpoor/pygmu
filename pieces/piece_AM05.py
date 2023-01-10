@@ -32,7 +32,7 @@ def delays(src, secs, howmany = 1, decay = 1):
 
 def blit_note(pitch,t,dur,gain,harmonics):
     f = ut.pitch_to_freq(pitch)    
-    return pg.BlitsigPE(frequency=f, n_harmonics=harmonics, channel_count=1, frame_rate=48000, waveform=pg.BlitsigPE.PULSE).crop(pg.Extent(0, secs(dur))).gain(gain).delay(secs(t)).env(500,1000)
+    return pg.BlitsigPE(frequency=f, n_harmonics=harmonics, channel_count=1, frame_rate=48000, waveform=pg.BlitsigPE.PULSE).crop(pg.Extent(0, secs(dur))).gain(gain).delay(secs(t)).env(100,100)
     #return pg.BlitsigPE(frequency=f, n_harmonics=harmonics, channel_count=1, frame_rate=48000, waveform=pg.BlitsigPE.SAWTOOTH).crop(pg.Extent(0, secs(dur))).gain(gain).delay(secs(t)).env(500,1000)
 
 def render_cycle(pitches, pulses, dur, gain, harmonics, transpose=0, big_start=0):
@@ -76,7 +76,7 @@ sourceA= pg.WavReaderPE("/Users/andy/Dev/python/pygmu/samples/ItsGonnaRain_Origi
 
 elements = []
 
-pulse = 0.65
+pulse = 0.11
 
 gain = 0.7
 
@@ -116,7 +116,7 @@ render_cycle(cycle51, [pulse * 0.34], 10, gain * 0.007, 5 ,28, big_t)
 render_cycle(cycle51, [pulse * 0.37], 10, gain * 0.007, 5 ,28, big_t)
 
 
-big_t = 10.5
+big_t = 10
 
 render_cycle(cycle42, [pulse], 10, gain * 0.75, 4, 2, big_t)
 render_cycle(cycle36, [pulse * 1.5], 10, gain * 0.25, 4, 14, big_t)
@@ -132,20 +132,15 @@ render_cycle(cycle51, [pulse * 0.34], 10, gain * 0.007, 5 ,28, big_t)
 render_cycle(cycle51, [pulse * 0.37], 10, gain * 0.007, 5 ,28, big_t)
 
 
-
-
-
-
 mix = pg.MixPE(*elements)
 
-# syrup_mix1 = delays(mix, 0.3, 5, 0.5)
-# pg.Transport(syrup_mix1).play()
+#syrup_mix1 = delays(mix, 0.3, 5, 0.5)
+syrup_mix1 = mix
 
-# st_mix = pg.SpatialAPE(mix, degree=90, curve='linear')
-# pg.Transport(st_mix).play()
-# impulse = pg.WavReaderPE('samples/IR/Small Prehistoric Cave.wav')
-# syrup_mix2 = pg.ConvolvePE(st_mix, impulse)
-# pg.Transport(syrup_mix2).play()
+impulse = pg.WavReaderPE('samples/IR/Small Prehistoric Cave.wav')
+convolved = pg.ConvolvePE(syrup_mix1.gain(0.1), impulse)
+output_filename = "examples/piece_AM05.wav"
+syrup_mix = pg.WavWriterPE(convolved, output_filename)
 
-
-pg.Transport(mix).play()
+pg.FtsTransport(syrup_mix).play()
+pg.Transport(pg.WavReaderPE(output_filename)).play()

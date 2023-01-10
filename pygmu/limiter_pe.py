@@ -21,7 +21,7 @@ class LimiterPE(PygPE):
             self._observed_max = amax
             if amax > self._hard_limit:
                 self._reduction = (amax - self._hard_limit) / amax
-        print('self._reduction',self._reduction,self._observed_max)
+        #print('self._reduction',self._reduction,self._observed_max)
         return src_buf * self._reduction
 
     def extent(self):

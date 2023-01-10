@@ -186,7 +186,7 @@ def ostinato3(s, dur):
 	return pg.MixPE(*pes)
 
 def random_ostinato(start_beat, dur_beat, seed):
-	print(ut.ansicodes.WARNING, 'random ostinato seed:',beat_to_frame(start_beat),beat_to_frame(dur_beat),seed,ut.ansicodes.ENDC)
+	ut.print_warn('random ostinato seed:',beat_to_frame(start_beat),beat_to_frame(dur_beat),seed)
 	pes = []
 	random.seed(seed)
 	t = beat_to_frame(start_beat)

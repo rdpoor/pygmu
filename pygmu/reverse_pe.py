@@ -1,7 +1,7 @@
 import numpy as np
 from extent import Extent
 from pyg_pe import PygPE
-from utils import ansicodes
+import utils as ut
 
 class ReversePE(PygPE):
     """
@@ -23,7 +23,7 @@ class ReversePE(PygPE):
             # full overlap: just grab the corresponding samples and reverse them
 
             if self._src_pe.extent().is_indefinite() and not self._gave_warning:
-                print(ansicodes.WARNING,'reverse is unhappy with an indefinite source,',self._src_pe,' we declare infinity to actually mean '+str(self._infinite_end)+' seconds.  ')
+                ut.print_warn('reverse is unhappy with an indefinite source,',self._src_pe,' we declare infinity to actually mean '+str(self._infinite_end)+' seconds.  ')
                 self._gave_warning = True
             #src_extent = Extent(start=self._src_pe.extent().end() - intersection.end(), end=self._src_pe.extent().end() - intersection.start())
             fake_end = self._infinite_end * self._src_pe.frame_rate()

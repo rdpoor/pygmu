@@ -15,7 +15,7 @@ BlitsawPT
 
     pg.BlitSawPE(frequency=freq, n_harmonics=n_harmonics, frame_rate=frame_rate)
 
-
+Mogrify
 
 ## Processing
 

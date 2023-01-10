@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import sys
 
 def lerp(x, x0, x1, y0, y1):
     """
@@ -57,6 +58,28 @@ def ratio_to_db(ratio):
 def db_to_ratio(ratio):
     return np.power(10, ratio / 20)
 
+def meter_string_for_rms(arr):
+    nchans = len(arr)
+    if nchans == 2:
+        rms_left = clamp(0,arr[0],38)
+        rms_right = clamp(0,arr[1],38)
+        ctr = '.' if rms_left == 0 and rms_right == 0 else '|'
+        ans = f'{" " * (38 - rms_left)}{"#" * (rms_left)}{ctr}{"#" * rms_right}'
+    else:
+        rms_left = clamp(0,arr[0],76)
+        ans = f'{"#" * rms_left}'
+       
+    return ans
+
+def rms_for_audio_buffer(buf, scale=120):
+    rms_arr = column_rms_linalg(buf)
+    return [int(np.round(x * scale)) for x in rms_arr]
+
+def column_rms_linalg(buf):
+    return np.linalg.norm(buf, ord=2, axis=tuple(range(buf.ndim - 1))) / np.sqrt(np.prod(buf.shape[:-1]))
+
+use_ansi_when_avaible = True
+
 class ansicodes:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -67,6 +90,60 @@ class ansicodes:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
+    CURSOR1 = '\033[1g'
+    CURSOR2 = '\033[10;0f'
+    CURSOR2B = '\033[11;0f'
+    PREVLINE = '\033[1;F'
+    PREVLINE2 = '\033[2;F'
+    SCROLLUP = '\033[1;S'
+    SCROLLDN = '\033[1;T'
+    CLEAR = '\033[2K'
+    HIDE_CURSOR = '\x1b[?25l'
+    SHOW_CURSOR = '\x1b[?25h'
+    ESC = '\x1b'
+    RESET = f'{ESC}[0m'
+    BOLD = f'{ESC}[1m'
+    RED = f'{ESC}[31m'
+    YELLOW = f'{ESC}[33m'
+    GREEN = f'{ESC}[32m'
+
+def terminal_has_ansi_support():
+    # Check if the colorama module is available
+    try:
+        import colorama
+        has_colorama = True
+    except ImportError:
+        has_colorama = False
+
+    # Check if the operating system is Windows
+    is_windows = sys.platform.startswith('win')
+
+    # If colorama is available and the operating system is Windows, assume ANSI escape code support
+    if is_windows and not has_colorama:
+        return False
+    else:
+         return use_ansi_when_avaible
+
+def clear_term_lines(howmany):
+    if not terminal_has_ansi_support():
+        return
+    while howmany > 0:
+        print(ansicodes.PREVLINE,ansicodes.CLEAR,'',end='\r')
+        howmany -= 1
+
+def show_cursor(flag):
+    if not terminal_has_ansi_support():
+        return
+    if flag:
+        print(ansicodes.SHOW_CURSOR,end='')
+    else:
+        print(ansicodes.HIDE_CURSOR,end='')
+
+def print_warn(*args):
+    if terminal_has_ansi_support():
+        print(ansicodes.WARNING,*args,ansicodes.ENDC)
+    else:
+        print(*args)
 
 """
 Tuning Systems
@@ -74,9 +151,9 @@ Tuning Systems
 
 PHI = 1.6180339887
 
-RenoldTemperament = [0, 1.914023, 3.6104998, 6.244825, 8.033583, -1.8587259, 0, 1.804308, 3.829694, 6.021689, 7.952746, 9.64478287]; # cents deviation from 12ET
+RenoldTemperament = [0, 1.914023, 3.6104998, 6.244825, 8.033583, -1.8587259, 0, 1.804308, 3.829694, 6.021689, 7.952746, 9.64478287] # cents deviation from 12ET
 
-JustTemperament = [0, 11.73, 3.91, 15.64, -13.69, -1.96, -17.49, 1.96, 13.69, -15.64, -3.91, -11.73]; # cents deviation from 12ET
+JustTemperament = [0, 11.73, 3.91, 15.64, -13.69, -1.96, -17.49, 1.96, 13.69, -15.64, -3.91, -11.73] # cents deviation from 12ET
 
 Bohlen833Scale = [99.27, 235.77, 366.91, 466.18, 597.32, 733.82, 833.09] # ratios (in cents) of each step above the base
 
@@ -88,7 +165,7 @@ def freq_to_nearest_just_freq(frequency, a_hz = 440.0):
     steps = round(rawSteps)
     pc = steps % 12
     bentSteps = steps + (JustTemperament[pc]) / 100
-    return baseFrequency * pow(2, bentSteps / 12); # ET freq for this note
+    return baseFrequency * pow(2, bentSteps / 12) # ET freq for this note
 
 def freq_to_nearest_renold_freq(frequency, a_hz = 432.0):
     # round to nearest frequency on the Renold Temperament, based on C 
@@ -98,7 +175,7 @@ def freq_to_nearest_renold_freq(frequency, a_hz = 432.0):
     steps = round(rawSteps)
     pc = steps % 12
     bentSteps = steps + (RenoldTemperament[pc]) / 100
-    return baseFrequency * pow(2, bentSteps / 12); # ET freq for this note
+    return baseFrequency * pow(2, bentSteps / 12) # ET freq for this note
 
 def pitch_to_freq(note, tuning_system = "12TET", a_hz = 440.0):
     """
@@ -117,7 +194,7 @@ def pitch_to_freq(note, tuning_system = "12TET", a_hz = 440.0):
                         https://en.xen.wiki/w/833_Cent_Golden_Scale_(Bohlen)
 
     """
-    
+
 
     et_freq = a_hz * pow(2.0, (note - 69) / 12.0)
 

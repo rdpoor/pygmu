@@ -15,4 +15,4 @@ sourceA= pg.WavReaderPE("samples/ItsGonnaRain_Original.wav")
 
 loopB = loopWindow(sourceA,secs(2.95),secs(.8))
 
-pg.Transport(loopB.crop(pg.Extent(start=0,end=secs(30)))).play()
+pg.Transport(loopB.crop(pg.Extent(start=0,end=secs(30)))).term_play()
