@@ -5,36 +5,105 @@ pygmu_dir = os.path.join( script_dir, '..', 'pygmu' )
 sys.path.append( pygmu_dir )
 import unittest
 import numpy as np
-from pygmu import (DelayPE, Extent, IdentityPE, PygPE)
+import pyg_exceptions as pyx
+from pygmu import (ArrayPE, ConstPE, DelayPE, Extent, IdentityPE, LinearRampPE, PygPE)
+
 
 class TestDelayPE(unittest.TestCase):
 
-    def setUp(self):
-        self.id_pe = IdentityPE(channel_count=2)
-        self.pe = DelayPE(self.id_pe, 5)
-
     def test_init(self):
-        self.assertIsInstance(self.pe, DelayPE)
+        # verify that creating a DelayPE returns an instance of DelayPE
+        extent = Extent(0, 10)
+        delay = 0
+        src = LinearRampPE(0, 10, extent, channel_count = 1).crop(extent)
+        pe = DelayPE(src, delay)
+        self.assertIsInstance(pe, DelayPE)
+        self.assertEqual(pe.channel_count(), 1)
+        self.assertFalse(pe.extent().is_indefinite())
 
-    def test_render(self):        
-        e = Extent(0, 5)
+        delay = 0
+        src = LinearRampPE(0, 10, extent, channel_count = 2).crop(extent)
+        pe = DelayPE(src, delay)
+        self.assertIsInstance(pe, DelayPE)
+        self.assertEqual(pe.channel_count(), 2)
+        self.assertFalse(pe.extent().is_indefinite())
+
+        delay = ConstPE(0, channel_count = 1)
+        src = LinearRampPE(0, 10, extent, channel_count = 1).crop(extent)
+        pe = DelayPE(src, delay)
+        self.assertIsInstance(pe, DelayPE)
+        self.assertEqual(pe.channel_count(), 1)
+        self.assertTrue(pe.extent().is_indefinite())
+
+        delay = ConstPE(0, channel_count = 1)
+        src = LinearRampPE(0, 10, extent, channel_count = 2).crop(extent)
+        pe = DelayPE(src, delay)
+        self.assertIsInstance(pe, DelayPE)
+        self.assertEqual(pe.channel_count(), 2)
+        self.assertTrue(pe.extent().is_indefinite())
+
+        delay = ConstPE(0, channel_count = 2)
+        src = LinearRampPE(0, 10, extent, channel_count = 1).crop(extent)
+        with self.assertRaises(pyx.ChannelCountMismatch):
+            DelayPE(src, delay)
+
+    def test_render(self):
+        delay = -0.5
+        src = ArrayPE(np.array([[100], [101], [98], [100]]))
+        pe = DelayPE(src, delay)
+        got = pe.render(Extent(0, 3))
+        expect = np.array([[100.5], [99.5], [99.0]], dtype=np.float32)
+        # print("got:", got)
+        # print("expect:", expect)
+        np.testing.assert_array_almost_equal(got, expect)
+
+        delay = -0.5
+        src = ArrayPE(np.array([[100], [101], [98], [100]])).delay(30)
+        pe = DelayPE(src, delay)
+        got = pe.render(Extent(30, 33))
+        expect = np.array([[100.5], [99.5], [99.0]], dtype=np.float32)
+        # print("got:", got)
+        # print("expect:", expect)
+        np.testing.assert_array_almost_equal(got, expect)
+
+        delay = -1.0
+        src = ArrayPE(np.array([[100], [101], [98], [100]])).delay(30)
+        pe = DelayPE(src, delay)
+        got = pe.render(Extent(30, 33))
+        expect = np.array([[101], [98], [100]], dtype=np.float32)
+        # print("got:", got)
+        # print("expect:", expect)
+        np.testing.assert_array_almost_equal(got, expect)
+
+        delay = 0.0
+        src = ArrayPE(np.array([[100], [101], [98], [100]])).delay(30)
+        pe = DelayPE(src, delay)
+        got = pe.render(Extent(30, 33))
+        expect = np.array([[100], [101], [98]], dtype=np.float32)
+        # print("got:", got)
+        # print("expect:", expect)
+        np.testing.assert_array_almost_equal(got, expect)
+
+        delay = -0.5
+        src = ArrayPE(np.array([[100, 200], [101, 201], [98, 198], [100, 200]])).delay(30)
+        pe = DelayPE(src, delay)
+        got = pe.render(Extent(30, 33))
+        expect = np.array([[100.5, 200.5], [99.5, 199.5], [99.0, 199.0]], dtype=np.float32)
+        # print("got:", got)
+        # print("expect:", expect)
+        np.testing.assert_array_almost_equal(got, expect)
+
+        # fixed integer delay
+        delay = 5
+        src = IdentityPE(channel_count=2)
+        pe = DelayPE(src, delay)
         expect = np.array([[-5, -5], [-4, -4], [-3, -3], [-2, -2], [-1, -1]], dtype=np.float32)
-        got = self.pe.render(e)
+        got = pe.render(Extent(0, 5))
         np.testing.assert_array_almost_equal(got, expect)
 
-        e = Extent(5, 10)
+        delay = 5
+        src = IdentityPE(channel_count=2)
+        pe = DelayPE(src, delay)
         expect = np.array([[0, 0], [1, 1], [2, 2], [3, 3], [4, 4]], dtype=np.float32)
-        got = self.pe.render(e)
+        got = pe.render(Extent(5, 10))
         np.testing.assert_array_almost_equal(got, expect)
-
-    def test_extent(self):
-        # This is not quite a complete test.  If src_pe has finite extent, then the
-        # delay_pe's extent is the shifted version.
-        self.assertTrue(self.id_pe.extent().equals(self.pe.extent()))
-
-    def test_frame_rate(self):
-        self.assertEqual(self.pe.frame_rate(), PygPE.DEFAULT_FRAME_RATE)
-
-    def test_channel_count(self):
-        self.assertEqual(self.pe.channel_count(), self.id_pe.channel_count())
-
