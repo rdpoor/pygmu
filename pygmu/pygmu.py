@@ -13,7 +13,6 @@ from const_pe import ConstPE
 from convolve_pe import ConvolvePE
 from crop_pe import CropPE
 from delay_pe import DelayPE
-from delay_a_pe import DelayAPE
 from env_detect_pe import EnvDetectPE
 from env_pe import EnvPE
 from extent import Extent
