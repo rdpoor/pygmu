@@ -95,11 +95,14 @@ class PygPE(object):
     def pan(self, degree=0):
         return pg.SpatialAPE(self, degree=degree)
 
-    def play(self):
+    def play(self,show_meter=False, max_silent_frames=3000):
         return pg.Transport(self).play()
 
     def reverse(self, infinite_end):
         return pg.ReversePE(self, infinite_end)
+
+    def term_play(self,show_meter=True, max_silent_frames=300, max_dur_secs_for_infinite_sources=100):
+        return pg.Transport(self).term_play()
 
     def timewarp(self, timeline_pe):
         return pg.TimewarpPE(self, timeline_pe)

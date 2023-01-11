@@ -74,10 +74,6 @@ frag3 = pg.EnvPE(sourceC, fade_in, fade_out).reverse(5).gain(6.82)
 frag3a = pg.TimewarpPE(delays(frag3, 0.6,15,0.92), make_timeline([-7, -12, -14, -17]))
 frag3b = delays(frag3a, 0.36,17,0.94)
 
-print(frag1.extent().end())
-print(frag1a.extent().end())
-
-
 elements = []
 gain = 1.85
 t = 0
@@ -88,7 +84,7 @@ elements.append(mix_at(frag2a,secs(t),gain * 0.43))
 
 elements.append(mix_at(frag3a,secs(t),gain * 2.43))
 
-mosh = pg.LimiterPE(pg.MixPE(*elements))
+mosh = pg.LimiterPE(pg.MixPE(*elements)).gain(1.5)
 
 mosh.play()
 

@@ -80,7 +80,7 @@ mosh2 = mosh.crop(pg.Extent(start=0,end=720000)).env(fade_in, fade_out).reverse(
 
 mosh3 = pg.MixPE(mosh,mosh2.delay(secs(5.5)))
 
-wet_mix = delays(mosh3, 0.5, 4, 0.7)
+wet_mix = delays(mosh3, 0.5, 4, 0.7).gain(2)
 
 wet_mix.play()
 

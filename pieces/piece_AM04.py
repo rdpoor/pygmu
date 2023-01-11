@@ -54,7 +54,9 @@ t = t + 12
 elements.append(mix_at(noloopA,secs(t),gain * 0.5))
 
 
-mosh = pg.LimiterPE(pg.MixPE(*elements))
-hi_mosh = pg.Biquad2PE(mosh, 0, 88, 22, "highpass")
-hi_mosh.play()
+
+#mosh = pg.LimiterPE(pg.MixPE(*elements))
+mosh = pg.MixPE(*elements)
+hi_mosh = pg.Biquad2PE(mosh, 0, 90, 7, "highpass").limit_a(threshold_db=-30, headroom_db=3)
+hi_mosh.term_play()
 # %%

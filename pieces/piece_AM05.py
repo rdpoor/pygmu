@@ -9,8 +9,10 @@ sys.path.append( pygmu_dir )
 import pygmu as pg
 import utils as ut
 
+srate = 44100
+
 def secs(s):
-    return int(s * 48000)
+    return int(s * srate)
 
 def mix_at(src, t, amp = 1):
     return pg.DelayPE(src,t).gain(amp)
@@ -29,16 +31,14 @@ def delays(src, secs, howmany = 1, decay = 1):
         delay_units.append(src.delay(int(i * secs * frame_rate)).gain(amp))
         amp *= decay
     return pg.MixPE(src.gain(2/howmany),*delay_units)
+    
+def loopWindow(src,insk,dur):
+    return pg.LoopPE(src.crop(pg.Extent(insk)).delay(-insk), dur)
 
 def blit_note(pitch,t,dur,gain,harmonics):
     f = ut.pitch_to_freq(pitch)    
-<<<<<<< HEAD:pieces/piece_AM05.py
-    return pg.BlitsigPE(frequency=f, n_harmonics=harmonics, channel_count=1, frame_rate=48000, waveform=pg.BlitsigPE.PULSE).crop(pg.Extent(0, secs(dur))).gain(gain).delay(secs(t)).env(100,100)
+    return pg.BlitSigPE(frequency=f, n_harmonics=harmonics, frame_rate=srate, waveform=pg.BlitSigPE.PULSE).crop(pg.Extent(0, secs(dur))).gain(gain).delay(secs(t)).env(100,100)
     #return pg.BlitsigPE(frequency=f, n_harmonics=harmonics, channel_count=1, frame_rate=48000, waveform=pg.BlitsigPE.SAWTOOTH).crop(pg.Extent(0, secs(dur))).gain(gain).delay(secs(t)).env(500,1000)
-=======
-    return pg.BlitSigPE(frequency=f, n_harmonics=harmonics, channel_count=1, frame_rate=48000, waveform=pg.BlitSigPE.PULSE).crop(pg.Extent(0, secs(dur))).gain(gain).delay(secs(t)).env(500,1000)
-    #return pg.BlitSigPE(frequency=f, n_harmonics=harmonics, channel_count=1, frame_rate=48000, waveform=pg.BlitSigPE.SAWTOOTH).crop(pg.Extent(0, secs(dur))).gain(gain).delay(secs(t)).env(500,1000)
->>>>>>> 605b0cb07582a938c57b3163ac546372b29695e8:examples/piece_AM05.py
 
 def render_cycle(pitches, pulses, dur, gain, harmonics, transpose=0, big_start=0):
     pi = 0
@@ -77,21 +77,24 @@ def tone_cycle(base_pitch,a,type):
         ans.append(base_pitch + a_step)
     return ans
 
-sourceA= pg.WavReaderPE("/Users/andy/Dev/python/pygmu/samples/ItsGonnaRain_Original.wav")
+sourceA= pg.WavReaderPE("/Users/andy/Dev/python/pygmu/samples/DP2_108_Maxmex_Breakdown2.wav")
+
+pulseA = 60 / 216
+
+beatloop = loopWindow(sourceA,secs(0),secs(pulseA * 8)).crop(pg.Extent(start=0,end=secs(21)))
 
 elements = []
 
-pulse = 0.11
 
-gain = 0.7
+gain = 0.17
 
 pitch = 36
-cycle_do_re = [0,-2,0]
-cycle_do_re2 = [0,-5,2,3]
-cycle_do_re3 = [-5,-3,0,2,0]
-cycle_do_do = [0,2]
-cycle_abc = [0,4,2]
-cycle_xyz = [0,2,1,4,-1,2]
+cycle_do_re = [0,-2,1]
+cycle_do_re2 = [0,2,-2,3]
+cycle_do_re3 = [-5,-3,0,2,-1]
+cycle_do_do = [6,7]
+cycle_abc = [0,4,3]
+cycle_xyz = [0,2,1,4,-1,1]
 
 
 doabc = expand_cycle(cycle_do_re, 'chromatic', cycle_abc)
@@ -105,47 +108,51 @@ cycle36 = tone_cycle(42, doxyz, 'chromatic')
 cycle50 = tone_cycle(50, doxyz2, 'chromatic')
 cycle51 = tone_cycle(57, doxyz3, 'chromatic')
 
-big_t = 0
 
-render_cycle(cycle42, [pulse], 10, gain * 0.75, 4, 0, big_t)
-render_cycle(cycle36, [pulse * 1.5], 10, gain * 0.25, 4, 12, big_t)
-render_cycle(cycle50, [pulse * 0.66], 10, gain * 0.09, 11, 0, big_t)
-render_cycle(cycle51, [pulse * 0.3], 10, gain * 0.05, 5 ,0, big_t)
+for i in range(1,15):
 
-render_cycle(cycle42, [pulse, pulse * 2], 10, gain * 0.07, 4, 24, big_t)
-render_cycle(cycle36, [pulse], 10, gain * 0.25, 4, 12, big_t)
-render_cycle(cycle50, [pulse * 0.66, pulse * 1.4], 10, gain * 0.07, 6, 12, big_t)
-render_cycle(cycle51, [pulse * 0.3], 10, gain * 0.007, 5 ,24, big_t)
-render_cycle(cycle51, [pulse * 0.32], 10, gain * 0.007, 5 ,28, big_t)
-render_cycle(cycle51, [pulse * 0.34], 10, gain * 0.007, 5 ,28, big_t)
-render_cycle(cycle51, [pulse * 0.37], 10, gain * 0.007, 5 ,28, big_t)
+    big_t = 0
 
+    pulse = pulseA / i
 
-big_t = 10
+    render_cycle(cycle42, [pulse], 10, gain * 0.75, 4, 0 + i, big_t)
+    render_cycle(cycle36, [pulse * 1.5], 10, gain * 0.25, 4, 12, big_t)
+    render_cycle(cycle50, [pulse * 0.66], 10, gain * 0.09, 11, 0, big_t)
+    render_cycle(cycle51, [pulse * 0.3], 10, gain * 0.05, 5 ,0, big_t)
 
-render_cycle(cycle42, [pulse], 10, gain * 0.75, 4, 2, big_t)
-render_cycle(cycle36, [pulse * 1.5], 10, gain * 0.25, 4, 14, big_t)
-render_cycle(cycle50, [pulse * 0.66], 10, gain * 0.09, 11, 2, big_t)
-render_cycle(cycle51, [pulse * 0.3], 10, gain * 0.05, 5 ,2, big_t)
-
-render_cycle(cycle42, [pulse, pulse * 2], 10, gain * 0.07, 4, 24, big_t)
-render_cycle(cycle36, [pulse], 10, gain * 0.25, 4, 12, big_t)
-render_cycle(cycle50, [pulse * 0.66, pulse * 1.4], 10, gain * 0.07, 6, 12, big_t)
-render_cycle(cycle51, [pulse * 0.3], 10, gain * 0.007, 5 ,24, big_t)
-render_cycle(cycle51, [pulse * 0.32], 10, gain * 0.007, 5 ,28, big_t)
-render_cycle(cycle51, [pulse * 0.34], 10, gain * 0.007, 5 ,28, big_t)
-render_cycle(cycle51, [pulse * 0.37], 10, gain * 0.007, 5 ,28, big_t)
+    render_cycle(cycle42, [pulse, pulse * 2], 10, gain * 0.07, 4 + i, 24, big_t)
+    render_cycle(cycle36, [pulse], 10, gain * 0.25, 4, 12, big_t)
+    render_cycle(cycle50, [pulse * 0.66, pulse * 1.4], 10, gain * 0.07, 6, 12, big_t)
+    render_cycle(cycle51, [pulse * 0.3], 10, gain * 0.007, 5 ,24, big_t)
+    render_cycle(cycle51, [pulse * 0.32], 10, gain * 0.007, 5 ,2 * i, big_t)
+    render_cycle(cycle51, [pulse * 0.34], 10, gain * 0.007, 5 ,2 * i, big_t)
+    render_cycle(cycle51, [pulse * 0.37], 10, gain * 0.007, 5 ,2 * i, big_t)
 
 
-mix = pg.MixPE(*elements)
+    big_t = 10
 
-#syrup_mix1 = delays(mix, 0.3, 5, 0.5)
-syrup_mix1 = mix
+    render_cycle(cycle42, [pulse], 10, gain * 0.75, 4, 2, big_t)
+    render_cycle(cycle36, [pulse * 1.5], 10, gain * 0.25, 4, 14, big_t)
+    render_cycle(cycle50, [pulse * 0.66], 10, gain * 0.09, 11, 2, big_t)
+    render_cycle(cycle51, [pulse * 0.3], 10, gain * 0.05, 5 ,2, big_t)
+
+    render_cycle(cycle42, [pulse, pulse * 2], 10, gain * 0.07, 4, 24, big_t)
+    render_cycle(cycle36, [pulse], 10, gain * 0.25, 4, 12, big_t)
+    render_cycle(cycle50, [pulse * 0.66, pulse * 1.4], 10, gain * 0.07, 6, 12, big_t)
+    render_cycle(cycle51, [pulse * 0.3], 10, gain * 0.007, 5 ,24, big_t)
+    render_cycle(cycle51, [pulse * 0.32], 10, gain * 0.007, 5 ,28, big_t)
+    render_cycle(cycle51, [pulse * 0.34], 10, gain * 0.007, 5 ,28, big_t)
+    render_cycle(cycle51, [pulse * 0.37], 10, gain * 0.007, 5 ,28, big_t)
+
+
+mixA = pg.MixPE(*elements)
+
+syrup_mixA = delays(mixA, pulse, 5, 0.85)
+
+mixB = pg.MixPE(syrup_mixA, beatloop.gain(0.5))
 
 impulse = pg.WavReaderPE('samples/IR/Small Prehistoric Cave.wav')
-convolved = pg.ConvolvePE(syrup_mix1.gain(0.1), impulse)
-output_filename = "examples/piece_AM05.wav"
-syrup_mix = pg.WavWriterPE(convolved, output_filename)
+convolved = pg.ConvolvePE(mixB.gain(0.25), impulse)
 
-pg.FtsTransport(syrup_mix).play()
-pg.Transport(pg.WavReaderPE(output_filename)).play()
+convolved.term_play(False,0)
+

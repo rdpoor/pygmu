@@ -66,7 +66,7 @@ frag3a = delays(frag3, 0.36,7,0.78)
 
 elements = []
 
-gain = 1.85
+gain = 9.85
 
 t = 0
 elements.append(mix_at(frag1a,secs(t),gain * 0.25))

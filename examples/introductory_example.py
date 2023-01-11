@@ -34,4 +34,4 @@ tristan = pg.MixPE(
     sin_at(2.0, freq_gs, 0.2))
 
 # Start calling render() on the "root" processing element.
-pg.Transport(tristan).play()
+pg.Transport(tristan).term_play()

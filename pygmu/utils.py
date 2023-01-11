@@ -67,7 +67,7 @@ def meter_string_for_rms(arr):
         ans = f'{" " * (38 - rms_left)}{"#" * (rms_left)}{ctr}{"#" * rms_right}'
     else:
         rms_left = clamp(0,arr[0],76)
-        ans = f'{"#" * rms_left}'
+        ans = f'|{"#" * rms_left}'
        
     return ans
 
@@ -143,7 +143,13 @@ def print_warn(*args):
     if terminal_has_ansi_support():
         print(ansicodes.WARNING,*args,ansicodes.ENDC)
     else:
-        print(*args)
+        print('WARNING:',*args)
+
+def print_info(*args):
+    if terminal_has_ansi_support():
+        print(ansicodes.OKCYAN,*args,ansicodes.ENDC)
+    else:
+        print('INFO:',*args)
 
 """
 Tuning Systems
