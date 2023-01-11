@@ -7,6 +7,7 @@ import pygmu as pg
 import random
 import utils as ut
 import tempfile
+from sport import Sport
 
 
 prior = ut.use_ansi_when_avaible
@@ -23,44 +24,44 @@ sourceA= pg.WavReaderPE("samples/ItsGonnaRain_Original.wav").gain(7)
 sourceB= pg.WavReaderPE("samples/BigBeat120bpm10.wav").gain(2)
 monoSource= pg.WavReaderPE("samples/Sine_C4.wav") 
 
-filename = tempfile.gettempdir()+'/transport2.wav'
+filename = tempfile.gettempdir()+'/sport.wav'
 dst = pg.WavWriterPE(sourceA, filename)
 
 max_secs = 1
 
 ut.print_info('\tplay()\n\t\tdefault -- no meter, continue after default seconds.\n')
-ret = pg.Transport(sourceB).play() 
+ret = Sport(sourceB).play() 
 
 
 ut.print_info('\tterm_play()\n\t\tdefault -- meter, continue after default seconds.\n')
-ret = pg.Transport(sourceB).term_play() 
+ret = Sport(sourceB).term_play() 
 
 ut.print_info('\tplay(\'bars\')\n\t\tmeter, continue after default seconds.\n')
-ret = pg.Transport(sourceB).play('bars') 
+ret = Sport(sourceB).play('bars') 
 
 ut.print_info('\tplay(\'live\')\n\t\tmeter (should fallback to bars since we have no ansi), continue after default seconds.\n')
-ret = pg.Transport(sourceB).play('live') 
+ret = Sport(sourceB).play('live') 
 
 ut.print_info('\tplay()\n\t\tmono signal, default -- no meter, continue after default seconds\n')
-ret = pg.Transport(monoSource).play()
+ret = Sport(monoSource).play()
 
 ut.print_info('\tterm_play()\n\t\tmono signal, default -- meter, continue after default seconds\n')
-ret = pg.Transport(monoSource).term_play()
+ret = Sport(monoSource).term_play()
 
 ut.print_info('\tterm_play(\'bars\',0)\n\t\tmono signal, bars meter, should wait for return before continuing\n')
-ret = pg.Transport(monoSource).term_play('bars',0)
+ret = Sport(monoSource).term_play('bars',0)
 
 
 ut.print_info('FtsTransport rendering....')
 pg.FtsTransport(dst).play()
 ut.print_info('\tplay()\n\t\tno meter, continue after default seconds.\n')
-pg.Transport(pg.WavReaderPE(filename)).play()
+Sport(pg.WavReaderPE(filename)).play()
 
 
 ut.print_info('FtsTransport rendering....')
 pg.FtsTransport(dst).play()
 ut.print_info('\tterm_play()\n\t\tdefault  -- meter, continue after default seconds.\n')
-pg.Transport(pg.WavReaderPE(filename)).term_play()
+Sport(pg.WavReaderPE(filename)).term_play()
 
 
 ut.use_ansi_when_avaible = True
@@ -74,36 +75,36 @@ ut.print_warn('Turning ansi on.\n')
 
 
 ut.print_info('\tplay()\n\t\tdefault -- no meter, continue after default seconds.\n')
-ret = pg.Transport(sourceB).play() 
+ret = Sport(sourceB).play() 
 
 ut.print_info('\tterm_play()\n\t\tdefault -- meter, continue after default seconds.\n')
-ret = pg.Transport(sourceB).term_play() 
+ret = Sport(sourceB).term_play() 
 
 ut.print_info('\tplay(\'bars\')\n\t\tmeter, continue after default seconds.\n')
-ret = pg.Transport(sourceB).play('bars') 
+ret = Sport(sourceB).play('bars') 
 
 ut.print_info('\tplay(\'live\')\n\t\tmeter (presumably live since we have ansi), continue after default seconds.\n')
-ret = pg.Transport(sourceB).play('live') 
+ret = Sport(sourceB).play('live') 
 
 ut.print_info('\tplay()\nmono signal, default -- no meter, continue after default seconds\n')
-ret = pg.Transport(monoSource).play()
+ret = Sport(monoSource).play()
 
 ut.print_info('\tterm_play()\n\t\tmono signal, default -- meter, continue after default seconds\n')
-ret = pg.Transport(monoSource).term_play()
+ret = Sport(monoSource).term_play()
 
 ut.print_info('\tterm_play(\'bars\',0)\n\t\tmono signal, bars meter, should wait for return before continuing\n')
-ret = pg.Transport(monoSource).term_play('bars',0)
+ret = Sport(monoSource).term_play('bars',0)
 
 
 ut.print_info('FtsTransport rendering....')
 ut.print_info('\tplay()\n\t\tno meter, continue after default seconds.\n')
 pg.FtsTransport(dst).play()
-pg.Transport(pg.WavReaderPE(filename)).play()
+Sport(pg.WavReaderPE(filename)).play()
 
 ut.print_info('FtsTransport rendering....')
 ut.print_info('\tterm_play()\n\t\tdefault --  meter, continue after default seconds.\n')
 pg.FtsTransport(dst).play()
-pg.Transport(pg.WavReaderPE(filename)).term_play()
+Sport(pg.WavReaderPE(filename)).term_play()
 
 
 

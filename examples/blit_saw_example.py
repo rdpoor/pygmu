@@ -38,4 +38,4 @@ output_filename = "examples/blit_example.wav"
 mix = pg.WavWriterPE(mix, output_filename).crop(pg.Extent(0, mix.extent().duration()))
 #pg.FtsTransport(mix).play()
 #pg.Transport(pg.WavReaderPE(output_filename)).play()
-pg.Transport(mix).term_play()
+pg.Transport(mix).play()
