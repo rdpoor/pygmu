@@ -154,5 +154,5 @@ mixB = pg.MixPE(syrup_mixA, beatloop.gain(0.5))
 impulse = pg.WavReaderPE('samples/IR/Small Prehistoric Cave.wav')
 convolved = pg.ConvolvePE(mixB.gain(0.25), impulse)
 
-convolved.term_play(False,0)
+convolved.term_play('live',0)
 

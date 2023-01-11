@@ -39,18 +39,18 @@ class Transport(object):
         else:
             self._channel_count = channel_count
         self.__frame_info_queue = queue.Queue()
-    def play(self, show_meter=False, max_silent_frames=400, replayable=False):
+    def play(self, meter_type='none', max_silent_frames=400, replayable=False):
         curr_frame = 0
         silent_count = 0
-        show_meter = show_meter and self._use_ansi
         if self._src_pe.extent().is_indefinite():
             frames_per_col = self._frame_rate #1 col per sec
         else:
             frames_per_col = int((self._src_pe.extent().end() / 512) / 58)
         cur_col_sum = 0
         cur_block = 0
+        show_meter = meter_type != 'none'
         def callback(outdata, n_frames, time, status):
-            nonlocal curr_frame, silent_count, cur_col_sum, frames_per_col, cur_block
+            nonlocal curr_frame, silent_count, cur_col_sum, frames_per_col, cur_block, show_meter
             if status:
                 print(status)
             # "The output buffer contains uninitialized data and the callback
@@ -68,18 +68,19 @@ class Transport(object):
                 silent_count = 0
             self.__frame_info_queue.put(silent_count)
             if show_meter:
-                meter_string = ut.meter_string_for_rms(rms_array) 
-                # move up a line, print the meter string, then pop back down
-                print(ut.ansicodes.PREVLINE, ut.ansicodes.CLEAR,meter_string)
-            else:
-                cur_col_sum += rms_array[0]
-                if cur_block % frames_per_col == 0:
-                    block_rms = int(((cur_col_sum / frames_per_col)  * len(amp_chars) / 90) + 0.85)
-                    amp_ndx = block_rms % len(amp_chars)
-                    cur_col_sum = 0
-                    if silent_count < 2:
-                        print(chr(amp_chars[amp_ndx]),end='')
-                        sys.stdout.flush()
+                if self._use_ansi and meter_type == 'live':
+                    meter_string = ut.meter_string_for_rms(rms_array) 
+                    # move up a line, print the meter string, then pop back down
+                    print(ut.ansicodes.PREVLINE, ut.ansicodes.CLEAR,meter_string)
+                else:
+                    cur_col_sum += rms_array[0]
+                    if cur_block % frames_per_col == 0:
+                        block_rms = int(((cur_col_sum / frames_per_col)  * len(amp_chars) / 90) + 0.85)
+                        amp_ndx = block_rms % len(amp_chars)
+                        cur_col_sum = 0
+                        if silent_count < 2:
+                            print(chr(amp_chars[amp_ndx]),end='')
+                            sys.stdout.flush()
 
         try:
             with sd.OutputStream(
@@ -129,10 +130,10 @@ class Transport(object):
             exit('')
         except Exception as e:
             exit(type(e).__name__ + ': ' + str(e))
-    def term_play(self,show_meter=True, max_silent_frames=300, max_dur_secs_for_infinite_sources=100):
+    def term_play(self,meter_type='live', max_silent_frames=300,  max_dur_secs_for_infinite_sources=100):
         """
         Play to the output_device, with interactive options to skip, replay or quit the entire script
-        [show_meter] option to draw a meter on terms with ansi code support
+        [meter_type] option to draw a meter 'none', 'bars' or 'live' (only works on terms with ansi code support)
         [max_silent_frames ] if > 0, will automatically return after max_silent_frames of low signal
         """
         if self._src_pe.extent().is_indefinite():
@@ -145,10 +146,11 @@ class Transport(object):
         out = WavReaderPE(tmpfile)
         end_frame = out.extent().end()
         dur_str = 'duration: {0:.2f} '.format(end_frame / out.frame_rate())
+        show_meter = meter_type != 'none'
         while True:
             print('press return to skip, q to exit, space to replay',dur_str,'\n',end='' if show_meter else '\n')
             #print('press return to skip, q to exit, space to replay   ',dur_str,end='\r')
-            ret = Transport(out).play(show_meter, max_silent_frames, True)
+            ret = Transport(out).play(meter_type, max_silent_frames, True)
             match ret:
                 case ' ':
                     ut.clear_term_lines(4)

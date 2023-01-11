@@ -95,8 +95,8 @@ class PygPE(object):
     def pan(self, degree=0):
         return pg.SpatialAPE(self, degree=degree)
 
-    def play(self,show_meter=False, max_silent_frames=3000):
-        return pg.Transport(self).play()
+    def play(self,meter_type='live', max_silent_frames=3000):
+        return pg.Transport(self).play(meter_type, max_silent_frames)
 
     def reverse(self, infinite_end):
         return pg.ReversePE(self, infinite_end)
