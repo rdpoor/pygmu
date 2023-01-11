@@ -8,6 +8,7 @@ numpy = "*"
 soundfile = "*"
 sounddevice = "*"
 scipy = "*"
+readchar = "*"
 
 [dev-packages]
 jupyter = "*"
