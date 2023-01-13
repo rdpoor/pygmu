@@ -30,12 +30,12 @@ class CombPE(PygPE):
     def render(self, requested:Extent):
         overlap = self._src_pe.extent().intersect(requested)
         if overlap.is_empty():
-            return ut.const_frames(0.0, requested.duration(), self.channel_count())
+            return ut.const_frames(0.0, self.channel_count(), requested.duration())
 
         src_frames = self._src_pe.render(requested)
-        x = src_frames.transpose()  # as expected by sosfilt
+        x = src_frames
         y, self._zinit = signal.lfilter(self._b, self._a, x, zi=self._zinit)
-        return y.transpose()
+        return y
 
     def extent(self):
         return self._src_pe.extent()

@@ -41,7 +41,7 @@ class BiquadPE(PygPE):
     def render(self, requested:Extent):
         overlap = self._src_pe.extent().intersect(requested)
         if overlap.is_empty():
-            return ut.const_frames(0.0, requested.duration(), self.channel_count())
+            return ut.const_frames(0.0, self.channel_count(), requested.duration())
 
         src_frames = self._src_pe.render(requested)
         # nb: Tricky code: src_frames.shape => (n_frames, n_channels), which 
@@ -79,11 +79,11 @@ class BiquadPE(PygPE):
         else:
             # this feels really messy.  expand constant coeffs into arrays.
             if not isinstance(db_gain, np.ndarray):
-                db_gain = ut.const_frames(db_gain, len(src_frames), 1)
+                db_gain = ut.const_frames(db_gain, 1, ut.frame_count(src_frames))
             if not isinstance(f0, np.ndarray):
-                f0 = ut.const_frames(f0, len(src_frames), 1)
+                f0 = ut.const_frames(f0, 1, ut.framee_count(src_frames))
             if not isinstance(q, np.ndarray):
-                q = ut.const_frames(q, len(src_frames), 1)
+                q = ut.const_frames(q, 1, ut.frame_count(src_frames))
 
         for i, x in enumerate(src_frames):
             if all_constant == False:

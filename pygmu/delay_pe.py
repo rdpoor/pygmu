@@ -24,7 +24,7 @@ class DelayPE(PygPE):
 	    		pass
 	    else:
 			# With a fixed delay, the resulting extent is src extent shifted.
-	    	self._extent = src_pe.extent().offset(-delay)
+	    	self._extent = src_pe.extent().offset(delay)
 
 	def render(self, requested:Extent):
 		if isinstance(self._delay, int):

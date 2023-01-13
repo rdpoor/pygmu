@@ -123,7 +123,7 @@ def gen_intro():
     for pitch, n_frames in motif_a + motif_a:
         e = s + n_frames
         freq = ut.pitch_to_freq(pitch+24)
-        snip = beat_loop.mono().crop(pg.Extent(s, e))
+        snip = beat_loop.crop(pg.Extent(s, e))
         snip = pg.SpatialAPE(snip, degree = -45).gain(0.75)
         pes.append(pg.CombPE(snip, f0=freq, q=20))
         s = e
@@ -234,7 +234,7 @@ def gen_verse_3():
         freq_comb = ut.pitch_to_freq(pitch)
         pes.append(pg.CombPE(snip, f0=freq_comb, q=50).gain(0.5))
         # Biquad2PE is generating crackles...need to fix...
-        freq_biquad = ut.pitch_to_freq(pitch-12)
+        # freq_biquad = ut.pitch_to_freq(pitch-12)
         # pes.append(pg.Biquad2PE(snip.gain(0.1), f0=freq_biquad, q=50))
         s = e
 
@@ -384,7 +384,7 @@ def gen_verse_4():
 
     # flange all the pitched components
     pitched_pes = pg.MixPE(*pes)
-    timeline = pg.MixPE(pg.IdentityPE(channel_count=1), 
+    timeline = pg.MixPE(pg.IdentityPE(), 
                         pg.SinPE(frequency=1.0, amplitude=100, frame_rate=FRAME_RATE))
     timeline = timeline.crop(pg.Extent(0, beats(16)))
     warped_pes = pg.TimewarpPE(pitched_pes, timeline)
@@ -405,14 +405,15 @@ def gen_outro():
     # use the last sixteenth note of the previous section as the snip to
     # repeat.  Note that we delay it by -15.75 so it (now) starts at t=0.
     outro_snip = v3.crop(pg.Extent(beats(15.75))).delay(beats(-15.75))
-    s = 0
-    dt = 0.25
-    g = 1.0
+    s = 0       # initial snip start time
+    dt = 0.25   # initial inter-snip delay 
+    g = 1.0     # initial snip gain
     for i in range(17):
+        # add snip to the sequence of snips...
         pes.append(outro_snip.delay(beats(s)).gain(g))
-        g = g * 0.8
-        dt += 0.07
-        s += dt
+        g = g * 0.8   # decrease gain
+        dt += 0.07    # increase delay
+        s += dt       # start time of next snip
     return pg.MixPE(*pes)
 
 mix = pg.MixPE(
@@ -439,6 +440,7 @@ mix = pg.MixPE(
 # mix = pg.MixPE(gen_bridge(), gen_bridge_melody().delay(beats(8)))
 # mix = gen_verse_4()
 # mix = gen_outro()
+print("mix.extent() =", mix.extent())
 filename = "examples/piece_RD03v2.wav"
 dst = pg.WavWriterPE(mix, filename)
 pg.FtsTransport(dst).play()
