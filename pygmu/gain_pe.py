@@ -17,7 +17,7 @@ class GainPE(PygPE):
         if isinstance(self._gain, PygPE):
             # gain is the output of a PE.  Render the values and use them.
             overlap = requested.intersect(self.extent())
-            dst_buf = ut.const_frames(0.0, requested.duration(), self.channel_count())
+            dst_buf = ut.const_frames(0.0, self.channel_count(), requested.duration())
             if overlap.is_empty():
                 # no overlap - dst_buf is already zero
                 pass
@@ -28,7 +28,7 @@ class GainPE(PygPE):
                 src_buf = self._src_pe.render(overlap) * self._gain.render(overlap)
                 dst_idx = overlap.start() - requested.start()
                 # dst_idx is the index into dst_buf where src_buf[0] gets written
-                dst_buf[dst_idx:dst_idx+n,:] = src_buf
+                dst_buf[:, dst_idx:dst_idx+n] = src_buf
         else:
             # gain is constant.
             dst_buf = self._src_pe.render(requested) * self._gain

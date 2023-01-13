@@ -163,165 +163,98 @@ two-dimensional [numpy arrrays](https://numpy.org/doc/stable/reference/generated
 `numpy` provides a truly dazziling assortment of functions that operate on arrays.  Here are some of the more common ones you might encounter as a pygmu developer.
 
 
-A buffer of single-channel (mono) data is represented by a single column of samples:
-
+A buffer of single-channel (mono) data is represented as a 2-D array with one row:
 ```
->>> a
-array([[0.],
-       [1.],
-       [2.],
-       [3.],
-       [4.]], dtype=float32)
+>>> a1 = np.array([np.arange(100, 105)], dtype=np.float32)
+array([[100., 101., 102., 103., 104.]], dtype=float32)
 ```
 
-Stereo frames have two columns, where column 0 is understood to be the left channel:
-
+As a convenience, a mono channel can also be represented by a 1-D array of samples:
 ```
->>> b
-array([[0., 1.],
-       [2., 3.],
-       [4., 5.],
-       [6., 7.],
-       [8., 9.]], dtype=float32)
-```
-To convert mono frames into stereo (with no gain change):
-```
->>> a.repeat(2, axis=1)
-array([[0., 0.],
-       [1., 1.],
-       [2., 2.],
-       [3., 3.],
-       [4., 4.]], dtype=float32)
+>>> a2 = np.arange(200, 205, dtype=np.float32)
+array([200., 201., 202., 203., 204.], dtype=float32) 
 ```
 
-To convert mono frames into stereo (applying 0.7 gain to left channel and 0.5 to right):
-
+Stereo frames have two rows, where row 0 is understood to be the left channel:
 ```
->>> np.dot(a, [[0.7, 0.5]])
-array([[0. , 0. ],
-       [0.7, 0.5],
-       [1.4, 1. ],
-       [2.1, 1.5],
-       [2.8, 2. ]])
+>>> b = np.array([np.arange(100, 105), np.arange(200, 205)], dtype=np.float32)
+array([[100., 101., 102., 103., 104.],                          
+       [200., 201., 202., 203., 204.]], dtype=float32) 
 ```
-
-To extract the left channel from stereo frames:
+You can use `np.vstack()` to convert a mono buffer into stereo without changing gain.  Note that you can use 1-D or 2-D arrays:
 ```
->>> b[:,0:1]
-array([[0.],
-       [2.],
-       [4.],
-       [6.],
-       [8.]], dtype=float32)
+>>> np.vstack((a1, a1))
+array([[100., 101., 102., 103., 104.],
+       [100., 101., 102., 103., 104.]], dtype=float32)
+>>> np.vstack((a2, a2))
+array([[100., 101., 102., 103., 104.],
+       [100., 101., 102., 103., 104.]], dtype=float32)
 ```
-
-This is an example of `slicing`.  The general syntax is:
+You can also use `np.vstack()` to "glue" two independent mono tracks into stereo, assuming they have the same length:
+```
+>>> a3=np.arange(300, 305, dtype=np.float32)
+>>> np.vstack((a2, a3))
+array([[200., 201., 202., 203., 204.],
+       [300., 301., 302., 303., 304.]], dtype=float32)
+```
+You can use 'slicing' to extract the left or right channel from stereo frames:
+```
+>>> b[0,:]
+array([100., 101., 102., 103., 104.], dtype=float32)
+>>> b[1,:]
+array([200., 201., 202., 203., 204.], dtype=float32)
+```
+You can think of that as "get all of row 0 from b" and "get all of row 1 from b" respectively.  The general syntax for slicing is:
 
     <array>[<row indexes>,<column indexes>]
 
-If \<row indeces\> has the form `j:k`, that's interpreted as starting at row j (inclusive) and ending at row k (exclusive).  If j is omitted, it is interpreted as 0.  If k is omitted, it is interpreted as the end of the axis.  And if either j or k are negative, they index from the end of the array.  So:
+If \<column indeces\> has the form `j:k`, that's interpreted as starting at column j (inclusive) and ending at column k (exclusive).  If j is omitted, it is interpreted as 0.  If k is omitted, it is interpreted as the end of the column.  And if either j or k are negative, they index from the end of the row.  So:
 
 ```
->>> b[1:3]
-array([[2., 3.],
-       [4., 5.]], dtype=float32)
->>> b[-4:3]       # -4 is samee as 2
-array([[2., 3.],
-       [4., 5.]], dtype=float32)
+>>> b[:, 1:3]
+array([[101., 102.],
+       [201., 202.]], dtype=float32)
+>>> b[:,-4:3]           # -4 is equivalent to 2
+array([[101., 102.],
+       [201., 202.]], dtype=float32)
 
 ``` 
-Column indeces work the same.  If you want slice that returns just the left or right channels as columns:
 
-```
->>> b[:,0:1]
-array([[0.],
-       [2.],
-       [4.],
-       [6.],
-       [8.]], dtype=float32)
->>> b[:,1:2]
-array([[1.],
-       [3.],
-       [5.],
-       [7.],
-       [9.]], dtype=float32)
-```
-
-Sometimes you'd like to extact a channel of data as a row rather than a column as required by many library functions like `scipy.signal.convolve()`, etc.  You do this by passing a scalar rather than a `j:k` range:
-
-```
->>> b[:,0]
-array([0., 2., 4., 6., 8.], dtype=float32)
->>> b[:,1]
-array([1., 3., 5., 7., 9.], dtype=float32)
-```
 numpy arrays support scalar operations which are "broadcast" over all the elements.  Therefore:
 ```
->>> a += 100
->>> a
-array([[100.],
-       [101.],
-       [102.],
-       [103.],
-       [104.]], dtype=float32)
+>>> a1 + 0.123
+array([[100.123, 101.123, 102.123, 103.123, 104.123]], dtype=float32)
 ```
 Slices can almost always appear on the left hand side of an assignment.  If you wanted to modify the left channel of a frames object:
 ```
->>> b[:,0:1] = a
+>>> b[0:1,] = a3
 >>> b
-array([[100.,   1.],
-       [101.,   3.],
-       [102.,   5.],
-       [103.,   7.],
-       [104.,   9.]], dtype=float32)
+array([[300., 301., 302., 303., 304.],
+       [200., 201., 202., 203., 204.]], dtype=float32)
 ```
-
 The `T` operator will transpose a column array into a row array and vice versa:
-
 ```
->>> a
-array([[100.],
-       [101.],
-       [102.],
-       [103.],
-       [104.]], dtype=float32)
->>> b
-array([[100.,   1.],
-       [101.,   3.],
-       [102.,   5.],
-       [103.,   7.],
-       [104.,   9.]], dtype=float32)
->>> c = a.T
->>> c
-array([[100., 101., 102., 103., 104.]], dtype=float32)
->>> d = b.T
->>> d
-array([[100., 101., 102., 103., 104.],
-       [  1.,   3.,   5.,   7.,   9.]], dtype=float32)
->>> c.T
-array([[100.],
-       [101.],
-       [102.],
-       [103.],
-       [104.]], dtype=float32)
->>> d.T
-array([[100.,   1.],
-       [101.,   3.],
-       [102.,   5.],
-       [103.,   7.],
-       [104.,   9.]], dtype=float32)
+>>> b.T
+array([[300., 200.],
+       [301., 201.],
+       [302., 202.],
+       [303., 203.],
+       [304., 204.]], dtype=float32)
+>>> b.T.T
+array([[300., 301., 302., 303., 304.],
+       [200., 201., 202., 203., 204.]], dtype=float32)
 ```
 
-#### Of channel_count and frame_count
+#### Of frame_count and channel_count
 
 A numpy array has a `shape` property, so:
 
 ```
 >>> b.shape
-(5, 2)
+(2, 5)
 ```
 
-This tells us that `b` is five frames long and has two channels (stereo).
+This tells us that `b` has two channels and is five frames long.
 
 #### The ubiquitous `reshape()` function
 
@@ -363,18 +296,7 @@ array([[ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10., 11.]], dtype=floa
 ```
 To simplify things, `reshape()` lets you specify -1 as one of the arguments.  It
 will infer what that should be based on the other argument and the length of the
-underlying array.  In numpy, you'll often see the construct like this:
-```
->>> a.reshape(-1, 2)
-array([[ 0.,  1.],
-       [ 2.,  3.],
-       [ 4.,  5.],
-       [ 6.,  7.],
-       [ 8.,  9.],
-       [10., 11.]], dtype=float32)
-```
-This can be interpreted as 'take whatever data is in a and return a frames
-object with two channels' (i.e. two columns), regardless of its original length.
+underlying array.
 
 ### Utilities
 

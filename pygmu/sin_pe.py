@@ -21,7 +21,7 @@ class SinPE(PygPE):
         t0 = requested.start()
         t1 = requested.end()
         t = np.arange(t0, t1)
-        return self._amplitude * np.sin(self._omega * t + self._phase).astype(np.float32).reshape(-1, 1)
+        return self._amplitude * np.sin(self._omega * t + self._phase).astype(np.float32).reshape(1, -1)
 
     def frame_rate(self):
         return self._frame_rate

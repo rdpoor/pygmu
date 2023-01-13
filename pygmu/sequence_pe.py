@@ -29,17 +29,17 @@ class SequencePE(PygPE):
 
         if requested.end() <= self._times[0]:
             # common case #1: request ends before sequence starts, return v[0]
-            return ut.const_frames(self._values[0], requested.duration(), 1)
+            return ut.const_frames(self._values[0], 1, requested.duration())
 
         if requested.start() >= self._times[-1]:
             # common case #2: request starts after sequence ends: return v[n-1]
-            return ut.const_frames(self._values[-1], requested.duration(), 1)
+            return ut.const_frames(self._values[-1], 1, requested.duration())
 
-        dst_buf = np.ndarray([requested.duration(), 1], dtype=np.float32)
+        dst_buf = np.ndarray(requested.duration(), dtype=np.float32)
         t = requested.start()
 
         if self._interpolation == 'step':
-            for dst_idx in range(len(dst_buf)):
+            for dst_idx in range(ut.frame_count(dst_buf)):
                 seq_idx = np.searchsorted(self._times, t, side='right')
                 if seq_idx >= len(self._times):
                     dst_buf[dst_idx] = self._values[-1]
@@ -48,8 +48,8 @@ class SequencePE(PygPE):
                 else:
                     dst_buf[dst_idx] = self._values[seq_idx-1]
                 t += 1
-        else:
-            for dst_idx in range(len(dst_buf)):
+        else:  # interpolation == 'ramp'
+            for dst_idx in range(ut.frame_count(dst_buf)):
                 seq_idx = np.searchsorted(self._times, t)
                 if seq_idx >= len(self._times):
                     dst_buf[dst_idx] = self._values[-1]
@@ -62,7 +62,8 @@ class SequencePE(PygPE):
                     v1 = self._values[seq_idx]
                     dst_buf[dst_idx] = ut.lerp(t, t0, t1, v0, v1)
                 t += 1
-        return dst_buf
+        # Convert 1D dst_buf to monophonic (2D with 1 row)
+        return ut.normalize_frames(dst_buf)
 
     def channel_count(self):
         return 1

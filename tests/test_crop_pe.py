@@ -18,27 +18,27 @@ class TestCropPE(unittest.TestCase):
 
     def test_render(self):   
         e = Extent(95, 100)       # no overlap
-        expect = np.zeros([5, 2], dtype=np.float32)
+        expect = np.zeros([2, 5], dtype=np.float32)
         got = self.pe.render(e)
         np.testing.assert_array_almost_equal(got, expect)
 
         e = Extent(97, 102)     # partial overlap
-        expect = np.array([[0, 0], [0, 0], [0, 0], [100, 100], [101, 101]], dtype=np.float32)
+        expect = np.array([[0., 0., 0., 100., 101.], [0., 0., 0., 100., 101.]], dtype=np.float32)
         got = self.pe.render(e)
         np.testing.assert_array_almost_equal(got, expect)
 
         e = Extent(99, 104)     # full overlap
-        expect = np.array([[0, 0], [100, 100], [101, 101], [102, 102], [0, 0]], dtype=np.float32)
+        expect = np.array([[0, 100, 101, 102, 0], [0, 100, 101, 102, 0]], dtype=np.float32)
         got = self.pe.render(e)
         np.testing.assert_array_almost_equal(got, expect)
 
         e = Extent(101, 106)     # partial overlap
-        expect = np.array([[101, 101], [102, 102], [0, 0], [0, 0], [0, 0]], dtype=np.float32)
+        expect = np.array([[101., 102., 0., 0., 0.], [101., 102., 0., 0., 0.]], dtype=np.float32)
         got = self.pe.render(e)
         np.testing.assert_array_almost_equal(got, expect)
 
         e = Extent(103, 108)     # no overlap
-        expect = np.zeros([5, 2], dtype=np.float32)
+        expect = np.zeros([2, 5], dtype=np.float32)
         got = self.pe.render(e)
         np.testing.assert_array_almost_equal(got, expect)
 

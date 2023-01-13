@@ -12,7 +12,7 @@ import pygmu as pg
 src = pg.WavReaderPE("samples/Tamper_MagnifyingFrame1.wav")
 rate_ramp = pg.LinearRampPE(48000/40, 48000/10, src.extent())
 duty_ramp = pg.LinearRampPE(0.1, 1.0, src.extent())
-pwm = pg.PwmPE(rate_ramp, duty_ramp, channel_count = src.channel_count())
+pwm = pg.PwmPE(rate_ramp, duty_ramp)
 
 # multiply the pwm signal with the original source before rendering
 pg.Transport(pg.MulPE(src, pwm)).play()

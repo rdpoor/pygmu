@@ -14,7 +14,7 @@ class ConstPE(PygPE):
 
     def render(self, requested:Extent):
         duration = requested.duration()
-        return np.full([duration, self.channel_count()], self._value, dtype=np.float32)
+        return np.full([self.channel_count(), duration], self._value, dtype=np.float32)
 
     def channel_count(self):
         return self._channel_count

@@ -49,46 +49,46 @@ class TestDelayPE(unittest.TestCase):
 
     def test_render(self):
         delay = -0.5
-        src = ArrayPE(np.array([[100], [101], [98], [100]]))
+        src = ArrayPE(np.array([[100, 101, 98, 100]]))
         pe = DelayPE(src, delay)
         got = pe.render(Extent(0, 3))
-        expect = np.array([[100.5], [99.5], [99.0]], dtype=np.float32)
+        expect = np.array([[100.5, 99.5, 99.0]], dtype=np.float32)
         # print("got:", got)
         # print("expect:", expect)
         np.testing.assert_array_almost_equal(got, expect)
 
         delay = -0.5
-        src = ArrayPE(np.array([[100], [101], [98], [100]])).delay(30)
+        src = ArrayPE(np.array([[100, 101, 98, 100]])).delay(30)
         pe = DelayPE(src, delay)
         got = pe.render(Extent(30, 33))
-        expect = np.array([[100.5], [99.5], [99.0]], dtype=np.float32)
+        expect = np.array([[100.5, 99.5, 99.0]], dtype=np.float32)
         # print("got:", got)
         # print("expect:", expect)
         np.testing.assert_array_almost_equal(got, expect)
 
         delay = -1.0
-        src = ArrayPE(np.array([[100], [101], [98], [100]])).delay(30)
+        src = ArrayPE(np.array([[100, 101, 98, 100]])).delay(30)
         pe = DelayPE(src, delay)
         got = pe.render(Extent(30, 33))
-        expect = np.array([[101], [98], [100]], dtype=np.float32)
+        expect = np.array([[101, 98, 100]], dtype=np.float32)
         # print("got:", got)
         # print("expect:", expect)
         np.testing.assert_array_almost_equal(got, expect)
 
         delay = 0.0
-        src = ArrayPE(np.array([[100], [101], [98], [100]])).delay(30)
+        src = ArrayPE(np.array([[100, 101, 98, 100]])).delay(30)
         pe = DelayPE(src, delay)
         got = pe.render(Extent(30, 33))
-        expect = np.array([[100], [101], [98]], dtype=np.float32)
+        expect = np.array([[100, 101, 98]], dtype=np.float32)
         # print("got:", got)
         # print("expect:", expect)
         np.testing.assert_array_almost_equal(got, expect)
 
         delay = -0.5
-        src = ArrayPE(np.array([[100, 200], [101, 201], [98, 198], [100, 200]])).delay(30)
+        src = ArrayPE(np.array([[100, 101,  98, 100], [200, 201, 198, 200]])).delay(30)
         pe = DelayPE(src, delay)
         got = pe.render(Extent(30, 33))
-        expect = np.array([[100.5, 200.5], [99.5, 199.5], [99.0, 199.0]], dtype=np.float32)
+        expect = np.array([[100.5,  99.5,  99. ], [200.5, 199.5, 199. ]], dtype=np.float32)
         # print("got:", got)
         # print("expect:", expect)
         np.testing.assert_array_almost_equal(got, expect)
@@ -97,13 +97,13 @@ class TestDelayPE(unittest.TestCase):
         delay = 5
         src = IdentityPE(channel_count=2)
         pe = DelayPE(src, delay)
-        expect = np.array([[-5, -5], [-4, -4], [-3, -3], [-2, -2], [-1, -1]], dtype=np.float32)
+        expect = np.array([[-5., -4., -3., -2., -1.], [-5., -4., -3., -2., -1.]], dtype=np.float32)
         got = pe.render(Extent(0, 5))
         np.testing.assert_array_almost_equal(got, expect)
 
         delay = 5
         src = IdentityPE(channel_count=2)
         pe = DelayPE(src, delay)
-        expect = np.array([[0, 0], [1, 1], [2, 2], [3, 3], [4, 4]], dtype=np.float32)
+        expect = np.array([[0., 1., 2., 3., 4.], [0., 1., 2., 3., 4.]], dtype=np.float32)
         got = pe.render(Extent(5, 10))
         np.testing.assert_array_almost_equal(got, expect)

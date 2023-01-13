@@ -44,35 +44,35 @@ class ConvolvePE(PygPE):
 
         overlap = src_request.intersect(requested)
         if overlap.is_empty():
-            return ut.const_frames(0.0, requested.duration(), self.channel_count())
+            return ut.const_frames(0.0, self.channel_count(), requested.duration())
 
         src_frames = self._src_pe.render(src_request)
 
         if self._src_pe.channel_count() == 1 and self._filter_pe.channel_count() == 1:
             # mono source, mono filter: mono result
-            dst_frames = self.process(src_frames[:,0], self._filter_frames[:,0]).reshape(-1, 1)
+            dst_frames = self.process(src_frames[0,:], self._filter_frames[0,:]).reshape(1, -1)
 
         elif self._src_pe.channel_count() == 2 and self._filter_pe.channel_count() == 1:
             # stereo source, mono filter: stereo result
-            l_frames = self.process(src_frames[:,0], self._filter_frames[:,0])
-            r_frames = self.process(src_frames[:,1], self._filter_frames[:,0])
-            dst_frames = np.vstack((l_frames, r_frames)).T
+            l_frames = self.process(src_frames[0,:], self._filter_frames[0,:])
+            r_frames = self.process(src_frames[1,:], self._filter_frames[0,:])
+            dst_frames = np.vstack((l_frames, r_frames))
 
         elif self._src_pe.channel_count() == 1 and self._filter_pe.channel_count() == 2:
             # mono source, stereo filter: stereo result
-            l_frames = self.process(src_frames[:,0], self._filter_frames[:,0])
-            r_frames = self.process(src_frames[:,0], self._filter_frames[:,1])
-            dst_frames = np.vstack((l_frames, r_frames)).T
+            l_frames = self.process(src_frames[0,:], self._filter_frames[0,:])
+            r_frames = self.process(src_frames[0,:], self._filter_frames[1,:])
+            dst_frames = np.vstack((l_frames, r_frames))
 
         else:
             # stereo source, stereo filter: stereo result
-            l_frames = self.process(src_frames[:,0], self._filter_frames[:,0])
-            r_frames = self.process(src_frames[:,1], self._filter_frames[:,1])
-            dst_frames = np.vstack((l_frames, r_frames)).T
+            l_frames = self.process(src_frames[0,:], self._filter_frames[0,:])
+            r_frames = self.process(src_frames[1,:], self._filter_frames[1,:])
+            dst_frames = np.vstack((l_frames, r_frames))
 
         # At this point, dst_Frames contains N samples before the requested start (the length
         # of the filter, and frames past the requested end.  slice to the requested size.
-        return dst_frames[N:N+(e-s),:]
+        return dst_frames[:, N:N+(e-s)]
 
     def extent(self):
         return self._extent

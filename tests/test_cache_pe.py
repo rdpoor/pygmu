@@ -14,15 +14,15 @@ class CounterPE(PygPE):
     Special purpose PE that counts calls to render()
     """
 
-    def __init__(self, frame_count, channel_count):
+    def __init__(self, channel_count, frame_count):
         super(CounterPE, self).__init__()
-        self._frame_count = frame_count
         self._channel_count = channel_count
+        self._frame_count = frame_count
         self._render_calls = 0
 
     def render(self, requested:Extent):
         self._render_calls += 1
-        return ut.ramp_frames(0, self._frame_count, self._frame_count, self._channel_count)
+        return ut.ramp_frames(0, self._frame_count, self._channel_count, self._frame_count)
 
     def extent(self):
         return Extent(0, self._frame_count)
@@ -36,11 +36,12 @@ class CounterPE(PygPE):
 class TestCachePE(unittest.TestCase):
 
     def test_init(self):
-        src = CounterPE(5, 1)
+        src = CounterPE(1, 5)
         self.assertIsInstance(CachePE(src), CachePE)
 
     def test_render(self):
-        src = CounterPE(5, 1)
+        src = CounterPE(1, 5)
+        self.assertEqual(src.render_calls(), 0)
 
         pe = CachePE(src)
         self.assertEqual(src.render_calls(), 1)

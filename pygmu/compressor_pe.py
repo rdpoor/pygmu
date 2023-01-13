@@ -53,7 +53,7 @@ class CompressorPE(PygPE):
     def render(self, requested:Extent):
         overlap = self._src_pe.extent().intersect(requested)
         if overlap.is_empty():
-            return ut.const_frames(0.0, requested.duration(), self.channel_count())
+            return ut.const_frames(0.0, self.channel_count(), requested.duration())
         
         src = self._src_pe.render(requested)
         db_env = ut.ratio_to_db(self._env_pe.render(requested))

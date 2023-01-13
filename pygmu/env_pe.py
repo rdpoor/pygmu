@@ -28,7 +28,7 @@ class EnvPE(PygPE):
         # optimize common cases
         if overlap.precedes(self.extent()) or overlap.follows(self.extent()):
             # src_pe hasn't started or has already ended
-            dst_buf = np.zeros([requested.duration(), self.channel_count()], dtype=np.float32)
+            dst_buf = np.zeros([self.channel_count(), requested.duration()], dtype=np.float32)
 
         elif Extent(tu1, td0).spans(overlap):
             # src is fully on (g=1.0) for the entire request.  dst_buf = src
@@ -88,7 +88,7 @@ g=0.0  ---+     +---
             # into which we'll progressively write frames in five easy steps 
             # (see "Game Plan" below)
             src_buf = self._src_pe.render(overlap)
-            dst_buf = ut.uninitialized_frames(requested.duration(), self.channel_count())
+            dst_buf = ut.uninitialized_frames(self.channel_count(), requested.duration())
 
             src_index = 0
             dst_index = 0
@@ -113,7 +113,7 @@ g=0.0  ---+     +---
             n = max(0, e - s)
             if n > 0:
                 # print("Step 1: s=", s, "e=", e, "n=", n)
-                dst_buf[dst_index:dst_index+n,:] = ut.const_frames(0.0, n, self.channel_count())
+                dst_buf[:, dst_index:dst_index+n] = ut.const_frames(0.0, self.channel_count(), n)
                 dst_index += n
 
             # 2. ramp up from tu0 to tu1 with values (gu0 ... gu1)
@@ -123,10 +123,10 @@ g=0.0  ---+     +---
             if n > 0:
                 g0 = ut.lerp(s, tu0, tu1, gu0, gu1)
                 g1 = ut.lerp(e, tu0, tu1, gu0, gu1)
-                ramp = ut.ramp_frames(g0, g1, n, self.channel_count())
+                ramp = ut.ramp_frames(g0, g1, self.channel_count(), n)
                 # print("Step 2: s=", s, "e=", e, "n=", n)
                 # print("Step 2: ramp=", ramp)
-                dst_buf[dst_index:dst_index+n,:] = src_buf[0:n,:] * ramp
+                dst_buf[:, dst_index:dst_index+n] = src_buf[:, 0:n] * ramp
                 src_index += n
                 dst_index += n
 
@@ -136,7 +136,7 @@ g=0.0  ---+     +---
             n = max(0, e - s)
             if n > 0:
                 # print("Step 3: s=", s, "e=", e, "n=", n)
-                dst_buf[dst_index:dst_index+n,:] = src_buf[src_index:src_index+n]
+                dst_buf[:, dst_index:dst_index+n] = src_buf[:, src_index:src_index+n]
                 src_index += n
                 dst_index += n
 
@@ -147,10 +147,10 @@ g=0.0  ---+     +---
             if n > 0:
                 g0 = ut.lerp(s, td0, td1, gd0, gd1)
                 g1 = ut.lerp(e, td0, td1, gd0, gd1)
-                ramp = ut.ramp_frames(g0, g1, n, self.channel_count())
+                ramp = ut.ramp_frames(g0, g1, self.channel_count(), n)
                 # print("Step 4: s=", s, "e=", e, "n=", n)
                 # print("Step 4: ramp=", ramp)
-                dst_buf[dst_index:dst_index+n,:] = src_buf[src_index:src_index+n,:] * ramp
+                dst_buf[:, dst_index:dst_index+n] = src_buf[:, src_index:src_index+n] * ramp
                 src_index += n
                 dst_index += n
 
@@ -160,7 +160,7 @@ g=0.0  ---+     +---
             n = max(0, e - s)
             if n > 0:
                 # print("Step 5: s=", s, "e=", e, "n=", n)
-                dst_buf[dst_index:dst_index+n,:] = ut.const_frames(0.0, n, self.channel_count())
+                dst_buf[:, dst_index:dst_index+n] = ut.const_frames(0.0, self.channel_count(), n)
                 dst_index += n
 
             assert(dst_index == requested.duration())

@@ -32,7 +32,7 @@ class BlitSigPE(PygPE):
         """
         Band limited pulse train: y(n) = (_m / _period) * sinc(_m * n / _p)
         """
-        tau = np.arange(requested.start(), requested.end()).reshape(-1, 1)
+        tau = np.arange(requested.start(), requested.end())
         omega = np.pi * tau / self._period
 
         # compute BLIT (bamd-limited impulse train)

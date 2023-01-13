@@ -42,7 +42,7 @@ class WavWriterPE(PygPE):
         # Super special hack with possibly surprising consequences:
         if not overlap.is_empty():
             # some non-empty data arrived.  Open and start writing...
-            self.open().write(src_frames)
+            self.open().write(src_frames.T)
         elif self._soundfile is not None:
             # sample data has been written to the file, but now overlap is
             # zero: stop writing

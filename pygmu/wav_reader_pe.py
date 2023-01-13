@@ -50,7 +50,7 @@ class WavReaderPE(PygPE):
         intersection = requested.intersect(self.extent())
         if intersection.is_empty():
             # no intersection
-            dst_buf = np.zeros([requested.duration(), self.channel_count()], np.float32)
+            dst_buf = np.zeros([self.channel_count(), requested.duration()], np.float32)
         else:
             # the sound file overlaps with some or all of the request
 
@@ -60,7 +60,9 @@ class WavReaderPE(PygPE):
 
             # read the frames from the source file.
             src_n_frames = int(intersection.duration())
-            src_buf = self.soundfile().read(frames=src_n_frames, dtype=np.float32, always_2d=True)
+            # Use the .T (transpose) operator to convert from soundfile "channel per column"
+            # form to pygmu "channel per row" form.
+            src_buf = self.soundfile().read(frames=src_n_frames, dtype=np.float32, always_2d=True).T
 
             if intersection.equals(requested):
                 # full overlap: we can return frames directly from the soundfile
@@ -68,9 +70,9 @@ class WavReaderPE(PygPE):
             else:
                 # partial overlap.  Allocate a buffer of zeros and replace some
                 # of them with sample data from the file.
-                dst_buf = np.zeros([requested.duration(), self.channel_count()], np.float32)
+                dst_buf = np.zeros([self.channel_count(), requested.duration()], np.float32)
                 offset = intersection.start() - requested.start()
-                dst_buf[offset:offset + src_n_frames, :] = src_buf
+                dst_buf[:, offset:offset + src_n_frames] = src_buf
 
         return dst_buf
 

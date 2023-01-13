@@ -18,19 +18,19 @@ class TestMonoPE(unittest.TestCase):
 
         src = IdentityPE(channel_count=1)
         pe = MonoPE(src)
-        expect = np.array([[0], [1], [2], [3], [4]], dtype=np.float32)
+        expect = np.array([[0, 1, 2, 3, 4]], dtype=np.float32)
         got = pe.render(Extent(0, 5))
         np.testing.assert_array_almost_equal(got, expect)
 
         src = IdentityPE(channel_count=2)
         pe = MonoPE(src)
-        expect = np.array([[0], [2], [4], [6], [8]], dtype=np.float32)
+        expect = np.array([[0, 2, 4, 6, 8]], dtype=np.float32)
         got = pe.render(Extent(0, 5))
         np.testing.assert_array_almost_equal(got, expect)
 
         src = IdentityPE(channel_count=2)
         pe = MonoPE(src, attenuation = 0.5)
-        expect = np.array([[0], [1], [2], [3], [4]], dtype=np.float32)
+        expect = np.array([[0, 1, 2, 3, 4]], dtype=np.float32)
         got = pe.render(Extent(0, 5))
         np.testing.assert_array_almost_equal(got, expect)
 

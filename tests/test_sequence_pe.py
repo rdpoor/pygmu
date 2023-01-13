@@ -38,14 +38,14 @@ class TestSequencePE(unittest.TestCase):
 
     def test_render(self):
         e = Extent(-5, 0)     # no overlap -- return first value
-        expect = np.full([5, 1], 1.0, dtype=np.float32)
+        expect = np.full([1, 5], 1.0, dtype=np.float32)
         got = self.pe_ramp.render(e)
         np.testing.assert_array_almost_equal(got, expect)
         got = self.pe_step.render(e)
         np.testing.assert_array_almost_equal(got, expect)
 
         e = Extent(6, 11)     # no overlap -- return last value
-        expect = np.full([5, 1], -3.0, dtype=np.float32)
+        expect = np.full([1, 5], -3.0, dtype=np.float32)
         got = self.pe_ramp.render(e)
         np.testing.assert_array_almost_equal(got, expect)
         got = self.pe_step.render(e)
@@ -54,13 +54,13 @@ class TestSequencePE(unittest.TestCase):
         e = Extent(-1, 8)
         # interpolation = ramp
         #           idx =  -1   0    1     2    3     4    5      6     7
-        expect = np.array([1.0, 1.0, 1.25, 1.5, 1.75, 2.0, -0.5, -3.0, -3.0]).reshape(-1, 1)
+        expect = np.array([1.0, 1.0, 1.25, 1.5, 1.75, 2.0, -0.5, -3.0, -3.0]).reshape(1, -1)
         got = self.pe_ramp.render(e)
         np.testing.assert_array_almost_equal(got, expect)
 
         # interpolation = step
         #           idx =  -1   0    1    2    3    4    5     6     7
-        expect = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, -3.0, -3.0]).reshape(-1, 1)
+        expect = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, -3.0, -3.0]).reshape(1, -1)
         got = self.pe_step.render(e)
         np.testing.assert_array_almost_equal(got, expect)
 

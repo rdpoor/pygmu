@@ -94,8 +94,8 @@ class BlitSawPE(PygPE):
             return self.render_fixed(requested)
 
     def render_fixed(self, requested):
-        dst_frames = ut.const_frames(0.0, requested.duration(), 1)
-        for idx in range(len(dst_frames)):
+        dst_frames = np.full(requested.duration(), 0.0, dtype=np.float32)
+        for idx in range(ut.frame_count(dst_frames)):
             den = np.sin(self._phase)
             if np.abs(den) <= EPSILON:
                 tmp = self._a
@@ -109,15 +109,15 @@ class BlitSawPE(PygPE):
             
             dst_frames[idx] = tmp
 
-        return dst_frames
+        return dst_frames.reshape(1, -1)
 
     def render_dynamic(self, requested):
         """
         Similar to render_fixed(), but updates frequency on each frame
         """
         freqs = self._frequency.render(requested).reshape(-1)  # convert to 1D array
-        dst_frames = ut.uninitialized_frames(requested.duration(), 1)
-        for idx in range(len(dst_frames)):
+        dst_frames = np.full(requested.duration(), 0.0, dtype=np.float32)
+        for idx in range(ut.frame_count(dst_frames)):
             self.set_frequency(freqs[idx])
             den = np.sin(self._phase)
             if np.abs(den) <= EPSILON:
@@ -132,7 +132,7 @@ class BlitSawPE(PygPE):
 
             dst_frames[idx] = tmp
 
-        return dst_frames
+        return dst_frames.reshape(1, -1)
 
     def channel_count(self):
         return 1

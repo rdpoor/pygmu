@@ -15,14 +15,14 @@ class LoopPE(PygPE):
 
     def render(self, requested:Extent):
         src_buf = self._src_pe.render(Extent(0, self._dur))
-        dst_buf = ut.uninitialized_frames(requested.duration(), self.channel_count())
+        dst_buf = ut.uninitialized_frames(self.channel_count(), requested.duration())
         dst_ndx = 0
         dst_size = requested.duration()
         src_ndx = requested.start() % self._dur
         while dst_ndx < dst_size:
             # limit the size of this pass to the smaller of remaining requested frames or remaining frames in the source loop
-            src_size = min(dst_size - dst_ndx,min(self._dur - src_ndx, dst_size)) 
-            dst_buf[dst_ndx:dst_ndx + src_size, :] = src_buf[src_ndx:src_ndx + src_size, :]
+            src_size = min(dst_size - dst_ndx, min(self._dur - src_ndx, dst_size)) 
+            dst_buf[:, dst_ndx:dst_ndx + src_size] = src_buf[:, src_ndx:src_ndx + src_size]
             dst_ndx += src_size
             src_ndx = 0
         return dst_buf

@@ -64,11 +64,12 @@ class SpatialAPE(PygPE):
     def render(self, requested:Extent):
         overlap = self._src_pe.extent().intersect(requested)
         if overlap.is_empty():
-            return ut.const_frames(0.0, requested.duration(), 2)
+            return ut.const_frames(0.0, 2, requested.duration())
 
         left_frames = self._left_chain.render(requested)
         right_frames = self._right_chain.render(requested)
-        return np.hstack((left_frames, right_frames))
+        dst_frames = np.vstack((left_frames, right_frames))
+        return dst_frames
 
     def extent(self):
         return self._src_pe.extent()
@@ -112,4 +113,3 @@ class SpatialAPE(PygPE):
         else:
             # gain is unchanged
             pass
-

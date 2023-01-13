@@ -22,39 +22,39 @@ class TestLoopPE(unittest.TestCase):
 
         pe = LoopPE(src_pe, loop_duration=3) # loop is shorter than source
         e = Extent(0, 12)
-        expect = np.array([[0], [1], [2], [0], [1], [2], [0], [1], [2], [0], [1], [2]], dtype=np.float32)
+        expect = np.array([[0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2]], dtype=np.float32)
         got = pe.render(e)
         np.testing.assert_array_almost_equal(got, expect)
 
         pe = LoopPE(src_pe, loop_duration=5) # loop is shorter than source
         e = Extent(0, 12)
-        expect = np.array([[0], [1], [2], [3], [4], [0], [1], [2], [3], [4], [0], [1]], dtype=np.float32)
+        expect = np.array([[0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1]], dtype=np.float32)
         got = pe.render(e)
         np.testing.assert_array_almost_equal(got, expect)
 
         pe = LoopPE(src_pe, loop_duration=7) # loop is longer than source
         e = Extent(0, 12)
-        expect = np.array([[0], [1], [2], [3], [4], [5], [0], [0], [1], [2], [3], [4]], dtype=np.float32)
+        expect = np.array([[0, 1, 2, 3, 4, 5, 0, 0, 1, 2, 3, 4]], dtype=np.float32)
         got = pe.render(e)
         np.testing.assert_array_almost_equal(got, expect)
 
         pe = LoopPE(src_pe, loop_duration=9) # loop is longer than source
         e = Extent(0, 12)
-        expect = np.array([[0], [1], [2], [3], [4], [5], [0], [0], [0], [0], [1], [2]], dtype=np.float32)
+        expect = np.array([[0, 1, 2, 3, 4, 5, 0, 0, 0, 0, 1, 2]], dtype=np.float32)
         got = pe.render(e)
         np.testing.assert_array_almost_equal(got, expect)
 
         pe = LoopPE(src_pe, loop_duration=5) # Extent fully negative...
         e = Extent(-12, 0)
         #                  -12  -11  -10  -9   -8   -7   -6   -5   -4   -3   -2   -1
-        expect = np.array([[3], [4], [0], [1], [2], [3], [4], [0], [1], [2], [3], [4]], dtype=np.float32)
+        expect = np.array([[ 3,   4,   0,  1,   2,   3,   4,   0,   1,   2,   3,  4]], dtype=np.float32)
         got = pe.render(e)
         np.testing.assert_array_almost_equal(got, expect)
 
         pe = LoopPE(src_pe, loop_duration=5) # Extent spans negative to positive
         e = Extent(-6, 6)
         #                  -6   -5   -4   -3   -2   -1    0    1    2    3    4    5
-        expect = np.array([[4], [0], [1], [2], [3], [4], [0], [1], [2], [3], [4], [0]], dtype=np.float32)
+        expect = np.array([[4,   0,   1,   2,   3,   4,   0,   1,   2,   3,   4,   0]], dtype=np.float32)
         got = pe.render(e)
         np.testing.assert_array_almost_equal(got, expect)
 
@@ -62,7 +62,7 @@ class TestLoopPE(unittest.TestCase):
         pe = LoopPE(src_pe, loop_duration=5) # src < loop_len, negative to positive
         e = Extent(-5, 7)
         #                  -5   -4   -3   -2   -1    0    1    2    3    4    5    6
-        expect = np.array([[0], [1], [2], [0], [0], [0], [1], [2], [0], [0], [0], [1]], dtype=np.float32)
+        expect = np.array([[0,   1,   2,   0,   0,   0,   1,   2,   0,   0,   0,   1]], dtype=np.float32)
         got = pe.render(e)
         np.testing.assert_array_almost_equal(got, expect)
 
@@ -70,7 +70,7 @@ class TestLoopPE(unittest.TestCase):
         pe = LoopPE(src_pe, loop_duration=5) # source starts > 0
         e = Extent(0, 12)
         #                   0    1    2    3    4    5    6    7    8    9    10   11
-        expect = np.array([[0], [0], [0], [3], [4], [0], [0], [0], [3], [4], [0], [0]], dtype=np.float32)
+        expect = np.array([[0,   0,   0,   3,   4,   0,   0,   0,   3,   4,    0,   0]], dtype=np.float32)
         got = pe.render(e)
         np.testing.assert_array_almost_equal(got, expect)
 
