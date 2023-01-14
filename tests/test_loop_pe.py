@@ -13,12 +13,12 @@ class TestLoopPE(unittest.TestCase):
         pass
 
     def test_init(self):
-        src_pe = CropPE(ConstPE(10, channel_count=1), Extent(0, 10))
+        src_pe = CropPE(ConstPE(10), Extent(0, 10))
         pe = LoopPE(src_pe, loop_duration=4)
         self.assertIsInstance(pe, LoopPE)
 
     def test_render1(self):
-        src_pe = CropPE(IdentityPE(channel_count=1), Extent(0, 6))
+        src_pe = CropPE(IdentityPE(), Extent(0, 6))
 
         pe = LoopPE(src_pe, loop_duration=3) # loop is shorter than source
         e = Extent(0, 12)
@@ -58,7 +58,7 @@ class TestLoopPE(unittest.TestCase):
         got = pe.render(e)
         np.testing.assert_array_almost_equal(got, expect)
 
-        src_pe = CropPE(IdentityPE(channel_count=1), Extent(0, 3))
+        src_pe = CropPE(IdentityPE(), Extent(0, 3))
         pe = LoopPE(src_pe, loop_duration=5) # src < loop_len, negative to positive
         e = Extent(-5, 7)
         #                  -5   -4   -3   -2   -1    0    1    2    3    4    5    6
@@ -66,7 +66,7 @@ class TestLoopPE(unittest.TestCase):
         got = pe.render(e)
         np.testing.assert_array_almost_equal(got, expect)
 
-        src_pe = CropPE(IdentityPE(channel_count=1), Extent(3, 6))
+        src_pe = CropPE(IdentityPE(), Extent(3, 6))
         pe = LoopPE(src_pe, loop_duration=5) # source starts > 0
         e = Extent(0, 12)
         #                   0    1    2    3    4    5    6    7    8    9    10   11
@@ -76,19 +76,19 @@ class TestLoopPE(unittest.TestCase):
 
     def test_extent(self):
         # extent is, by definition, indefinite...
-        src_pe = CropPE(IdentityPE(channel_count=1), Extent(3, 6))
+        src_pe = CropPE(IdentityPE(), Extent(3, 6))
         pe = LoopPE(src_pe, loop_duration=5)
         self.assertTrue(pe.extent().equals(Extent()))
 
     def test_frame_rate(self):
         # inherits frame_rate rate from source.
-        src_pe = CropPE(IdentityPE(channel_count=1), Extent(3, 6))
+        src_pe = CropPE(IdentityPE(), Extent(3, 6))
         pe = LoopPE(src_pe, loop_duration=5)
         self.assertEqual(src_pe.frame_rate(), pe.frame_rate())
 
     def test_channel_count(self):
         # inherits frame_rate rate from source.
-        src_pe = CropPE(IdentityPE(channel_count=1), Extent(3, 6))
+        src_pe = CropPE(IdentityPE(), Extent(3, 6))
         pe = LoopPE(src_pe, loop_duration=5)
         self.assertEqual(src_pe.channel_count(), pe.channel_count())
 

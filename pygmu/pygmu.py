@@ -41,6 +41,7 @@ from sequence_pe import SequencePE
 from sin_pe import SinPE
 from snippet_pe import SnippetPE
 from spatial_a_pe import SpatialAPE
+from spread_pe import SpreadPE
 from timewarp_pe import TimewarpPE
 from tralfam_pe import TralfamPE
 from transport import Transport

@@ -101,6 +101,9 @@ class PygPE(object):
     def reverse(self, infinite_end):
         return pg.ReversePE(self, infinite_end)
 
+    def spread(self, channel_count=2):
+        return pg.SpreadPE(self, channel_count=channel_count)
+
     def timewarp(self, timeline_pe):
         return pg.TimewarpPE(self, timeline_pe)
         

@@ -2,6 +2,7 @@ import numpy as np
 from extent import Extent
 from pyg_pe import PygPE
 from array_pe import ArrayPE
+import pyg_exceptions as pyx
 
 class CachePE(PygPE):
     """
@@ -13,7 +14,7 @@ class CachePE(PygPE):
         self._src_pe = src_pe
         src_extent = src_pe.extent()
         if src_extent.is_indefinite():
-            raise pex.IndefiniteExtent("src to CachePE cannot have indefinite extent")
+            raise pyx.IndefiniteExtent("src to CachePE cannot have indefinite extent")
         # Slurp all samples into an ArrayPE
         self._cached_pe = ArrayPE(src_pe.render(src_extent))
 

@@ -5,12 +5,12 @@ pygmu_dir = os.path.join( script_dir, '..', 'pygmu' )
 sys.path.append( pygmu_dir )
 import unittest
 import numpy as np
-from pygmu import (CropPE, Extent, IdentityPE, PygPE)
+from pygmu import (CropPE, Extent, IdentityPE, PygPE, SpatialAPE)
 
 class TestCropPE(unittest.TestCase):
 
     def setUp(self):
-        self.id_pe = IdentityPE(channel_count=2)
+        self.id_pe = SpatialAPE(IdentityPE(), 0, curve='none')
         self.pe = CropPE(self.id_pe, Extent(100, 103))
 
     def test_init(self):

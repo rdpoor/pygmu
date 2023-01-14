@@ -5,7 +5,7 @@ import numpy as np
 script_dir = os.path.dirname( __file__ )
 pygmu_dir = os.path.join( script_dir, '..', 'pygmu' )
 sys.path.append( pygmu_dir )
-from pygmu import (Extent, GainPE, IdentityPE, SinPE)
+from pygmu import (Extent, GainPE, IdentityPE, SinPE, SpatialAPE)
 
 class TestGainPE(unittest.TestCase):
 
@@ -15,7 +15,7 @@ class TestGainPE(unittest.TestCase):
         self.assertIsInstance(pe, GainPE)
 
     def test_render(self):
-        src = IdentityPE(channel_count=1)
+        src = IdentityPE()
 
         pe = GainPE(src, 1.0)
         expect = np.array([[0, 1, 2, 3, 4]], dtype=np.float32)
@@ -53,7 +53,7 @@ class TestGainPE(unittest.TestCase):
         np.testing.assert_array_almost_equal(got, expect)
 
     def test_extent(self):
-        src = IdentityPE(channel_count=1)
+        src = IdentityPE()
         expected_extent = Extent(2, 4)
 
         pe = GainPE(src, 1.0)
@@ -75,7 +75,7 @@ class TestGainPE(unittest.TestCase):
         self.assertEqual(pe.frame_rate(), 1234)
 
     def test_channel_count(self):
-        src = IdentityPE(channel_count = 3)
+        src = SpatialAPE(IdentityPE(), 0, curve='none')
         pe = GainPE(src, 1.0)
-        self.assertEqual(pe.channel_count(), 3)
+        self.assertEqual(pe.channel_count(), 2)
 

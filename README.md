@@ -123,6 +123,45 @@ If you are already running the pygmu shell:
 ```
 The `-f` means stop on first error.  The `-s` means search in the `tests/` directory for files that start with `test_xxx`
 
+### Coverage Tests
+
+After you have the unit tests running, hre are the commands that will make sure you've got good testing coverage.
+When you open the .html file, click on an individual file listed there.  Lines highlighted in red indicate that 
+they did not get run, and is a strong indicator that your unit tests need to excercise and test those lines.
+
+#### On Windows:
+
+```
+$ py -m coverage run -m unittest discover -f -s tests
+......................................................................
+----------------------------------------------------------------------
+Ran 152 tests in 0.038s
+OK
+
+$ py -m coverage html
+Wrote HTML report to htmlcov\index.html
+
+$ start htmlcov/index.html
+```
+
+#### On macOS:
+
+(Typed from memory -- please correct if needed)
+
+```
+$ python -m coverage run -m unittest discover -f -s tests
+......................................................................
+----------------------------------------------------------------------
+Ran 152 tests in 0.038s
+OK
+
+$ python -m coverage html
+Wrote HTML report to htmlcov\index.html
+
+$ open htmlcov/index.html
+```
+
+
 ### Profiling
 Python has built-in profiling tools.  To use it:
 * Run the python script with the cProfile module, as shown below
