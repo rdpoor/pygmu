@@ -4,7 +4,6 @@ from array_pe import ArrayPE
 from biquad_pe import BiquadPE
 from biquad2_pe import Biquad2PE
 from blit_saw_pe import BlitSawPE
-from blit_sig_pe import BlitSigPE
 from cache_pe import CachePE
 from comb_pe import CombPE
 from comp_lim_pe import CompLimPE

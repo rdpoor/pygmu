@@ -5,7 +5,7 @@ import numpy as np
 script_dir = os.path.dirname( __file__ )
 pygmu_dir = os.path.join( script_dir, '..', 'pygmu' )
 sys.path.append( pygmu_dir )
-from pygmu import (Extent, GainPE, IdentityPE, SinPE, SpatialAPE)
+from pygmu import (Extent, GainPE, IdentityPE, SinPE)
 
 class TestGainPE(unittest.TestCase):
 
@@ -75,7 +75,7 @@ class TestGainPE(unittest.TestCase):
         self.assertEqual(pe.frame_rate(), 1234)
 
     def test_channel_count(self):
-        src = SpatialAPE(IdentityPE(), 0, curve='none')
+        src = IdentityPE().spread(2)
         pe = GainPE(src, 1.0)
         self.assertEqual(pe.channel_count(), 2)
 

@@ -1,8 +1,9 @@
 import numpy as np
 from extent import Extent
+from pyg_gen import PygGen
 from pyg_pe import PygPE
 
-class PwmPE(PygPE):
+class PwmPE(PygGen):
     """
     Generate a rectangular wave with given period and duty cycle.  Note that 
     period is the number of frames per period, duty_cycle is the ratio of time 
@@ -17,8 +18,8 @@ class PwmPE(PygPE):
 
     """
 
-    def __init__(self, period:int, duty_cycle:np.float32):
-        super(PwmPE, self).__init__()
+    def __init__(self, period:int, duty_cycle:np.float32, frame_rate=None):
+        super(PwmPE, self).__init__(frame_rate=frame_rate)
         if isinstance(period, PygPE) and period.channel_count() != 1:
             raise ChannelCountMismatch("PwmPE period must be 1 channel")
         if isinstance(duty_cycle, PygPE) and duty_cycle.channel_count() != 1:

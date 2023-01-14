@@ -47,7 +47,7 @@ class TestAbsPE(unittest.TestCase):
         self.assertTrue(self.pe.extent().equals(self.src.extent()))
 
     def test_frame_rate(self):
-        self.assertEqual(self.pe.frame_rate(), PygPE.DEFAULT_FRAME_RATE)
+        self.assertEqual(self.pe.frame_rate(), self.src.frame_rate())
 
     def test_channel_count(self):
         self.assertEqual(self.pe.channel_count(), self.src.channel_count())

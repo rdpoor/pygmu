@@ -24,22 +24,22 @@ class TestSpreadPE(unittest.TestCase):
         self.assertIsInstance(self.pe1, SpreadPE)
         self.assertEqual(self.pe1.channel_count(), 1)
         self.assertEqual(self.pe1.extent(), self.src.extent())
-        self.assertEqual(self.pe1.frame_rate(), PygPE.DEFAULT_FRAME_RATE)
+        self.assertEqual(self.pe1.frame_rate(), None)
 
         self.assertIsInstance(self.pe2, SpreadPE)
         self.assertEqual(self.pe2.channel_count(), 2)
         self.assertEqual(self.pe2.extent(), self.src.extent())
-        self.assertEqual(self.pe2.frame_rate(), PygPE.DEFAULT_FRAME_RATE)
+        self.assertEqual(self.pe2.frame_rate(), None)
 
         self.assertIsInstance(self.pe3, SpreadPE)
         self.assertEqual(self.pe3.channel_count(), 3)
         self.assertEqual(self.pe3.extent(), self.src.extent())
-        self.assertEqual(self.pe3.frame_rate(), PygPE.DEFAULT_FRAME_RATE)
+        self.assertEqual(self.pe3.frame_rate(), None)
 
         self.assertIsInstance(self.pe_default, SpreadPE)
         self.assertEqual(self.pe_default.channel_count(), 2)
         self.assertEqual(self.pe_default.extent(), self.src.extent())
-        self.assertEqual(self.pe_default.frame_rate(), PygPE.DEFAULT_FRAME_RATE)
+        self.assertEqual(self.pe_default.frame_rate(), None)
 
         # Cannot use a multi-channel source as input to SpreadPE
         with self.assertRaises(pyx.ChannelCountMismatch):
@@ -63,8 +63,15 @@ class TestSpreadPE(unittest.TestCase):
         pass
 
     def test_frame_rate(self):
-        # already tested
-        pass
+        # no frame rate provided
+        src = LinearRampPE(0, 5, self.extent)
+        pe = SpreadPE(self.src, 1)
+        self.assertEqual(pe.frame_rate(), None)
+
+        # inherets from src
+        src = LinearRampPE(0, 5, self.extent, frame_rate=1234)
+        pe = SpreadPE(src, 1)
+        self.assertEqual(pe.frame_rate(), 1234)
 
     def test_channel_count(self):
         # already tested

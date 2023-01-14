@@ -1,14 +1,14 @@
 import numpy as np
 from extent import Extent
-from pyg_pe import PygPE
+from pyg_gen import PygGen
 
-class LinearRampPE(PygPE):
+class LinearRampPE(PygGen):
     """
     Generate a ramp with start time, end time, start value and end value.
     """
 
-    def __init__(self, start_v, end_v, extent:Extent):
-        super(LinearRampPE, self).__init__()
+    def __init__(self, start_v, end_v, extent:Extent, frame_rate=None):
+        super(LinearRampPE, self).__init__(frame_rate=frame_rate)
         self._start_v = start_v
         self._end_v = end_v
         self._extent = extent

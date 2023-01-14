@@ -2,8 +2,9 @@ import warnings
 import numpy as np
 from scipy import signal
 from extent import Extent
+from pyg_gen import PygGen
 from pyg_pe import PygPE
-import pyg_exceptions as px
+import pyg_exceptions as pyx
 import utils as ut
 
 """
@@ -57,7 +58,7 @@ tick():
 
 EPSILON = 0.00001   # could be better...
 
-class BlitSawPE(PygPE):
+class BlitSawPE(PygGen):
     """
     Band Limited Impulse Train, generating bandlimited pulse or sawtooth waves
     Version B with dynamic frequency input.
@@ -71,14 +72,16 @@ class BlitSawPE(PygPE):
         frequency sets the frequency (in conjunction with frame rate)
         n_harmonics is the number of harmonics / 2.  Defaults to frame_rate / freq.
         """
-        super(BlitSawPE, self).__init__()
+        super(BlitSawPE, self).__init__(frame_rate=frame_rate)
         self._n_harmonics = 0
         if frame_rate is None:
-            raise pyx.ArgumentError("frame_rate must be specified")
+            raise pyx.FrameRateMismatch("frame_rate must be specified")
         self._frame_rate = frame_rate
         self._frequency = frequency
         self.reset()
         if isinstance(self._frequency, PygPE):
+            if self._frequency.channel_count() != 1:
+                raise pyx.ChannelCountMismatch("dynamic frequency source must be single channel")
             self.set_frequency(440)  # initialize _p, etc...
         else:
             self.set_frequency(frequency)

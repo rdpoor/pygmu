@@ -1,9 +1,10 @@
 import numpy as np
 from extent import Extent
 from pyg_pe import PygPE
+from pyg_gen import PygGen
 import utils as ut
 
-class SequencePE(PygPE):
+class SequencePE(PygGen):
     """
     Generate a sequence of [[t0, v0], [t1, v1], .... [tn-1, vn-1]].  
     Values before t0 will be fixed at v0, values greater than tn-1 will be fixed
@@ -15,8 +16,8 @@ class SequencePE(PygPE):
     RAMP = 'ramp'
     STEP = 'step'
 
-    def __init__(self, time_value_pairs, interpolation='ramp'):
-        super(SequencePE, self).__init__()
+    def __init__(self, time_value_pairs, interpolation='ramp', frame_rate=None):
+        super(SequencePE, self).__init__(frame_rate=frame_rate)
         if len(time_value_pairs) < 2:
             raise ArgumentError("Must have at least two time/value pairs")
         self._times = np.array([])

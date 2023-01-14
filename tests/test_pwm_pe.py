@@ -54,7 +54,9 @@ class TestPwmPE(unittest.TestCase):
 
     def test_frame_rate(self):
         self.pe = PwmPE(4, 0.5)
-        self.assertEqual(self.pe.frame_rate(), PygPE.DEFAULT_FRAME_RATE)
+        self.assertEqual(self.pe.frame_rate(), None)
+        self.pe = PwmPE(4, 0.5, frame_rate=1234)
+        self.assertEqual(self.pe.frame_rate(), 1234)
 
     def test_channel_count(self):
         self.pe = PwmPE(4, 0.5)

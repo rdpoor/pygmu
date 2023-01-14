@@ -13,7 +13,7 @@ class TestEnvPE(unittest.TestCase):
         pass
 
     def test_init(self):
-        src_pe = CropPE(ConstPE(10, channel_count=1), Extent(0, 10))
+        src_pe = CropPE(ConstPE(10), Extent(0, 10))
         pe = EnvPE(src_pe, up_dur=4, dn_dur=5)
         self.assertIsInstance(pe, EnvPE)
 
@@ -25,7 +25,7 @@ class TestEnvPE(unittest.TestCase):
         [[0, 0.0, 1, 0.25, 2, 0.5, 3, 0.75, 4, 1.0], 
          [5, 1.0, 6, 0.8, 7, 0.6, 8, 0.4, 9, 0.2]]
         """
-        src_pe = CropPE(ConstPE(10, channel_count=1), Extent(0, 10))
+        src_pe = CropPE(ConstPE(10), Extent(0, 10))
         pe1 = EnvPE(src_pe, up_dur=4, dn_dur=5)
 
         e = Extent(-10, 0)       # no overlap
@@ -92,7 +92,7 @@ class TestEnvPE(unittest.TestCase):
         over 5 steps.  It has the following [time, gain] values:
         [[0, 0.0, 1, 0.25, 2, 0.5, 3, 0.6, 4, 0.4, [5, 0.2]]
         """
-        src_pe = CropPE(ConstPE(10, channel_count=1), Extent(0, 6))
+        src_pe = CropPE(ConstPE(10), Extent(0, 6))
         self.pe1 = EnvPE(src_pe, up_dur=4, dn_dur=5)
 
         e = Extent(-10, 0)       # no overlap
@@ -143,19 +143,19 @@ class TestEnvPE(unittest.TestCase):
 
     def test_extent(self):
         # EnvPE inherits extent rate from source.
-        src_pe = CropPE(ConstPE(10, channel_count=1), Extent(0, 10))
+        src_pe = CropPE(ConstPE(10), Extent(0, 10))
         pe = EnvPE(src_pe, up_dur=4, dn_dur=5)
         self.assertTrue(src_pe.extent().equals(pe.extent()))
 
     def test_frame_rate(self):
         # EnvPE inherits frame_rate rate from source.
-        src_pe = CropPE(ConstPE(10, channel_count=1), Extent(0, 10))
+        src_pe = CropPE(ConstPE(10), Extent(0, 10))
         pe = EnvPE(src_pe, up_dur=4, dn_dur=5)
         self.assertEqual(src_pe.frame_rate(), pe.frame_rate())
 
     def test_channel_count(self):
         # EnvPE inherits channel_count from source.
-        src_pe = CropPE(ConstPE(10, channel_count=1), Extent(0, 10))
+        src_pe = CropPE(ConstPE(10), Extent(0, 10))
         pe = EnvPE(src_pe, up_dur=4, dn_dur=5)
         self.assertEqual(src_pe.channel_count(), pe.channel_count())
 

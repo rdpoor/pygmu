@@ -69,8 +69,10 @@ class TestSequencePE(unittest.TestCase):
         self.assertTrue(Extent().equals(self.pe_step.extent()))
 
     def test_frame_rate(self):
-        self.assertEqual(self.pe_ramp.frame_rate(), PygPE.DEFAULT_FRAME_RATE)
-        self.assertEqual(self.pe_step.frame_rate(), PygPE.DEFAULT_FRAME_RATE)
+        self.assertEqual(self.pe_ramp.frame_rate(), None)
+        self.assertEqual(self.pe_step.frame_rate(), None)
+        pe = SequencePE(self.tvs, frame_rate=1234)
+        self.assertEqual(pe.frame_rate(), 1234)
 
     def test_channel_count(self):
         self.assertEqual(self.pe_ramp.channel_count(), 1)

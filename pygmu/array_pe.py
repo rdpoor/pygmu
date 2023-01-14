@@ -1,14 +1,14 @@
 import numpy as np
 from extent import Extent
-from pyg_pe import PygPE
+from pyg_gen import PygGen
 
-class ArrayPE(PygPE):
+class ArrayPE(PygGen):
     """
     A Processing Element with a fixed array of source data.
     """
 
-    def __init__(self, frames):
-        super(ArrayPE, self).__init__()
+    def __init__(self, frames, frame_rate=None):
+        super(ArrayPE, self).__init__(frame_rate=frame_rate)
         self._frames = np.array(frames, dtype=np.float32)
         n_channels = self._frames.shape[0]
         n_frames = self._frames.shape[1]

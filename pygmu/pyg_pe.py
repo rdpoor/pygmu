@@ -6,9 +6,6 @@ class PygPE(object):
     PygPE is the abstract base class for all Processing Elements.
     """
 
-    DEFAULT_FRAME_RATE = 48000
-    DEFAULT_CHANNEL_COUNT = 2
-
     def render(self, requested:Extent) -> (np.ndarray, int):
         """
         Instructs this Processing ELement to return an np.ndarray of sample data
@@ -34,19 +31,15 @@ class PygPE(object):
 
     def frame_rate(self):
         """
-        Return the frame rate of this PE.  If the PE has an input, it will 
-        typically override this method and return the frame rate of its 
-        input, but it's free to override this method as needed.
+        Return the frame rate of this PE.
         """        
-        return PygPE.DEFAULT_FRAME_RATE
+        return None
 
     def channel_count(self):
         """
-        Return the number of channels produced by this PE.  If the PE has an 
-        input, it will typically override this method and return the channel
-        count of its input, but it's free to override this method as needed.
+        Return the number of channels produced by this PE.
         """        
-        return PygPE.DEFAULT_CHANNEL_COUNT
+        return None
 
     # is there a way to migrate these to a different file?
 
