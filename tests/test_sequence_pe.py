@@ -69,8 +69,8 @@ class TestSequencePE(unittest.TestCase):
         self.assertTrue(Extent().equals(self.pe_step.extent()))
 
     def test_frame_rate(self):
-        self.assertEqual(self.pe_ramp.frame_rate(), None)
-        self.assertEqual(self.pe_step.frame_rate(), None)
+        self.assertIsNone(self.pe_ramp.frame_rate())
+        self.assertIsNone(self.pe_step.frame_rate())
         pe = SequencePE(self.tvs, frame_rate=1234)
         self.assertEqual(pe.frame_rate(), 1234)
 

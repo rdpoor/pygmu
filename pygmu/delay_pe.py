@@ -40,8 +40,6 @@ class DelayPE(PygPE):
 			delays = self._delay
 
 		times = np.arange(requested.start(), requested.end()) - delays
-		min_time = min(times)
-		max_time = max(times)
 		t0 = int(np.floor(min(times)))
 		t1 = int(np.floor(max(times))) + 1
 		src_frames = self._src_pe.render(Extent(t0, t1+1))

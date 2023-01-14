@@ -52,6 +52,13 @@ class TestGainPE(unittest.TestCase):
         got = pe.render(Extent(0, 5))
         np.testing.assert_array_almost_equal(got, expect)
 
+        # no overlap
+        pe = GainPE(src, src.crop(Extent(0, 5)))
+        expect = np.array([[0, 0, 0, 0, 0]])
+        got = pe.render(Extent(5, 10))
+        np.testing.assert_array_almost_equal(got, expect)
+
+
     def test_extent(self):
         src = IdentityPE()
         expected_extent = Extent(2, 4)

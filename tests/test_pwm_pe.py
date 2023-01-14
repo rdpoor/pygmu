@@ -54,7 +54,7 @@ class TestPwmPE(unittest.TestCase):
 
     def test_frame_rate(self):
         self.pe = PwmPE(4, 0.5)
-        self.assertEqual(self.pe.frame_rate(), None)
+        self.assertIsNone(self.pe.frame_rate())
         self.pe = PwmPE(4, 0.5, frame_rate=1234)
         self.assertEqual(self.pe.frame_rate(), 1234)
 

@@ -1,8 +1,8 @@
 import numpy as np
 from abs_pe import AbsPE
 from array_pe import ArrayPE
-from biquad_pe import BiquadPE
-from biquad2_pe import Biquad2PE
+# from biquad_pe import BiquadPE
+# from biquad2_pe import Biquad2PE
 from blit_saw_pe import BlitSawPE
 from cache_pe import CachePE
 from comb_pe import CombPE
@@ -25,7 +25,7 @@ from impulse_pe import ImpulsePE
 from interpolate_pe import InterpolatePE
 from limiter_pe import LimiterPE
 from limiter_a_pe import LimiterAPE
-from linear_ramp_pe import LinearRampPE
+from ramp_pe import RampPE
 from loop_pe import LoopPE
 from mix_pe import MixPE
 from mono_pe import MonoPE

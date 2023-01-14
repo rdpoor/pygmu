@@ -6,14 +6,14 @@ sys.path.append( pygmu_dir )
 import unittest
 import numpy as np
 import pyg_exceptions as pyx
-from pygmu import (Extent, LinearRampPE, PygPE, SpreadPE)
+from pygmu import (Extent, RampPE, PygPE, SpreadPE)
 
 
 class TestSpreadPE(unittest.TestCase):
 
     def setUp(self):
         self.extent = Extent(0, 5)
-        self.src = LinearRampPE(0, 5, self.extent)
+        self.src = RampPE(0, 5, self.extent)
         self.pe1 = SpreadPE(self.src, channel_count=1)
         self.pe2 = SpreadPE(self.src, channel_count=2)
         self.pe3 = SpreadPE(self.src, channel_count=3)
@@ -24,22 +24,22 @@ class TestSpreadPE(unittest.TestCase):
         self.assertIsInstance(self.pe1, SpreadPE)
         self.assertEqual(self.pe1.channel_count(), 1)
         self.assertEqual(self.pe1.extent(), self.src.extent())
-        self.assertEqual(self.pe1.frame_rate(), None)
+        self.assertIsNone(self.pe1.frame_rate())
 
         self.assertIsInstance(self.pe2, SpreadPE)
         self.assertEqual(self.pe2.channel_count(), 2)
         self.assertEqual(self.pe2.extent(), self.src.extent())
-        self.assertEqual(self.pe2.frame_rate(), None)
+        self.assertIsNone(self.pe2.frame_rate())
 
         self.assertIsInstance(self.pe3, SpreadPE)
         self.assertEqual(self.pe3.channel_count(), 3)
         self.assertEqual(self.pe3.extent(), self.src.extent())
-        self.assertEqual(self.pe3.frame_rate(), None)
+        self.assertIsNone(self.pe3.frame_rate())
 
         self.assertIsInstance(self.pe_default, SpreadPE)
         self.assertEqual(self.pe_default.channel_count(), 2)
         self.assertEqual(self.pe_default.extent(), self.src.extent())
-        self.assertEqual(self.pe_default.frame_rate(), None)
+        self.assertIsNone(self.pe_default.frame_rate())
 
         # Cannot use a multi-channel source as input to SpreadPE
         with self.assertRaises(pyx.ChannelCountMismatch):
@@ -64,12 +64,12 @@ class TestSpreadPE(unittest.TestCase):
 
     def test_frame_rate(self):
         # no frame rate provided
-        src = LinearRampPE(0, 5, self.extent)
+        src = RampPE(0, 5, self.extent)
         pe = SpreadPE(self.src, 1)
-        self.assertEqual(pe.frame_rate(), None)
+        self.assertIsNone(pe.frame_rate())
 
         # inherets from src
-        src = LinearRampPE(0, 5, self.extent, frame_rate=1234)
+        src = RampPE(0, 5, self.extent, frame_rate=1234)
         pe = SpreadPE(src, 1)
         self.assertEqual(pe.frame_rate(), 1234)
 

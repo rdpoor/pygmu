@@ -22,13 +22,13 @@ class TestArrayPE(unittest.TestCase):
         self.assertIsInstance(self.pe1, ArrayPE)
         self.assertEqual(self.pe1.extent().start(), 0)
         self.assertEqual(self.pe1.extent().duration(), ut.frame_count(self.frames1))
-        self.assertEqual(self.pe1.frame_rate(), None)
+        self.assertIsNone(self.pe1.frame_rate())
         self.assertEqual(self.pe1.channel_count(), ut.channel_count(self.frames1))
 
         self.assertIsInstance(self.pe2, ArrayPE)
         self.assertEqual(self.pe2.extent().start(), 0)
         self.assertEqual(self.pe2.extent().duration(), ut.frame_count(self.frames2))
-        self.assertEqual(self.pe2.frame_rate(), None)
+        self.assertIsNone(self.pe2.frame_rate())
         self.assertEqual(self.pe2.channel_count(), ut.channel_count(self.frames2))
 
     def test_render1(self):

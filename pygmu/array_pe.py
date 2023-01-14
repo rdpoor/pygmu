@@ -1,6 +1,7 @@
 import numpy as np
 from extent import Extent
 from pyg_gen import PygGen
+import utils as ut
 
 class ArrayPE(PygGen):
     """
@@ -10,8 +11,8 @@ class ArrayPE(PygGen):
     def __init__(self, frames, frame_rate=None):
         super(ArrayPE, self).__init__(frame_rate=frame_rate)
         self._frames = np.array(frames, dtype=np.float32)
-        n_channels = self._frames.shape[0]
-        n_frames = self._frames.shape[1]
+        n_channels = ut.channel_count(self._frames)
+        n_frames = ut.frame_count(self._frames)
         # ArrayPE frames always start at t=0
         self._extent = Extent(start=0, end=n_frames)
         self._channel_count = n_channels

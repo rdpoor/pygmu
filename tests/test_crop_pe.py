@@ -16,14 +16,14 @@ class TestCropPE(unittest.TestCase):
         pe1 = CropPE(src1, extent)
         self.assertIsInstance(pe1, CropPE)
         self.assertTrue(pe1.extent().equals(extent))
-        self.assertEqual(pe1.frame_rate(), None)
+        self.assertIsNone(pe1.frame_rate())
         self.assertEqual(pe1.channel_count(), src1.channel_count())
 
         src2 = src1.spread(2)  # two channel
         pe2 = CropPE(src2, extent)
         self.assertIsInstance(pe2, CropPE)
         self.assertTrue(pe2.extent().equals(extent))
-        self.assertEqual(pe2.frame_rate(), None)
+        self.assertIsNone(pe2.frame_rate())
         self.assertEqual(pe2.channel_count(), src2.channel_count())
 
     def test_render(self):   

@@ -13,7 +13,7 @@ class TestConstPE(unittest.TestCase):
         pe = ConstPE(22.2)
         self.assertIsInstance(pe, ConstPE)
         self.assertTrue(pe.extent().is_indefinite())
-        self.assertEqual(pe.frame_rate(), None)
+        self.assertIsNone(pe.frame_rate())
         self.assertEqual(pe.channel_count(), 1)
 
     def test_render(self):

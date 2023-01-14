@@ -29,7 +29,7 @@ class TestIdentityPE(unittest.TestCase):
 
     def test_frame_rate(self):
         self.pe = IdentityPE()
-        self.assertEqual(self.pe.frame_rate(), None)
+        self.assertIsNone(self.pe.frame_rate())
         self.pe = IdentityPE(frame_rate=1234)
         self.assertEqual(self.pe.frame_rate(), 1234)
 

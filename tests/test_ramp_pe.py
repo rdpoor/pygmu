@@ -1,8 +1,8 @@
 import unittest
-from pygmu import LinearRampPE
+from pygmu import RampPE
 from pygmu import Extent
 
-class TestLinearRampPE(unittest.TestCase):
+class TestRampPE(unittest.TestCase):
 
     def setUp(self):
         pass

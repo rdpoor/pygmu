@@ -6,7 +6,7 @@ sys.path.append( pygmu_dir )
 import unittest
 import numpy as np
 import pyg_exceptions as pyx
-from pygmu import (ArrayPE, ConstPE, DelayPE, Extent, IdentityPE, LinearRampPE, PygPE)
+from pygmu import (ArrayPE, ConstPE, DelayPE, Extent, IdentityPE, RampPE, PygPE)
 
 
 class TestDelayPE(unittest.TestCase):
@@ -17,7 +17,7 @@ class TestDelayPE(unittest.TestCase):
 
         # fixed delay, single channel
         delay = 0
-        src = LinearRampPE(0, 10, extent).crop(extent)
+        src = RampPE(0, 10, extent).crop(extent)
         pe = DelayPE(src, delay)
         self.assertIsInstance(pe, DelayPE)
         self.assertEqual(pe.channel_count(), 1)
@@ -25,7 +25,7 @@ class TestDelayPE(unittest.TestCase):
 
         # fixed delay, two channel
         delay = 0
-        src = LinearRampPE(0, 10, extent).crop(extent).spread(2)
+        src = RampPE(0, 10, extent).crop(extent).spread(2)
         pe = DelayPE(src, delay)
         self.assertIsInstance(pe, DelayPE)
         self.assertEqual(pe.channel_count(), 2)
@@ -33,7 +33,7 @@ class TestDelayPE(unittest.TestCase):
 
         # dynamic delay, single channel
         delay = ConstPE(0)
-        src = LinearRampPE(0, 10, extent).crop(extent)
+        src = RampPE(0, 10, extent).crop(extent)
         pe = DelayPE(src, delay)
         self.assertIsInstance(pe, DelayPE)
         self.assertEqual(pe.channel_count(), 1)
@@ -41,7 +41,7 @@ class TestDelayPE(unittest.TestCase):
 
         # dynamic delay, two channel
         delay = ConstPE(0)
-        src = LinearRampPE(0, 10, extent).crop(extent).spread(2)
+        src = RampPE(0, 10, extent).crop(extent).spread(2)
         pe = DelayPE(src, delay)
         self.assertIsInstance(pe, DelayPE)
         self.assertEqual(pe.channel_count(), 2)
@@ -49,7 +49,7 @@ class TestDelayPE(unittest.TestCase):
 
         # dynamic delay source must be single channel
         delay = ConstPE(0).spread(2)
-        src = LinearRampPE(0, 10, extent).crop(extent)
+        src = RampPE(0, 10, extent).crop(extent)
         with self.assertRaises(pyx.ChannelCountMismatch):
             DelayPE(src, delay)
 
@@ -113,3 +113,34 @@ class TestDelayPE(unittest.TestCase):
         expect = np.array([[0., 1., 2., 3., 4.], [0., 1., 2., 3., 4.]], dtype=np.float32)
         got = pe.render(Extent(5, 10))
         np.testing.assert_array_almost_equal(got, expect)
+
+        # dynamic delay times, single channel source
+        extent = Extent(10, 20)
+        delay = ConstPE(22.0)
+        src = IdentityPE()
+        pe = DelayPE(src, delay);
+        expect = src.render(extent) - 22
+        got = pe.render(extent)
+        np.testing.assert_array_almost_equal(got, expect)
+
+        # dynamic delay times, two channel source
+        extent = Extent(10, 20)
+        delay = ConstPE(22.0)
+        src = IdentityPE().spread(2)
+        pe = DelayPE(src, delay);
+        expect = src.render(extent) - 22
+        got = pe.render(extent)
+        np.testing.assert_array_almost_equal(got, expect)
+
+    def test_frame_rate(self):
+        # no frame rate specified
+        delay = IdentityPE()
+        src = IdentityPE()
+        pe = DelayPE(src, delay);
+        self.assertIsNone(pe.frame_rate())
+
+        # frame_rate inherited from src
+        delay = IdentityPE()
+        src = IdentityPE(frame_rate = 1234)
+        pe = DelayPE(src, delay);
+        self.assertEqual(pe.frame_rate(), 1234)

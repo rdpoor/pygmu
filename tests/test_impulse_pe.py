@@ -41,7 +41,7 @@ class TestImpulsePE(unittest.TestCase):
 
     def test_frame_rate(self):
         self.pe = ImpulsePE()
-        self.assertEqual(self.pe.frame_rate(), None)
+        self.assertIsNone(self.pe.frame_rate())
         self.pe = ImpulsePE(frame_rate=1234)
         self.assertEqual(self.pe.frame_rate(), 1234)
 
