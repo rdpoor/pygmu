@@ -1,10 +1,11 @@
+import unittest
+import numpy as np
 import os
 import sys
+
 script_dir = os.path.dirname( __file__ )
 pygmu_dir = os.path.join( script_dir, '..', 'pygmu' )
 sys.path.append( pygmu_dir )
-import unittest
-import numpy as np
 import utils as ut
 import pyg_exceptions as pyx
 from pygmu import (BlitSawPE, ConstPE, Extent)

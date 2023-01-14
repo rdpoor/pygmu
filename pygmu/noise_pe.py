@@ -12,7 +12,6 @@ class NoisePE(PygGen):
 
     def render(self, requested):
         noise = np.random.random((1, requested.duration())) * 2.0 - 1.0
-        # TODO: support dynamic gain
         return noise * self._gain
 
     def channel_count(self):
