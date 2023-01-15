@@ -13,7 +13,6 @@ from convolve_pe import ConvolvePE
 from crop_pe import CropPE
 from delay_pe import DelayPE
 from env_detect_pe import EnvDetectPE
-from env_pe import EnvPE
 from extent import Extent
 from filter_pe import FilterPE
 from fts_transport import FtsTransport
@@ -40,6 +39,7 @@ from sequence_pe import SequencePE
 from sin_pe import SinPE
 from snippet_pe import SnippetPE
 from spatial_a_pe import SpatialAPE
+from splice_pe import SplicePE
 from spread_pe import SpreadPE
 from timewarp_pe import TimewarpPE
 from tralfam_pe import TralfamPE

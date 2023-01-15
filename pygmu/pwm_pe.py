@@ -2,6 +2,7 @@ import numpy as np
 from extent import Extent
 from pyg_gen import PygGen
 from pyg_pe import PygPE
+import pyg_exceptions as pyx
 
 class PwmPE(PygGen):
     """
@@ -21,9 +22,9 @@ class PwmPE(PygGen):
     def __init__(self, period:int, duty_cycle:np.float32, frame_rate=None):
         super(PwmPE, self).__init__(frame_rate=frame_rate)
         if isinstance(period, PygPE) and period.channel_count() != 1:
-            raise ChannelCountMismatch("PwmPE period must be 1 channel")
+            raise pyx.ChannelCountMismatch("PwmPE period must be 1 channel")
         if isinstance(duty_cycle, PygPE) and duty_cycle.channel_count() != 1:
-            raise ChannelCountMismatch("PwmPE duty_cycle must be 1 channel")
+            raise pyx.ChannelCountMismatch("PwmPE duty_cycle must be 1 channel")
         self._period = period
         self._duty_cycle = duty_cycle
 

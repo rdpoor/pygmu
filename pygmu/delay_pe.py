@@ -48,7 +48,11 @@ class DelayPE(PygPE):
 			delayed_channel = np.interp(times, np.arange(t0, t1+1), channel)
 			dst_channels.append(delayed_channel)
 		dst_frames = np.hstack(dst_channels)
-		return dst_frames.reshape(self.channel_count(), -1)
+		# d1 = dst_frames.shape
+		dst_frames = dst_frames.reshape(self.channel_count(), -1)
+		# d2 = dst_frames.shape
+		# print("d1, d2", d1, d2)
+		return dst_frames
 
 	def extent(self):
 	    return self._extent

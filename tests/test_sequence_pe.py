@@ -1,10 +1,12 @@
+import unittest
+import numpy as np
 import os
 import sys
+
 script_dir = os.path.dirname( __file__ )
 pygmu_dir = os.path.join( script_dir, '..', 'pygmu' )
 sys.path.append( pygmu_dir )
-import unittest
-import numpy as np
+import pyg_exceptions as pyx
 from pygmu import (SequencePE, Extent, PygPE)
 
 class TestSequencePE(unittest.TestCase):
@@ -17,6 +19,10 @@ class TestSequencePE(unittest.TestCase):
     def test_init(self):
         self.assertIsInstance(self.pe_ramp, SequencePE)
         self.assertIsInstance(self.pe_step, SequencePE)
+
+        with self.assertRaises(pyx.ArgumentError):
+            # need at least 2 time / value pairs
+            SequencePE(np.array([[0, 1]]))
 
     def test_insertion(self):
     	pe = SequencePE([[0, 100], [1, 200]])

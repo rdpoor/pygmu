@@ -2,6 +2,7 @@ import numpy as np
 from extent import Extent
 from pyg_pe import PygPE
 from pyg_gen import PygGen
+import pyg_exceptions as pyx
 import utils as ut
 
 class SequencePE(PygGen):
@@ -19,7 +20,7 @@ class SequencePE(PygGen):
     def __init__(self, time_value_pairs, interpolation='ramp', frame_rate=None):
         super(SequencePE, self).__init__(frame_rate=frame_rate)
         if len(time_value_pairs) < 2:
-            raise ArgumentError("Must have at least two time/value pairs")
+            raise pyx.ArgumentError("Must have at least two time/value pairs")
         self._times = np.array([])
         self._values = np.array([])
         for t, v in time_value_pairs:

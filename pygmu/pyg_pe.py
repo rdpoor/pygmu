@@ -64,9 +64,6 @@ class PygPE(object):
     def gain(self, fac):
         return pg.MulPE(self, pg.ConstPE(fac))
 
-    def env(self, up_dur, dn_dur):
-        return pg.EnvPE(self, up_dur, dn_dur)
-
     def fts_play(self):
         return pg.FtsTransport(self).play()
 
@@ -93,6 +90,9 @@ class PygPE(object):
 
     def reverse(self, infinite_end):
         return pg.ReversePE(self, infinite_end)
+
+    def splice(self, up_dur, dn_dur):
+        return pg.SplicePE(self, up_dur, dn_dur)
 
     def spread(self, channel_count=2):
         return pg.SpreadPE(self, channel_count=channel_count)
