@@ -19,7 +19,7 @@ class LimiterAPE(PygPE):
         self._env_detect = EnvDetectPE(src_pe.mono(), attack=0.9, release=0.0001)
         self._compressor = CompressorPE(
             src_pe, self._env_detect, threshold_db=threshold_db, ratio=1000,
-            post_gain_db = -threshold_db - headroom_db)
+            makeup_db = -threshold_db - headroom_db)
 
     def render(self, requested:Extent):
         return self._compressor.render(requested)

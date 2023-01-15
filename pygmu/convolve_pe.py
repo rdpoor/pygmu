@@ -23,6 +23,20 @@ class ConvolvePE(PygPE):
         if filter_pe.channel_count() > 2:
             raise pyx.ChannelCountMismatch('filter_pe channel_count must be 1 or 2')
 
+        if filter_pe.extent().is_indefinite():
+            raise pyx.IndefiniteExtent("Filter input to ConvolvePE must be finite")
+
+        # validate frame rates: may be omitted, but must match if both are given.
+        if src_pe.frame_rate() == filter_pe.frame_rate():
+            # frame rates match (possibly both None)
+            self._frame_rate = src_pe.frame_rate()
+        elif src_pe.frame_rate() is None:
+            self._frame_rate = filter_pe.frame_rate()
+        elif filter_pe.frame_rate() is None:
+            self._frame_rate = src_pe.frame_rate()
+        else:
+            raise pyx.FrameRateMismatch("src_pe and filter_pe frame rate mismatch")
+
         self._src_pe = src_pe
         self._filter_pe = filter_pe
         # The filter is constant, so fetch its data at initialization
@@ -43,6 +57,8 @@ class ConvolvePE(PygPE):
         src_request = Extent(s-N, e)
 
         overlap = src_request.intersect(requested)
+        # TODO: Unit test code coverage shows that the following is never executed.
+        # Figure out the correct logic for no overlap...
         if overlap.is_empty():
             return ut.const_frames(0.0, self.channel_count(), requested.duration())
 
@@ -81,7 +97,7 @@ class ConvolvePE(PygPE):
         return max(self._src_pe.channel_count(), self._filter_pe.channel_count())
 
     def frame_rate(self):
-        return self._src_pe.frame_rate()
+        return self._frame_rate
 
     def process(self, src_samples, filter_samples):
         """

@@ -339,7 +339,8 @@ underlying array.
 
 ### Utilities
 
-Command to print out info about all the soundfiles in the current directory (must have sox installed):
+Command to print out info about all the soundfiles in the current directory 
+(must have sox installed):
 
     Windows:    find . -name "*.wav" -print0 | xargs -0 sox.exe --i
     OXS/Linux:  find . -name "*.wav" -print0 | xargs -0 sox --i
@@ -353,11 +354,14 @@ Command to print out info about all the soundfiles in the current directory (mus
 * [done] add explanation of reshape(-1,1) to All about frames section
 * Add autoscale=n parameter to WavReaderPE to normalize amplitude, and/or create a batch
   file to normalize all files in samples/
-* TimewarpPE needs help.  see examples/example_09.py.  enfoce single-channel timeline
+* [done] TimewarpPE needs help.  see examples/example_09.py.  enfoce single-channel timeline
 * BiQuadPE needs help.  see examples/example_11.py
 * FilterPE needs help.  see examples/filter_example.py
 * examples/piece_RA01_v1.py needs help: MixPE trying to mix mono and stereo for some seeds
 
+### Ponders
+
+* Should compressors / limiters accept multi-channel envelope data?
 
 ### For future consideration
 

@@ -74,11 +74,26 @@ class TestLoopPE(unittest.TestCase):
         got = pe.render(e)
         np.testing.assert_array_almost_equal(got, expect)
 
+        # Loop is longer than render request...
+        src_pe = IdentityPE()
+        pe = LoopPE(src_pe, loop_duration=10000)   # rather long...
+        got = pe.render(Extent(0, 10))
+        expect = np.array([[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]])
+        np.testing.assert_array_almost_equal(got, expect)
+
+        got = pe.render(Extent(10, 20))
+        expect = np.array([[10, 11, 12, 13, 14, 15, 16, 17, 18, 19]])
+        np.testing.assert_array_almost_equal(got, expect)
+
+        got = pe.render(Extent(9995, 10005))
+        expect = np.array([[9995, 9996, 9997, 9998, 9999, 0, 1, 2, 3, 4]])
+        np.testing.assert_array_almost_equal(got, expect)
+
     def test_extent(self):
         # extent is, by definition, indefinite...
         src_pe = CropPE(IdentityPE(), Extent(3, 6))
         pe = LoopPE(src_pe, loop_duration=5)
-        self.assertTrue(pe.extent().equals(Extent()))
+        self.assertTrue(pe.extent().is_indefinite())
 
     def test_frame_rate(self):
         # inherits frame_rate rate from source.
