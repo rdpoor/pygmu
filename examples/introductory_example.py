@@ -1,37 +1,51 @@
+# This bit of boilerplate allows Python to find the pygmu library
 import os
 import sys
 script_dir = os.path.dirname( __file__ )
 pygmu_dir = os.path.join( script_dir, '..', 'pygmu' )
 sys.path.append( pygmu_dir )
 import pygmu as pg
+import utils as ut
 
-FRAME_RATE = 48000
+SRATE = 48000  # Define the frame rate for the piece.
 
-def sin_at(at_s, freq_hz, amp):
+def s_to_f(seconds):
+    '''Convert seconds to frames (samples)'''
+    return int(seconds * SRATE)
+
+def generate_note(start_time, duration, hz, amp):
     """
-    Play a sine tone starting at the given # of seconds.  More accurately:
-    Create a Processing Element such that when you call render(), it produces
-    a sine tone.
-
-    This function is intended to show that it is easy to compose different PEs
-    together to create more complex (or more bespoke) functions.
+    Return a Processing Element such that when you call render(), it produces
+    a tone at the desired time with a given duration, frequency and amplitude.
     """
-    # Create a sine generator with given frequency and ampltude
-    sin = pg.SinPE(frequency = freq_hz, amplitude = amp, frame_rate=FRAME_RATE)
-    # Crop the output to start and the given time, but last forever...
-    return pg.CropPE(sin, pg.Extent(int(sin.frame_rate() * at_s)))
+    # Use an Extent to define the start and end times of the note
+    extent = pg.Extent(s_to_f(start_time), s_to_f(start_time + duration))
 
-freq_f = 174.614
-freq_b = 246.942
-freq_ds = 311.127
-freq_gs = 415.305
+    # We use a BlitSaw (bandwidth limited sawtooth wave generator) to generate 
+    # the tone, passing its output through a gain stage to adjust the amplitude 
+    # and then through a "CropPE" to specify the start and end times.
 
-# Mix the output of four sinewaves, each with its own frequency and start time.
+    # We could chain together the processing elements like this...
+    # saw_pe = pg.BlitSawPE(frequency=hz, frame_rate=SRATE)
+    # saw_pe = pg.GainPE(saw_pe, amp)          # Adjust the amplitude
+    # saw_pe = pg.CropPE(saw_pe, extent)       # Crop start and end times
+    # return saw_pe                            # Return the result
+
+    # ... but PygMu provides shorthand chaining methods for many common
+    # functions, so you can write the whole thing in one line if you prefer:
+    return pg.BlitSawPE(frequency=hz, frame_rate=SRATE).gain(amp).crop(extent)
+
+# Mix the output of four tones to Generate Wagner's famous opening chord.
+# Note that we use the `utils` module's `pitch_to_freq()` functon to convert
+# MIDI style pitch numbers to frequencies.  
 tristan = pg.MixPE(
-    sin_at(0.5, freq_f, 0.2),
-    sin_at(1.0, freq_b, 0.2),
-    sin_at(1.5, freq_ds, 0.2),
-    sin_at(2.0, freq_gs, 0.2))
+    generate_note(0.5, 4.5, ut.pitch_to_freq(53), 0.2),
+    generate_note(1.0, 4.0, ut.pitch_to_freq(59), 0.2),
+    generate_note(1.5, 3.5, ut.pitch_to_freq(63), 0.2),
+    generate_note(2.0, 3.0, ut.pitch_to_freq(68), 0.2))
 
-# Start calling render() on the "root" processing element.
+# At this point, we have defined HOW the final piece will be generated, but it 
+# hasn't been generated yet.  The Transport `play()` method will repeatedly call
+# `tristan.render()` to request samples, sending the result to the DAC on your
+# computer.
 pg.Transport(tristan).play()

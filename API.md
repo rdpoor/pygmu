@@ -50,7 +50,7 @@ To create a stream with five stereo frames, you could do this:
 
 ### `RanpPE(self, start_v, end_v, extent:Extent, frame_rate=None)`
 
-### `SequencePE(time_value_pairs, interpolation='ramp', frame_rate=None)`
+### `SegmentsPE(time_value_pairs, interpolation='ramp', frame_rate=None)`
 
 ### `SinPE(requency=440, amplitude=1.0, phase=0.0, frame_rate=None)`
 

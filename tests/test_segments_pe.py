@@ -7,35 +7,35 @@ script_dir = os.path.dirname( __file__ )
 pygmu_dir = os.path.join( script_dir, '..', 'pygmu' )
 sys.path.append( pygmu_dir )
 import pyg_exceptions as pyx
-from pygmu import (SequencePE, Extent, PygPE)
+from pygmu import (SegmentsPE, Extent, PygPE)
 
-class TestSequencePE(unittest.TestCase):
+class TestSegmentsPE(unittest.TestCase):
 
     def setUp(self):
         self.tvs = np.array([[0, 1.0], [4, 2.0], [6, -3.0]], dtype=np.float32)
-        self.pe_ramp = SequencePE(self.tvs, interpolation=SequencePE.RAMP)
-        self.pe_step = SequencePE(self.tvs, interpolation=SequencePE.STEP)
+        self.pe_ramp = SegmentsPE(self.tvs, interpolation=SegmentsPE.RAMP)
+        self.pe_step = SegmentsPE(self.tvs, interpolation=SegmentsPE.STEP)
 
     def test_init(self):
-        self.assertIsInstance(self.pe_ramp, SequencePE)
-        self.assertIsInstance(self.pe_step, SequencePE)
+        self.assertIsInstance(self.pe_ramp, SegmentsPE)
+        self.assertIsInstance(self.pe_step, SegmentsPE)
 
         with self.assertRaises(pyx.ArgumentError):
             # need at least 2 time / value pairs
-            SequencePE(np.array([[0, 1]]))
+            SegmentsPE(np.array([[0, 1]]))
 
     def test_insertion(self):
-    	pe = SequencePE([[0, 100], [1, 200]])
+    	pe = SegmentsPE([[0, 100], [1, 200]])
     	np.testing.assert_array_almost_equal(pe._times, [0, 1])
     	np.testing.assert_array_almost_equal(pe._values, [100, 200])
 
     	# time order is maintained
-    	pe = SequencePE([[1, 200], [0, 300]])
+    	pe = SegmentsPE([[1, 200], [0, 300]])
     	np.testing.assert_array_almost_equal(pe._times, [0, 1])
     	np.testing.assert_array_almost_equal(pe._values, [300, 200])
 
     	# duplicate times are ellided
-    	pe = SequencePE([[0, 100], [1, 200], [1, 300]])
+    	pe = SegmentsPE([[0, 100], [1, 200], [1, 300]])
     	np.testing.assert_array_almost_equal(pe._times, [0, 1])
     	np.testing.assert_array_almost_equal(pe._values, [100, 300])
 
@@ -77,7 +77,7 @@ class TestSequencePE(unittest.TestCase):
     def test_frame_rate(self):
         self.assertIsNone(self.pe_ramp.frame_rate())
         self.assertIsNone(self.pe_step.frame_rate())
-        pe = SequencePE(self.tvs, frame_rate=1234)
+        pe = SegmentsPE(self.tvs, frame_rate=1234)
         self.assertEqual(pe.frame_rate(), 1234)
 
     def test_channel_count(self):

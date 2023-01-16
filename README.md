@@ -24,46 +24,63 @@ sys.path.append( pygmu_dir )
 import pygmu as pg
 import utils as ut
 
-def gen_sin(at_s, dur_s, freq_hz, amp):
+SRATE = 48000  # Define the frame rate for the piece.
+
+def s_to_f(seconds):
+    '''Convert seconds to frames (samples)'''
+    return int(seconds * SRATE)
+
+def generate_note(start_time, duration, hz, amp):
     """
     Return a Processing Element such that when you call render(), it produces
-    a sine tone at the desired time, frequency and amplitude.
-
-    This gen_sin() function is intended to show that it is easy to compose 
-    different PEs together to create more complex (or more bespoke) functions.
+    a tone at the desired time with a given duration, frequency and amplitude.
     """
-    # Exploit Python's support of nested functions
-    def s_to_f(seconds):
-        '''Convert seconds to frames (samples)'''
-        # In addition to a render() method, every processing element provides a
-        # frame_rate() method that advertises its frame rate.  Here, we use this
-        # to convert seconds to frames.
-        return int(seconds * sin_pe.frame_rate())
+    # Use an Extent to define the start and end times of the note
+    extent = pg.Extent(s_to_f(start_time), s_to_f(start_time + duration))
 
-    # Create a sine generator with given frequency and ampltude
-    sin_pe = pg.SinPE(frequency = freq_hz, amplitude = amp)
-    # Crop the output to to start and end at the desired times.
-    return pg.CropPE(sin_pe, pg.Extent(s_to_f(at_s), s_to_f(at_s + dur_s)))
+    # We use a BlitSaw (bandwidth limited sawtooth wave generator) to generate 
+    # the tone, passing its output through a gain stage to adjust the amplitude 
+    # and then through a "CropPE" to specify the start and end times.
 
-# Generate Wagner's famous opening chord...
-# Mix the output of four sinewaves, each with its own frequency and start time.
-mix = pg.MixPE(
-    gen_sin(0.5, 3.5, ut.pitch_to_freq(53), 0.2),
-    gen_sin(1.0, 3.0, ut.pitch_to_freq(59), 0.2),
-    gen_sin(1.5, 2.5, ut.pitch_to_freq(63), 0.2),
-    gen_sin(2.0, 2.0, ut.pitch_to_freq(68), 0.2))
+    # We could chain together the processing elements like this...
+    # saw_pe = pg.BlitSawPE(frequency=hz, frame_rate=SRATE)
+    # saw_pe = pg.GainPE(saw_pe, amp)          # Adjust the amplitude
+    # saw_pe = pg.CropPE(saw_pe, extent)       # Crop start and end times
+    # return saw_pe                            # Return the result
 
-# Start calling render() on the "mix" processing element to play in real-time
-pg.Transport(mix).play()
+    # ... but PygMu provides shorthand chaining methods for many common
+    # functions, so you can write the whole thing in one line if you prefer:
+    return pg.BlitSawPE(frequency=hz, frame_rate=SRATE).gain(amp).crop(extent)
 
+# Mix the output of four tones to Generate Wagner's famous opening chord.
+# Note that we use the `utils` module's `pitch_to_freq()` functon to convert
+# MIDI style pitch numbers to frequencies.  
+tristan = pg.MixPE(
+    generate_note(0.5, 4.5, ut.pitch_to_freq(53), 0.2),
+    generate_note(1.0, 4.0, ut.pitch_to_freq(59), 0.2),
+    generate_note(1.5, 3.5, ut.pitch_to_freq(63), 0.2),
+    generate_note(2.0, 3.0, ut.pitch_to_freq(68), 0.2))
+
+# At this point, we have defined HOW the final piece will be generated, but it 
+# hasn't been generated yet.  The Transport `play()` method will repeatedly call
+# `tristan.render()` to request samples, sending the result to the DAC on your
+# computer.
+pg.Transport(tristan).play()
 ```
 
-The example above has nine processing elements, connected as shown below.  The important thing to notice is that each processing element is a black box that will produce frames whenever its `render()` method is called.  A graphical representation of the above looks like this:
+The example above has eleven processing elements, connected as shown below.  The 
+important thing to notice is that each processing element is a black box that 
+will produce frames whenever its `render()` method is called.  A graphical 
+representation of the above looks like this:
 
 ```
       +---------------+ +---------------+ +---------------+ +---------------+ 
-      | sin(174, 0.2) | | sin(246, 0.2) | | sin(311, 0.2) | | sin(415, 0.2) | 
+      | saw(174, 0.2) | | saw(246, 0.2) | | saw(311, 0.2) | | saw(415, 0.2) | 
       +-------v-------+ +-------v-------+ +-------v-------+ +-------v-------+ 
+              |                 |                 |                 |
+      +-------v-------+ +-------v-------+ +-------v-------+ +-------v-------+ 
+      |   amp(0.2)    | |   amp(0.2)    | |   amp(0.2)    | |   amp(0.2)    | 
+      +-------v-------+ +-------v-------+ +-------v-------+ +-------v-------+
               |                 |                 |                 |
       +-------v-------+ +-------v-------+ +-------v-------+ +-------v-------+ 
       | crop(0.5,4.0) | | crop(1.0,4.0) | | crop(1.5,4.0) | | crop(2.0,4.0) | 
@@ -78,10 +95,15 @@ The example above has nine processing elements, connected as shown below.  The i
                                  +---------------+
 ```
 
-The `Transport` object is not a processing element itself: it doesn't provide a render() function.  Instead, when its play() method is called, it starts calling render() on the
-processing element connected to its input, which in this case is the `mix` processing element.  The `mix` PE in turn calls each of its inputs (the `crop` PEs), which in turn call _their_ inputs, which generate the sine tones.
+The `Transport` object is not a processing element itself: it doesn't provide a 
+render() function.  Instead, when its play() method is called, it starts calling 
+render() on the processing element connected to its input, which in this case is 
+the `mix` processing element.  The `mix` PE in turn calls each of its inputs 
+(the `crop` PEs), which in turn call _their_ inputs and so on, to generate the 
+tones.
 
-In computer science terms, a pygmu composition is a _directed acyclic graph_ in which the root node (Transport) "pulls" frames from the rest of the network.
+In computer science terms, a pygmu composition is a _directed acyclic graph_ in 
+which the root node (Transport) "pulls" frames from the rest of the network.
 
 ## Install pygmu, run an example
 
@@ -359,6 +381,10 @@ Command to print out info about all the soundfiles in the current directory
 * FilterPE needs help.  see examples/filter_example.py
 * examples/piece_RA01_v1.py needs help: MixPE trying to mix mono and stereo for some seeds
 * Create user-supplied f(x) processing element: output = user_function(input).
+* Rethink EnvDetectPE, CompLimPE, CompressorPE, LimiterAPE, LimiterPE.  Instead, 
+create one or more "envelope processors" that outputs a gain term that can be
+fed directly into a GainPE.  Maybe even EnvDetect => RatioToDbPE => Sequence =>
+DbToRatioPE => GainPE.
 
 ### Ponders
 

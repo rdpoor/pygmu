@@ -5,20 +5,21 @@ from pyg_gen import PygGen
 import pyg_exceptions as pyx
 import utils as ut
 
-class SequencePE(PygGen):
+class SegmentsPE(PygGen):
     """
-    Generate a sequence of [[t0, v0], [t1, v1], .... [tn-1, vn-1]].  
-    Values before t0 will be fixed at v0, values greater than tn-1 will be fixed
-    at vn-1.  With interpolation = 'ramp', intermediate values will be
-    interpolated.  With interpolation = 'step', values will step from
-    v0, v1, ... vn-1
+    Given a sequence of time-value segments, render value vN at time tN.
+    The time-value segments are specifies as: 
+       [[t0, v0], [t1, v1], ... [tn-1, vn-1]].  
+    Times before t0 will render as v0, times after tN-1 than tn-1 will render as
+    vN-1.  With interpolation = 'step', values will step from v0, v1, ... vN-1.
+    WIth interpolation = 'ramp', values will ramp between v0, v1, ... vN-1.'
     """
 
     RAMP = 'ramp'
     STEP = 'step'
 
     def __init__(self, time_value_pairs, interpolation='ramp', frame_rate=None):
-        super(SequencePE, self).__init__(frame_rate=frame_rate)
+        super(SegmentsPE, self).__init__(frame_rate=frame_rate)
         if len(time_value_pairs) < 2:
             raise pyx.ArgumentError("Must have at least two time/value pairs")
         self._times = np.array([])
