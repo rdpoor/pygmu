@@ -7,7 +7,7 @@ pygmu is a Python Generative Music framework.  It comprises a collection of _pro
 There are three fundamental objects upon which all of pygmu is built:
 * **Extent:** An Extent encapsulates a starting time (measured in samples) and an ending time (also measured in samples).
 * **Processing Element:**: Each processing element has a constructor, where you specificy parameters, and a `render(extent)` function which, when invoked, asks the processing element to produce sample data between `extent.start()` and `extent.end()`.  
-* **frames:** Sample data is passed around as a two-dimensional array, where each column is a channel (e.g. stereo frames will have two columns) and each row is an individual sample (mono, stereo or multi-channel).
+* **frames:** Sample data is passed around as a two-dimensional array, where each row is a channel (e.g. stereo frames will have two rows) and each columm is an individual sample (mono, stereo or multi-channel).
 
 ## A taste of pygmu
 
@@ -343,7 +343,7 @@ Command to print out info about all the soundfiles in the current directory
 (must have sox installed):
 
     Windows:    find . -name "*.wav" -print0 | xargs -0 sox.exe --i
-    OXS/Linux:  find . -name "*.wav" -print0 | xargs -0 sox --i
+    OSX/Linux:  find . -name "*.wav" -print0 | xargs -0 sox --i
 
 
 ### Todo
@@ -358,10 +358,12 @@ Command to print out info about all the soundfiles in the current directory
 * BiQuadPE needs help.  see examples/example_11.py
 * FilterPE needs help.  see examples/filter_example.py
 * examples/piece_RA01_v1.py needs help: MixPE trying to mix mono and stereo for some seeds
+* Create user-supplied f(x) processing element: output = user_function(input).
 
 ### Ponders
 
 * Should compressors / limiters accept multi-channel envelope data?
+* If a PE takes multple inputs, and inputs have different frame rates, should it: (1) raise an error, (2) print a warning, (3) silently accept the frame rate of the first input?  For now, we're implementing (1) (raise an error).  We could create a pass-through PE that discards frame rate as a universal adaptor.
 
 ### For future consideration
 
