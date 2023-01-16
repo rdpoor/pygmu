@@ -88,6 +88,7 @@ mogrify()
 #### EnvDetectPE
 #### FilterPE
 #### GainPE
+#### GainDbPE
 #### GravyPE
 #### InterpolatePE
 #### LimiterPE
