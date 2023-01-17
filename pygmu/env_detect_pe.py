@@ -7,13 +7,14 @@ import utils as ut
 
 class EnvDetectPE(PygPE):
     """
-    Simple envelope detector.
+    Simple envelope detector.  If units = 'db', output level in db.
     """
 
-    def __init__(self, src_pe, attack=0.9, release=1.0):
+    def __init__(self, src_pe, attack=0.9, release=0.1, units=None):
         self._src_pe = AbsPE(src_pe)
         self._attack = attack
         self._release = release
+        self._units = units
         self._env = ut.const_frames(0.0, 1, src_pe.channel_count())
 
     def render(self, requested:Extent):
@@ -26,6 +27,8 @@ class EnvDetectPE(PygPE):
         for i, s in enumerate(src):
             self._env = self.track(self._env, s)
             dst[i] = self._env
+        if self._units == 'db':
+            dst = ut.ratio_to_db(dst)
         return dst
 
     def extent(self):

@@ -164,6 +164,10 @@ $ py -m coverage html
 Wrote HTML report to htmlcov\index.html
 
 $ start htmlcov/index.html
+
+# Or all at once:
+
+py -m coverage run -m unittest discover -f -s tests && py -m coverage html ; start htmlcov/index.html
 ```
 
 #### On macOS:
@@ -355,9 +359,20 @@ array([ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10., 11.], dtype=float3
 >>> a.reshape(1, 12)
 array([[ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10., 11.]], dtype=float32)
 ```
-To simplify things, `reshape()` lets you specify -1 as one of the arguments.  It
+As a convenience, `reshape()` lets you specify -1 as one of the arguments.  It
 will infer what that should be based on the other argument and the length of the
-underlying array.
+underlying array:
+```
+>>> a.reshape(1, -1)
+array([[ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10., 11.]], dtype=float32)
+>>> a.reshape(2, -1)
+array([[ 0.,  1.,  2.,  3.,  4.,  5.],
+       [ 6.,  7.,  8.,  9., 10., 11.]], dtype=float32)
+>>> a.reshape(3, -1)
+array([[ 0.,  1.,  2.,  3.],
+       [ 4.,  5.,  6.,  7.],
+       [ 8.,  9., 10., 11.]], dtype=float32)
+```
 
 ### Utilities
 
@@ -371,20 +386,16 @@ Command to print out info about all the soundfiles in the current directory
 ### Todo
 
 * [done] Create pyg_exceptions for channel mismatch, frame rate mismatch, perhaps others.
-* Flesh out unit tests.
-* Add auto-stop feature to Transport to halt on first buffer of all zeros.
+* [never entirely done] Flesh out unit tests.
 * [done] add explanation of reshape(-1,1) to All about frames section
-* Add autoscale=n parameter to WavReaderPE to normalize amplitude, and/or create a batch
-  file to normalize all files in samples/
 * [done] TimewarpPE needs help.  see examples/example_09.py.  enfoce single-channel timeline
 * BiQuadPE needs help.  see examples/example_11.py
 * FilterPE needs help.  see examples/filter_example.py
 * examples/piece_RA01_v1.py needs help: MixPE trying to mix mono and stereo for some seeds
-* Create user-supplied f(x) processing element: output = user_function(input).
-* Rethink EnvDetectPE, CompLimPE, CompressorPE, LimiterAPE, LimiterPE.  Instead, 
-create one or more "envelope processors" that outputs a gain term that can be
-fed directly into a GainPE.  Maybe even EnvDetect => RatioToDbPE => Sequence =>
-DbToRatioPE => GainPE.
+* [done] Create user-supplied f(x) processing element: output = user_function(input).  (Create `MapPE`)
+* [done] Rethink EnvDetectPE, CompLimPE, CompressorPE, LimiterAPE, LimiterPE.  (Create `MapPE`,
+give `EnvDetectPE` and `GainPE` a `units='db'` optional parameter.)
+* In `EnvDetectPE`, optionally support time constants (seconds) for attack and relase rather than 0.99 meaning "fast" and 0.01 meaning "slow".
 
 ### Ponders
 
