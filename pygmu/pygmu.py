@@ -13,6 +13,7 @@ from convolve_pe import ConvolvePE
 from crop_pe import CropPE
 from delay_pe import DelayPE
 from env_detect_pe import EnvDetectPE
+from env_detect_db_pe import EnvDetectDbPE
 from extent import Extent
 from filter_pe import FilterPE
 from fts_transport import FtsTransport

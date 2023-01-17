@@ -78,11 +78,14 @@ def magphase_to_complex(mag, phase):
     """
     return mag * np.exp(1j*phase)
 
+RATIO_MIN = 1.1754944e-38  # np.finfo(np.float32).tiny
+
 def ratio_to_db(ratio):
+    ratio = np.maximum(ratio, RATIO_MIN)
     return 20 * np.log10(ratio)
 
-def db_to_ratio(ratio):
-    return np.power(10, ratio / 20)
+def db_to_ratio(db):
+    return np.power(10, db / 20)
 
 def meter_string_for_rms(arr):
     nchans = len(arr)
