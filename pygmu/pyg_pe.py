@@ -49,6 +49,9 @@ class PygPE(object):
     def biquad(self,gain,freq,q,type):
         return pg.BiquadPE(self, gain, freq, q, type)
 
+    def cache(self):
+        return pg.CachePE(self)
+
     def lowpass(self, freq):
         return pg.BiquadPE(self, 0.0, freq, 6, "lowpass")
 
