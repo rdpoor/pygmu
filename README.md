@@ -2,6 +2,8 @@
 
 pygmu is a Python Generative Music framework.  It comprises a collection of _processing elements_ that you connect together to create works of music.  Unlike most other frameworks, pygmu does not make a strong distinction between voices and notes: everything is computed at the sampling rate.
 
+pygmu is designed more for composers than for performers -- unlike GarageBand or Ableton Live, PygMu is unapologetically NOT real time: you think about the results you want, you type in some code, you drink some coffee and contemplate your actions while it renders, then you listen to it.  It invites a slower, more deliberate approach to creating music.
+
 ## Fundamental concepts
 
 There are three fundamental objects upon which all of pygmu is built:
@@ -105,6 +107,11 @@ Run an example:
     $ python examples/sin_example.py
 
 ## Developer's Corner
+
+Here's the WIP formula for getting tkinter up and running on macOS:
+
+pipenv install Tk inter
+brew install python-tk@3.10
 
 ### Running the unit tests
 If you haven't launched the pygmu shell:
@@ -389,6 +396,7 @@ Command to print out info about all the soundfiles in the current directory (mus
 * [done] Create pyg_exceptions for channel mismatch, frame rate mismatch, perhaps others.
 * Flesh out unit tests.
 * Add auto-stop feature to Transport to halt on first buffer of all zeros.
+* Add graphical interface to Transport
 * [done] add explanation of reshape(-1,1) to All about frames section
 * Add autoscale=n parameter to WavReaderPE to normalize amplitude, and/or create a batch
   file to normalize all files in samples/

@@ -25,6 +25,11 @@ GaneshPE
 	NOTE: Since it is performing FFT of entire PEs in memory, the extent
 	of the input PEs can't be too large...
 
+TralfamPE
+
+    takes a (finite) PE and spreads its spectrum randomly across the entire time
+    span of the PE.
+
 mogrify()
 
     Read in an entire sound file, take its fft, randomize the phase, and convert

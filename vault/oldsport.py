@@ -4,6 +4,7 @@ import sounddevice as sd
 import utils as ut
 import queue
 import threading
+import readchar
 import sys
 from pygmu import (Extent)
 from fts_transport import FtsTransport
@@ -108,7 +109,6 @@ class Sport(object):
                     # non-blocking attempt to read a char from stdin via input_thread
                     # will ignore everything except return, 'q' and space, and only cares about space if we are replayable
                     if not input_queue.empty():
-                        print('got something!')
                         c = input_queue.get()
                         if c == '\n' or c == '\r': # [return], so we clear out the meter
                             ut.clear_term_lines(1)
@@ -160,90 +160,16 @@ class Sport(object):
                     print('') # loop back up to play again
                 case _:
                     return('')
-    def window_play(self,meter_type='live', max_silent_frames=300,  max_dur_secs_for_infinite_sources=100):
-        """
-       make a spawnPlayer function, that fires up tkinter root, takes as an arg the function to call from a new thread (which is spawned by tkinter).  
-       presumably that thread does some stuff and then end up listening for something on the inputque that root will write to.
-        """
-        if self._src_pe.extent().is_indefinite():
-            source_pe = CropPE(self._src_pe, Extent(0,self._src_pe.frame_rate() * max_dur_secs_for_infinite_sources))
-            ut.print_warn('term_play() will crop its indefinite source to ',max_dur_secs_for_infinite_sources,'seconds')
-        else:
-            source_pe = self._src_pe
-        tmpfile = tempfile.gettempdir()+'/sport.wav'
-        FtsTransport(WavWriterPE(source_pe, tmpfile)).play()
-        out = WavReaderPE(tmpfile)
-        end_frame = out.extent().end()
-        dur_str = 'duration: {0:.2f} '.format(end_frame / out.frame_rate())
-        while True:
-            print('press return to skip, q to exit, space to replay',dur_str,'\n',end='' if show_meter else '\n')
-            #print('press return to skip, q to exit, space to replay   ',dur_str,end='\r')
-            ret = Sport(out).play('none', max_silent_frames, True)
-            match ret:
-                case ' ':
-                    ut.clear_term_lines(4)
-                    if ut.terminal_has_ansi_support():
-                        print(ut.ansicodes.PREVLINE,end='\r')
-                    print('') # loop back up to play again
-                case _:
-                    return('')    
                     
 amp_chars = [32,46,111,79,64,64]
 
+def input_thread(input_queue):
+    while True:
+        # read single character off stdin
+        input_queue.put(readchar.readchar())
+
 input_queue = queue.Queue()
-
-def onKeyPress(k):
-    print(k)
-    input_queue.put(k)
-
-def onButton1(x):
-    print('button1',x)
-
-
-from tkinter import *
-from tkinter import ttk
-root = Tk()
-root.geometry('100x100')
-label = ttk.Label(
-    root,
-    text="Hello, Tkinter",
-    foreground="white",
-    background="black",
-    #width=10,
-    #height=10
-).grid()
-
-# Add a Canvas widget
-#canvas= Canvas(root)
-
-
-playbut = ttk.Button(root, text="Play", command=onButton1).grid()
-
-#Adding transparent background property
-root.wm_attributes('-alpha', 0.5)
-
-#Create a Label
-#Label(root, text= "This is a New line Text", font= ('Helvetica 18'), bg= '#ab23ff').pack(ipadx= 50, ipady=50, padx= 20)
-
-
-# add some padding
-for child in root.winfo_children(): 
-    child.grid_configure(padx=5, pady=5)
-
-# root.bind("<Return>", onReturn)
-root.bind("<KeyPress>", onKeyPress)
-
-root.mainloop() # this will hang unless and until user closes the window
-
-
-
-
-# def input_thread(input_queue):
-#     while True:
-#         # read single character off stdin
-#         input_queue.put(readchar.readchar())
-
-# input_thread = threading.Thread(target=input_thread, args=(input_queue,))
-# input_thread.daemon = True
-# input_thread.start()
+input_thread = threading.Thread(target=input_thread, args=(input_queue,))
+input_thread.daemon = True
+input_thread.start()
 
