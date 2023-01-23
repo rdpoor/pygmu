@@ -1,21 +1,19 @@
 import numpy as np
 from extent import Extent
-from pyg_pe import PygPE
+from pyg_gen import PygGen
 
-class IdentityPE(PygPE):
+class IdentityPE(PygGen):
     """
     The IdentityPE is the function f(t) = t
     """
 
-    def __init__(self, channel_count=PygPE.DEFAULT_CHANNEL_COUNT):
-        super(IdentityPE, self).__init__()
-        self._channel_count = channel_count
+    def __init__(self, frame_rate=None):
+        super(IdentityPE, self).__init__(frame_rate=frame_rate)
 
     def render(self, requested:Extent):
         t0 = requested.start()
         t1 = requested.end()
-        dst_buf = np.tile(np.arange(t0, t1).reshape(-1, 1), (1, self.channel_count()))
-        return dst_buf
+        return np.arange(t0, t1).reshape(1, -1)
 
     def channel_count(self):
-        return self._channel_count
+        return 1

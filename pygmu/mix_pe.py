@@ -14,7 +14,7 @@ class MixPE(PygPE):
         self._extent = self.compute_extent()
 
     def render(self, requested:Extent):
-        dst_buf = np.zeros([requested.duration(), self.channel_count()], np.float32)
+        dst_buf = np.zeros([self.channel_count(), requested.duration()], np.float32)
         for src_pe in self._pes:
             dst_buf += src_pe.render(requested)
         return dst_buf

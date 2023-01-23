@@ -1,31 +1,5 @@
 """
 DelayPE - time varying delay
-
-Preliminary notes:
-
-The goal is to create a delay that supports time-varying fractional delays. 
-
-## First thought
-
-Implement it by creating a first order allpass section that can delay between
-0.5 and 1.5 samples, use standard delay technique for the bulk delay.
-
-Assume 0.5 <= alpha < 1.5:
-
-eta = (1.0 - alpha) / (1.0 + alpha)
-y[n] = eta * (x[n] - y[n-1]) + x(n-1)
-
-Q: Since Y(n) is a recursive filter, how far back in time must we go get an 
-accurate value for y[n-1]?
-
-A: By brute-force simulation, the answer appears to be 5 samples.  But this 
-requires recomputing eta and y[n-5, ... n] for each sample.
-
-## Second thought
-
-Just use linear interpolation.  Not as accurate (it's a lowpass filter), but
-much faster to compute.
-
 """
 
 import numpy as np
@@ -50,7 +24,7 @@ class DelayPE(PygPE):
 	    		pass
 	    else:
 			# With a fixed delay, the resulting extent is src extent shifted.
-	    	self._extent = src_pe.extent().offset(-delay)
+	    	self._extent = src_pe.extent().offset(delay)
 
 	def render(self, requested:Extent):
 		if isinstance(self._delay, int):
@@ -66,16 +40,18 @@ class DelayPE(PygPE):
 			delays = self._delay
 
 		times = np.arange(requested.start(), requested.end()) - delays
-		min_time = min(times)
-		max_time = max(times)
 		t0 = int(np.floor(min(times)))
 		t1 = int(np.floor(max(times))) + 1
 		src_frames = self._src_pe.render(Extent(t0, t1+1))
 		dst_channels = []
-		for channel in src_frames.T:
+		for channel in src_frames:
 			delayed_channel = np.interp(times, np.arange(t0, t1+1), channel)
 			dst_channels.append(delayed_channel)
-		dst_frames = np.vstack(dst_channels).T
+		dst_frames = np.hstack(dst_channels)
+		# d1 = dst_frames.shape
+		dst_frames = dst_frames.reshape(self.channel_count(), -1)
+		# d2 = dst_frames.shape
+		# print("d1, d2", d1, d2)
 		return dst_frames
 
 	def extent(self):

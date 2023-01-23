@@ -14,9 +14,9 @@ class MonoPE(PygPE):
 
     def render(self, requested:Extent):
         buf = self._src_pe.render(requested)
-        if buf.shape[1] == 2:
-            buf = np.dot(buf, [[self._attenuation], [self._attenuation]])
-        return buf
+        if buf.shape[0] == 2:
+            buf = (buf[0] + buf[1]) * self._attenuation
+        return buf.reshape(1, -1)
 
     def extent(self):
         return self._src_pe.extent()

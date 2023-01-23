@@ -1,19 +1,62 @@
 # pygmu API 
 
-## Sources
+## The `PygPE` base class
 
-Wav_ReaderPE
+All subclasses of PygPE provide the following methods:
 
-    source = pg.WavReaderPE("samples/Tamper_MagnifyingFrame1.wav")
-    pg.Transport(source).play()
+### `render(extent)`
 
-BlitsigPE   
+### `extent()`
 
-    pg.BlitsigPE(frequency=f, n_harmonics=h, channel_count=1, frame_rate=48000, waveform=w)
+### `channel_count()`
 
-BlitsawPE
+### `frame_rate()`
 
-    pg.BlitSawPE(frequency=freq, n_harmonics=n_harmonics, frame_rate=frame_rate)
+## Generators
+
+The following are "generators" inasmuch as they they produce a signal rather 
+than modify an existing signal:
+
+### `ArrayPE(frames, frame_rate=None)`
+
+A generator with a fixed array of source frames.  
+
+* frames: Either a 1-D array (for single channel) or 2-D array of frame data
+with one row per channel.  Note that the first element of the array corresponds 
+to time=0.
+* frame_rate: (Optional) Declares the frame rate of the output.
+
+#### Example
+
+To create a stream with five stereo frames, you could do this:
+
+```
+    pe = ArrayPE([[0, 1, 2, 3, 4], [0, 1, 2, 3, 4]])
+```
+
+### `BlitSawPE(frequency=440.0, n_harmonics=0, frame_rate=None)`
+
+### `ConstPE(value, frame_rate=None)`
+
+### `GaneshPE(head_pe, body_pe, extend=True)`
+
+### `IdentityPE(frame_rate=None)`
+
+### `ImpulsePE(frame_rate=None)`
+
+### `NoisePE(gain=1.0, frame_rate=None)`
+
+### `PwmPE(period, duty_cycle, frame_rate=None)`
+
+### `RanpPE(self, start_v, end_v, extent:Extent, frame_rate=None)`
+
+### `SegmentsPE(time_value_pairs, interpolation='ramp', frame_rate=None)`
+
+### `SinPE(requency=440, amplitude=1.0, phase=0.0, frame_rate=None)`
+
+### `TralfamPE(src_pe)`
+
+### `WavReaderPE(filename)`
 
 GaneshPE
 
@@ -37,6 +80,36 @@ mogrify()
 
 
 ## Processing
+
+#### AbsdPE
+#### BiquadpPE
+#### CachePE
+#### CombPE
+#### CompLimPE
+#### CompressorPE
+#### ConvolvePE
+#### CropPE
+#### DelayPE
+#### EnvDetectPE
+#### FilterPE
+#### GainPE
+#### GainDbPE
+#### GravyPE
+#### InterpolatePE
+#### LimiterPE
+#### LoopPE
+#### MixPE
+#### MonoPE
+#### MulPE
+#### PrintPE
+#### ReversePE
+#### SnippetPE
+#### SpatialPE
+#### SplicePE
+#### SpreadPE
+#### TimewarpPE
+#### TralfamPE
+#### WavWriterPE
 
 ## Utilities
 

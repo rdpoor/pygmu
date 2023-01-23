@@ -6,9 +6,6 @@ class PygPE(object):
     PygPE is the abstract base class for all Processing Elements.
     """
 
-    DEFAULT_FRAME_RATE = 48000
-    DEFAULT_CHANNEL_COUNT = 2
-
     def render(self, requested:Extent) -> (np.ndarray, int):
         """
         Instructs this Processing ELement to return an np.ndarray of sample data
@@ -34,19 +31,15 @@ class PygPE(object):
 
     def frame_rate(self):
         """
-        Return the frame rate of this PE.  If the PE has an input, it will 
-        typically override this method and return the frame rate of its 
-        input, but it's free to override this method as needed.
+        Return the frame rate of this PE.
         """        
-        return PygPE.DEFAULT_FRAME_RATE
+        return None
 
     def channel_count(self):
         """
-        Return the number of channels produced by this PE.  If the PE has an 
-        input, it will typically override this method and return the channel
-        count of its input, but it's free to override this method as needed.
+        Return the number of channels produced by this PE.
         """        
-        return PygPE.DEFAULT_CHANNEL_COUNT
+        return None
 
     # is there a way to migrate these to a different file?
 
@@ -55,6 +48,9 @@ class PygPE(object):
 
     def biquad(self,gain,freq,q,type):
         return pg.BiquadPE(self, gain, freq, q, type)
+
+    def cache(self):
+        return pg.CachePE(self)
 
     def lowpass(self, freq):
         return pg.BiquadPE(self, 0.0, freq, 6, "lowpass")
@@ -70,9 +66,6 @@ class PygPE(object):
 
     def gain(self, fac):
         return pg.MulPE(self, pg.ConstPE(fac))
-
-    def env(self, up_dur, dn_dur):
-        return pg.EnvPE(self, up_dur, dn_dur)
 
     def fts_play(self):
         return pg.FtsTransport(self).play()
@@ -100,6 +93,12 @@ class PygPE(object):
 
     def reverse(self, infinite_end):
         return pg.ReversePE(self, infinite_end)
+
+    def splice(self, up_dur, dn_dur):
+        return pg.SplicePE(self, up_dur, dn_dur)
+
+    def spread(self, channel_count=2):
+        return pg.SpreadPE(self, channel_count=channel_count)
 
     def timewarp(self, timeline_pe):
         return pg.TimewarpPE(self, timeline_pe)

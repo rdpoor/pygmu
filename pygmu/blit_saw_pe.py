@@ -2,8 +2,9 @@ import warnings
 import numpy as np
 from scipy import signal
 from extent import Extent
+from pyg_gen import PygGen
 from pyg_pe import PygPE
-import pyg_exceptions as px
+import pyg_exceptions as pyx
 import utils as ut
 
 """
@@ -57,7 +58,7 @@ tick():
 
 EPSILON = 0.00001   # could be better...
 
-class BlitSawPE(PygPE):
+class BlitSawPE(PygGen):
     """
     Band Limited Impulse Train, generating bandlimited pulse or sawtooth waves
     Version B with dynamic frequency input.
@@ -71,14 +72,16 @@ class BlitSawPE(PygPE):
         frequency sets the frequency (in conjunction with frame rate)
         n_harmonics is the number of harmonics / 2.  Defaults to frame_rate / freq.
         """
-        super(BlitSawPE, self).__init__()
+        super(BlitSawPE, self).__init__(frame_rate=frame_rate)
         self._n_harmonics = 0
         if frame_rate is None:
-            raise pyx.ArgumentError("frame_rate must be specified")
+            raise pyx.FrameRateMismatch("frame_rate must be specified")
         self._frame_rate = frame_rate
         self._frequency = frequency
         self.reset()
         if isinstance(self._frequency, PygPE):
+            if self._frequency.channel_count() != 1:
+                raise pyx.ChannelCountMismatch("dynamic frequency source must be single channel")
             self.set_frequency(440)  # initialize _p, etc...
         else:
             self.set_frequency(frequency)
@@ -94,8 +97,8 @@ class BlitSawPE(PygPE):
             return self.render_fixed(requested)
 
     def render_fixed(self, requested):
-        dst_frames = ut.const_frames(0.0, requested.duration(), 1)
-        for idx in range(len(dst_frames)):
+        dst_frames = np.full(requested.duration(), 0.0, dtype=np.float32)
+        for idx in range(ut.frame_count(dst_frames)):
             den = np.sin(self._phase)
             if np.abs(den) <= EPSILON:
                 tmp = self._a
@@ -109,15 +112,15 @@ class BlitSawPE(PygPE):
             
             dst_frames[idx] = tmp
 
-        return dst_frames
+        return dst_frames.reshape(1, -1)
 
     def render_dynamic(self, requested):
         """
         Similar to render_fixed(), but updates frequency on each frame
         """
         freqs = self._frequency.render(requested).reshape(-1)  # convert to 1D array
-        dst_frames = ut.uninitialized_frames(requested.duration(), 1)
-        for idx in range(len(dst_frames)):
+        dst_frames = np.full(requested.duration(), 0.0, dtype=np.float32)
+        for idx in range(ut.frame_count(dst_frames)):
             self.set_frequency(freqs[idx])
             den = np.sin(self._phase)
             if np.abs(den) <= EPSILON:
@@ -132,7 +135,7 @@ class BlitSawPE(PygPE):
 
             dst_frames[idx] = tmp
 
-        return dst_frames
+        return dst_frames.reshape(1, -1)
 
     def channel_count(self):
         return 1

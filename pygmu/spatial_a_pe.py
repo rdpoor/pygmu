@@ -2,32 +2,13 @@ import numpy as np
 from extent import Extent
 from pyg_pe import PygPE
 from mono_pe import MonoPE
+import pyg_exceptions as pyx
 import utils as ut
 
 """
 Notes:
 https://www.martinjaroszewicz.com/book/spatial_audio.html
 https://jeffvautin.com/2015/03/computing-panning-curves/
-"""
-
-"""
-Stereo to mono frames and back again:
-
->>> a=ut.ramp_frames(0, 4, 4, 2)
-array([[0., 0.],
-       [1., 1.],
-       [2., 2.],
-       [3., 3.]], dtype=float32)
->>> b = np.dot(a, [[1], [1]])
-array([[0.],
-       [2.],
-       [4.],
-       [6.]])
->>> c = np.dot(b, [[0.5, 2.0]])
-array([[ 0.,  0.],
-       [ 1.,  4.],
-       [ 2.,  8.],
-       [ 3., 12.]])
 """
 
 class SpatialAPE(PygPE):
@@ -44,7 +25,7 @@ class SpatialAPE(PygPE):
     HEAD_RADIUS_M = 0.22
 
 
-    def __init__(self, src_pe, degree=0, theta=None, curve='cosine'):
+    def __init__(self, src_pe, degree=0, theta=None, curve='cosine', frame_rate=None):
         """
         Create a panner.  
         src_pe: the source frames
@@ -57,6 +38,8 @@ class SpatialAPE(PygPE):
         """
         super(SpatialAPE, self).__init__()
         self._src_pe = src_pe
+        self.set_frame_rate(frame_rate, src_pe)
+
         if theta is None:
             theta = np.pi * degree / 180.0
         self.setup_chains(theta, curve)
@@ -64,11 +47,12 @@ class SpatialAPE(PygPE):
     def render(self, requested:Extent):
         overlap = self._src_pe.extent().intersect(requested)
         if overlap.is_empty():
-            return ut.const_frames(0.0, requested.duration(), 2)
+            return ut.const_frames(0.0, 2, requested.duration())
 
         left_frames = self._left_chain.render(requested)
         right_frames = self._right_chain.render(requested)
-        return np.hstack((left_frames, right_frames))
+        dst_frames = np.vstack((left_frames, right_frames))
+        return dst_frames
 
     def extent(self):
         return self._src_pe.extent()
@@ -113,3 +97,17 @@ class SpatialAPE(PygPE):
             # gain is unchanged
             pass
 
+    def set_frame_rate(self, frame_rate, src_pe):
+        """
+        Enforce setting of frame_rate, either from keyword arg or from source_pe.
+        If both are specified, print a warning on mismatch but honor keyword arg.
+        """
+        self._frame_rate = frame_rate or src_pe.frame_rate()
+        if self._frame_rate is not None:
+            if src_pe.frame_rate()  is not None and src_pe.frame_rate() != self._frame_rate:
+                print("CompPE warning: overriding input frame_rate of {} with {}".format(
+                    src_pe.frame_rate(), frame_rate))
+        else:
+            if src_pe.frame_rate() is None:
+                # neither specifies frame rate -- cannot proceed
+                raise pyx.FrameRateMismatch("frame rate must be specified")

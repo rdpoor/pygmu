@@ -23,6 +23,20 @@ class ConvolvePE(PygPE):
         if filter_pe.channel_count() > 2:
             raise pyx.ChannelCountMismatch('filter_pe channel_count must be 1 or 2')
 
+        if filter_pe.extent().is_indefinite():
+            raise pyx.IndefiniteExtent("Filter input to ConvolvePE must be finite")
+
+        # validate frame rates: may be omitted, but must match if both are given.
+        if src_pe.frame_rate() == filter_pe.frame_rate():
+            # frame rates match (possibly both None)
+            self._frame_rate = src_pe.frame_rate()
+        elif src_pe.frame_rate() is None:
+            self._frame_rate = filter_pe.frame_rate()
+        elif filter_pe.frame_rate() is None:
+            self._frame_rate = src_pe.frame_rate()
+        else:
+            raise pyx.FrameRateMismatch("src_pe and filter_pe frame rate mismatch")
+
         self._src_pe = src_pe
         self._filter_pe = filter_pe
         # The filter is constant, so fetch its data at initialization
@@ -43,36 +57,38 @@ class ConvolvePE(PygPE):
         src_request = Extent(s-N, e)
 
         overlap = src_request.intersect(requested)
+        # TODO: Unit test code coverage shows that the following is never executed.
+        # Figure out the correct logic for no overlap...
         if overlap.is_empty():
-            return ut.const_frames(0.0, requested.duration(), self.channel_count())
+            return ut.const_frames(0.0, self.channel_count(), requested.duration())
 
         src_frames = self._src_pe.render(src_request)
 
         if self._src_pe.channel_count() == 1 and self._filter_pe.channel_count() == 1:
             # mono source, mono filter: mono result
-            dst_frames = self.process(src_frames[:,0], self._filter_frames[:,0]).reshape(-1, 1)
+            dst_frames = self.process(src_frames[0,:], self._filter_frames[0,:]).reshape(1, -1)
 
         elif self._src_pe.channel_count() == 2 and self._filter_pe.channel_count() == 1:
             # stereo source, mono filter: stereo result
-            l_frames = self.process(src_frames[:,0], self._filter_frames[:,0])
-            r_frames = self.process(src_frames[:,1], self._filter_frames[:,0])
-            dst_frames = np.vstack((l_frames, r_frames)).T
+            l_frames = self.process(src_frames[0,:], self._filter_frames[0,:])
+            r_frames = self.process(src_frames[1,:], self._filter_frames[0,:])
+            dst_frames = np.vstack((l_frames, r_frames))
 
         elif self._src_pe.channel_count() == 1 and self._filter_pe.channel_count() == 2:
             # mono source, stereo filter: stereo result
-            l_frames = self.process(src_frames[:,0], self._filter_frames[:,0])
-            r_frames = self.process(src_frames[:,0], self._filter_frames[:,1])
-            dst_frames = np.vstack((l_frames, r_frames)).T
+            l_frames = self.process(src_frames[0,:], self._filter_frames[0,:])
+            r_frames = self.process(src_frames[0,:], self._filter_frames[1,:])
+            dst_frames = np.vstack((l_frames, r_frames))
 
         else:
             # stereo source, stereo filter: stereo result
-            l_frames = self.process(src_frames[:,0], self._filter_frames[:,0])
-            r_frames = self.process(src_frames[:,1], self._filter_frames[:,1])
-            dst_frames = np.vstack((l_frames, r_frames)).T
+            l_frames = self.process(src_frames[0,:], self._filter_frames[0,:])
+            r_frames = self.process(src_frames[1,:], self._filter_frames[1,:])
+            dst_frames = np.vstack((l_frames, r_frames))
 
         # At this point, dst_Frames contains N samples before the requested start (the length
         # of the filter, and frames past the requested end.  slice to the requested size.
-        return dst_frames[N:N+(e-s),:]
+        return dst_frames[:, N:N+(e-s)]
 
     def extent(self):
         return self._extent
@@ -81,7 +97,7 @@ class ConvolvePE(PygPE):
         return max(self._src_pe.channel_count(), self._filter_pe.channel_count())
 
     def frame_rate(self):
-        return self._src_pe.frame_rate()
+        return self._frame_rate
 
     def process(self, src_samples, filter_samples):
         """

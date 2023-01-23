@@ -20,25 +20,51 @@ def clamp(xlo, x, xhi):
     else:
         return x
 
-def uninitialized_frames(n_frames, n_channels):
+def normalize_frames(numpy_frames):
+    """
+    Convert a 1-D array into a 2-D array with one row (pygmu mono frames)
+    """
+    if numpy_frames.ndim == 1:
+        numpy_frames.shape = (1, numpy_frames.size)
+    return numpy_frames
+
+def channel_count(pygmu_frames):
+    """
+    Return the number of audio channels in pygmu-style frames
+    """
+    if pygmu_frames.ndim == 1:
+        return 1
+    else:
+        return pygmu_frames.shape[0]
+
+def frame_count(pygmu_frames):
+    """
+    Return the number of audio samples in pygmu-style frames
+    """
+    if pygmu_frames.ndim == 1:
+        return pygmu_frames.size
+    else:
+        return pygmu_frames.shape[1]
+
+def uninitialized_frames(n_channels, n_frames):
     """
     Create an uninitialized array of frames.
     """
-    return np.ndarray([n_frames, n_channels], dtype=np.float32) # empty
+    return np.ndarray([n_channels, n_frames], dtype=np.float32) # empty
 
-def const_frames(value, n_frames, n_channels):
+def const_frames(value, n_channels, n_frames):
     """
     Create an array of frames containing a constant value.
     """
-    return np.full([n_frames, n_channels], value, dtype=np.float32)
+    return np.full([n_channels, n_frames], value, dtype=np.float32)
 
-def ramp_frames(v0, v1, n_frames, n_channels):
+def ramp_frames(v0, v1, n_channels, n_frames):
     """
     Create an array of frames containing values ramping from v0 (inclusive) to
     v1 (exclusive).
     """
     ramp = np.linspace(v0, v1, num=n_frames, endpoint=False, dtype=np.float32)
-    return ramp.repeat(n_channels).reshape(-1, n_channels)
+    return ramp.repeat(n_channels).reshape(n_channels, -1)
 
 def complex_to_magphase(c):
     """
@@ -52,11 +78,14 @@ def magphase_to_complex(mag, phase):
     """
     return mag * np.exp(1j*phase)
 
+RATIO_MIN = 1.1754944e-38  # np.finfo(np.float32).tiny
+
 def ratio_to_db(ratio):
+    ratio = np.maximum(ratio, RATIO_MIN)
     return 20 * np.log10(ratio)
 
-def db_to_ratio(ratio):
-    return np.power(10, ratio / 20)
+def db_to_ratio(db):
+    return np.power(10, db / 20)
 
 def meter_string_for_rms(arr):
     nchans = len(arr)

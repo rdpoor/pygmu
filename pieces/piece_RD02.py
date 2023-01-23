@@ -15,7 +15,7 @@ orig_duration = 176865
 
 bpm = 100
 beat_dur = int(orig_duration*orig_bpm/bpm)
-beat = pg.TimewarpPE(orig_beat, pg.IdentityPE(channel_count=1).gain(bpm/orig_bpm)).loop(beat_dur).crop(pg.Extent(0))
+beat = pg.TimewarpPE(orig_beat, pg.IdentityPE().gain(bpm/orig_bpm)).loop(beat_dur).crop(pg.Extent(0))
 
 q_note = words.frame_rate() * 60.0 / bpm
 

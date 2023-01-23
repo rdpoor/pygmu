@@ -40,23 +40,23 @@ class GaneshPE(PygPE):
 		return self._head_pe.channel_count()
 
 	def ganeshify(self, head_frames, body_frames, extend):
-		delta = len(head_frames) - len(body_frames)
+		delta = ut.frame_count(head_frames) - ut.frame_count(body_frames)
 		if delta < 0:
 			if extend:
 				# head is shorter than body: zero pad head
 				head_frames = np.concatenate(
-					(head_frames, ut.const_frames(0.0, -delta, head_frames.shape[1])))
+					(head_frames, ut.const_frames(0.0, ut.channel_count(head_frames), -delta)))
 			else:
 				# head is shorter than body: truncate body
-				body_frames = body_frames[0:-delta,:]
+				body_frames = body_frames[:,0:-delta]
 		elif delta > 0:
 			if extend:
 				# head is longer than body: zero pad body
 				body_frames = np.concatenate(
-					(body_frames, ut.const_frames(0.0, delta, body_frames.shape[1])))
+					(body_frames, ut.const_frames(0.0, ut.channel_count(body_frames), delta)))
 			else:
 				# head is longer than body: truncate head
-				head_frames = head_frames[0:delta,:]
+				head_frames = head_frames[:,0:delta]
 		# We now have two equally sized arrays.  process them...
 		head_magnitudes, _ = self.analyze(head_frames)
 		_, body_phases = self.analyze(body_frames)
@@ -66,7 +66,7 @@ class GaneshPE(PygPE):
 		"""
 		Take the FFT of the given frames, return a duple of (magnitudes, phases)
 		"""
-		analysis = np.fft.fft(frames.transpose())
+		analysis = np.fft.fft(frames)
 		return ut.complex_to_magphase(analysis)
 
 	def synthesize(self, magnitudes, phases):
@@ -75,4 +75,4 @@ class GaneshPE(PygPE):
 		real component.
 		"""
 		analysis = ut.magphase_to_complex(magnitudes, phases)
-		return np.real(np.fft.ifft(analysis)).transpose()
+		return np.real(np.fft.ifft(analysis))

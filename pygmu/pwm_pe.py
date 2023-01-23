@@ -1,8 +1,10 @@
 import numpy as np
 from extent import Extent
+from pyg_gen import PygGen
 from pyg_pe import PygPE
+import pyg_exceptions as pyx
 
-class PwmPE(PygPE):
+class PwmPE(PygGen):
     """
     Generate a rectangular wave with given period and duty cycle.  Note that 
     period is the number of frames per period, duty_cycle is the ratio of time 
@@ -17,16 +19,20 @@ class PwmPE(PygPE):
 
     """
 
-    def __init__(self, period:int, duty_cycle:np.float32, channel_count=PygPE.DEFAULT_CHANNEL_COUNT):
-        super(PwmPE, self).__init__()
+    def __init__(self, period:int, duty_cycle:np.float32, frame_rate=None):
+        super(PwmPE, self).__init__(frame_rate=frame_rate)
+        if isinstance(period, PygPE) and period.channel_count() != 1:
+            raise pyx.ChannelCountMismatch("PwmPE period must be 1 channel")
+        if isinstance(duty_cycle, PygPE) and duty_cycle.channel_count() != 1:
+            raise pyx.ChannelCountMismatch("PwmPE duty_cycle must be 1 channel")
         self._period = period
         self._duty_cycle = duty_cycle
-        self._channel_count = channel_count
 
     def render(self, requested:Extent):
         if isinstance(self._period, PygPE):
             # period is the output of a PE.  Render the values and use them.
             period = self._period.render(requested)
+            period[np.where(period<1)] = 1;  # enforce positive period
         else:
             # period is constant.
             period = self._period
@@ -39,13 +45,13 @@ class PwmPE(PygPE):
             thresh = self._duty_cycle * period
 
         # t is simply a vector of time values.
-        t = np.arange(requested.start(), requested.end()).reshape(-1, 1)
+        t = np.arange(requested.start(), requested.end()).reshape(1, -1)
         # t % period counts from 0 to period
         # (t % period < thresh) is true when t MOD period is less than thresh
         # (t % period < thresh).astype(np.float32) coerces True=1.0, False=0.0
+        # print("pwm", period.shape, thresh.shape, t.shape)
         v = (t % period < thresh).astype(np.float32)
-        # TODO: handle channel count.  Maybe...
         return v
 
     def channel_count(self):
-        return self._channel_count
+        return 1

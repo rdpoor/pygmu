@@ -1,6 +1,14 @@
 import unittest
-from pygmu import XxxPE
-from pygmu import Extent
+import numpy as np
+import os
+import sys
+
+script_dir = os.path.dirname( __file__ )
+pygmu_dir = os.path.join( script_dir, '..', 'pygmu' )
+sys.path.append( pygmu_dir )
+import utils as ut
+import pyg_exceptions as pyx
+from pygmu import (BlitSawPE, ConstPE, Extent)
 
 class TestXxxPE(unittest.TestCase):
 

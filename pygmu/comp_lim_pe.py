@@ -47,9 +47,9 @@ output db:
 3. Between x0 and x1, output rises at 1/ratio db per unit change in 
    input db.
 
-If x1 < x, output_db(x) = y1
-If x0 <= x < x1, output_db(x) = m * (x - x0) + y0
-If x < x0, output_db(x) = SQUELCH_SLOPE * (x - x0) + y0 
+If x >= x1, output_db(x) = y1 (limiting)
+If x0 <= x < x1, output_db(x) = m * (x - x0) + y0 (compressing, m=1/ratio)
+If x < x0, output_db(x) = SQUELCH_SLOPE * (x - x0) + y0 (squelching)
 
 y – y1 = m(x – x1)
 
@@ -68,17 +68,14 @@ y0 = m * (x0 - x1) + y1
     def render(self, requested:Extent):
         overlap = self._src_pe.extent().intersect(requested)
         if overlap.is_empty():
-            return ut.const_frames(0.0, requested.duration(), self.channel_count())
+            return ut.const_frames(0.0, self.channel_count(), requested.duration())
         
-        src = self._src_pe.render(requested)
-        db_env = ut.ratio_to_db(self._env_pe.render(requested))
-        gain_env = self.compute_gain(db_env)
-        dst = src * gain_env
-        # print("==== render:")
-        # print("gain_env=", gain_env.shape, gain_env)
-        # print("src=", src.shape, src)
-        # print("dst=", dst.shape, dst)
-        return dst
+        src_frames = self._src_pe.render(requested)
+        env_frames = self._env_pe.render(requested)
+        db_frames = ut.ratio_to_db(env_frames)
+        gain_frames = self.compute_gain(db_frames)
+        dst_frames = src_frames * gain_frames
+        return dst_frames
 
     def extent(self):
         return self._src_pe.extent()
@@ -89,8 +86,10 @@ y0 = m * (x0 - x1) + y1
     def frame_rate(self):
         return self._src_pe.frame_rate()
 
-    def compute_gain(self, db_env):
-        gain_db = self.output_db(db_env) - db_env
+    def compute_gain(self, input_db):
+        out_db = self.output_db(input_db)
+        gain_db = out_db - input_db
+        # print("in=\n{}\nout=\n{}\ngain=\n{}\n".format(input_db, out_db, gain_db))
         return ut.db_to_ratio(gain_db)
 
     def output_db(self, x):
@@ -104,7 +103,6 @@ y0 = m * (x0 - x1) + y1
         # apply squelch
         squelched = np.where(x < self._x0)
         y[squelched] = self.SQUELCH_SLOPE * (x[squelched] - self._x0) + self._y0
-        # print("=== output_db:", y)
         return y
 
     def ratio(self):

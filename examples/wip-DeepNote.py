@@ -76,10 +76,10 @@ AMPLITUDE_BPTS = [[0.0, 0.0], [12.0, 1.0], [20.0, 1.0], [PIECE_DURATION, 0.0]]
 # DAMPING_BPTS = [[0.0, 0.5*DS], [8.0, 3.0], [16.0, 2.0], [20.0, 1.0]]
 # OBEDIENCE_BPTS = [[0.0, 0.0], [8.0, 0.0], [16.0, 1.0], [28.0, 1.0]]
 
-# Create SequencePE, converting seconds to frames
-AMPLITUDE_PE = pg.SequencePE([[t*FRAME_RATE, v] for t, v in AMPLITUDE_BPTS])
-# DAMPING_PE = SequencePE([[t*FRAME_RATE, v] for t, v in DAMPING_BPTS])
-# OBEDIENCE_PE = SequencePE([[t*FRAME_RATE, v] for t, v in OBEDIENCE_BPTS])
+# Create SegmentsPE, converting seconds to frames
+AMPLITUDE_PE = pg.SegmentsPE([[t*FRAME_RATE, v] for t, v in AMPLITUDE_BPTS])
+# DAMPING_PE = SegmentsPE([[t*FRAME_RATE, v] for t, v in DAMPING_BPTS])
+# OBEDIENCE_PE = SegmentsPE([[t*FRAME_RATE, v] for t, v in OBEDIENCE_BPTS])
 
 RNG = np.random.default_rng()
 
@@ -156,7 +156,7 @@ def gen_pitch_sequence(final_pitch):
 		if obedience == 1.0 and abs(current_pitch-final_pitch) < 0.1:
 			break
 
-	return pg.SequencePE([[t*FRAME_RATE, ut.mtof(v)] for t, v in bpts])
+	return pg.SegmentsPE([[t*FRAME_RATE, ut.mtof(v)] for t, v in bpts])
 
 def stof(seconds):
 	return int(seconds * FRAME_RATE)

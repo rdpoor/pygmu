@@ -9,7 +9,7 @@ pygmu is designed more for composers than for performers -- unlike GarageBand or
 There are three fundamental objects upon which all of pygmu is built:
 * **Extent:** An Extent encapsulates a starting time (measured in samples) and an ending time (also measured in samples).
 * **Processing Element:**: Each processing element has a constructor, where you specificy parameters, and a `render(extent)` function which, when invoked, asks the processing element to produce sample data between `extent.start()` and `extent.end()`.  
-* **frames:** Sample data is passed around as a two-dimensional array, where each column is a channel (e.g. stereo frames will have two columns) and each row is an individual sample (mono, stereo or multi-channel).
+* **frames:** Sample data is passed around as a two-dimensional array, where each row is a channel (e.g. stereo frames will have two rows) and each columm is an individual sample (mono, stereo or multi-channel).
 
 ## A taste of pygmu
 
@@ -26,46 +26,63 @@ sys.path.append( pygmu_dir )
 import pygmu as pg
 import utils as ut
 
-def gen_sin(at_s, dur_s, freq_hz, amp):
+SRATE = 48000  # Define the frame rate for the piece.
+
+def s_to_f(seconds):
+    '''Convert seconds to frames (samples)'''
+    return int(seconds * SRATE)
+
+def generate_note(start_time, duration, hz, amp):
     """
     Return a Processing Element such that when you call render(), it produces
-    a sine tone at the desired time, frequency and amplitude.
-
-    This gen_sin() function is intended to show that it is easy to compose 
-    different PEs together to create more complex (or more bespoke) functions.
+    a tone at the desired time with a given duration, frequency and amplitude.
     """
-    # Exploit Python's support of nested functions
-    def s_to_f(seconds):
-        '''Convert seconds to frames (samples)'''
-        # In addition to a render() method, every processing element provides a
-        # frame_rate() method that advertises its frame rate.  Here, we use this
-        # to convert seconds to frames.
-        return int(seconds * sin_pe.frame_rate())
+    # Use an Extent to define the start and end times of the note
+    extent = pg.Extent(s_to_f(start_time), s_to_f(start_time + duration))
 
-    # Create a sine generator with given frequency and ampltude
-    sin_pe = pg.SinPE(frequency = freq_hz, amplitude = amp)
-    # Crop the output to to start and end at the desired times.
-    return pg.CropPE(sin_pe, pg.Extent(s_to_f(at_s), s_to_f(at_s + dur_s)))
+    # We use a BlitSaw (bandwidth limited sawtooth wave generator) to generate 
+    # the tone, passing its output through a gain stage to adjust the amplitude 
+    # and then through a "CropPE" to specify the start and end times.
 
-# Generate Wagner's famous opening chord...
-# Mix the output of four sinewaves, each with its own frequency and start time.
-mix = pg.MixPE(
-    gen_sin(0.5, 3.5, ut.pitch_to_freq(53), 0.2),
-    gen_sin(1.0, 3.0, ut.pitch_to_freq(59), 0.2),
-    gen_sin(1.5, 2.5, ut.pitch_to_freq(63), 0.2),
-    gen_sin(2.0, 2.0, ut.pitch_to_freq(68), 0.2))
+    # We could chain together the processing elements like this...
+    # saw_pe = pg.BlitSawPE(frequency=hz, frame_rate=SRATE)
+    # saw_pe = pg.GainPE(saw_pe, amp)          # Adjust the amplitude
+    # saw_pe = pg.CropPE(saw_pe, extent)       # Crop start and end times
+    # return saw_pe                            # Return the result
 
-# Start calling render() on the "mix" processing element to play in real-time
-pg.Transport(mix).play()
+    # ... but PygMu provides shorthand chaining methods for many common
+    # functions, so you can write the whole thing in one line if you prefer:
+    return pg.BlitSawPE(frequency=hz, frame_rate=SRATE).gain(amp).crop(extent)
 
+# Mix the output of four tones to Generate Wagner's famous opening chord.
+# Note that we use the `utils` module's `pitch_to_freq()` functon to convert
+# MIDI style pitch numbers to frequencies.  
+tristan = pg.MixPE(
+    generate_note(0.5, 4.5, ut.pitch_to_freq(53), 0.2),
+    generate_note(1.0, 4.0, ut.pitch_to_freq(59), 0.2),
+    generate_note(1.5, 3.5, ut.pitch_to_freq(63), 0.2),
+    generate_note(2.0, 3.0, ut.pitch_to_freq(68), 0.2))
+
+# At this point, we have defined HOW the final piece will be generated, but it 
+# hasn't been generated yet.  The Transport `play()` method will repeatedly call
+# `tristan.render()` to request samples, sending the result to the DAC on your
+# computer.
+pg.Transport(tristan).play()
 ```
 
-The example above has nine processing elements, connected as shown below.  The important thing to notice is that each processing element is a black box that will produce frames whenever its `render()` method is called.  A graphical representation of the above looks like this:
+The example above has eleven processing elements, connected as shown below.  The 
+important thing to notice is that each processing element is a black box that 
+will produce frames whenever its `render()` method is called.  A graphical 
+representation of the above looks like this:
 
 ```
       +---------------+ +---------------+ +---------------+ +---------------+ 
-      | sin(174, 0.2) | | sin(246, 0.2) | | sin(311, 0.2) | | sin(415, 0.2) | 
+      | saw(174, 0.2) | | saw(246, 0.2) | | saw(311, 0.2) | | saw(415, 0.2) | 
       +-------v-------+ +-------v-------+ +-------v-------+ +-------v-------+ 
+              |                 |                 |                 |
+      +-------v-------+ +-------v-------+ +-------v-------+ +-------v-------+ 
+      |   amp(0.2)    | |   amp(0.2)    | |   amp(0.2)    | |   amp(0.2)    | 
+      +-------v-------+ +-------v-------+ +-------v-------+ +-------v-------+
               |                 |                 |                 |
       +-------v-------+ +-------v-------+ +-------v-------+ +-------v-------+ 
       | crop(0.5,4.0) | | crop(1.0,4.0) | | crop(1.5,4.0) | | crop(2.0,4.0) | 
@@ -80,10 +97,15 @@ The example above has nine processing elements, connected as shown below.  The i
                                  +---------------+
 ```
 
-The `Transport` object is not a processing element itself: it doesn't provide a render() function.  Instead, when its play() method is called, it starts calling render() on the
-processing element connected to its input, which in this case is the `mix` processing element.  The `mix` PE in turn calls each of its inputs (the `crop` PEs), which in turn call _their_ inputs, which generate the sine tones.
+The `Transport` object is not a processing element itself: it doesn't provide a 
+render() function.  Instead, when its play() method is called, it starts calling 
+render() on the processing element connected to its input, which in this case is 
+the `mix` processing element.  The `mix` PE in turn calls each of its inputs 
+(the `crop` PEs), which in turn call _their_ inputs and so on, to generate the 
+tones.
 
-In computer science terms, a pygmu composition is a _directed acyclic graph_ in which the root node (Transport) "pulls" frames from the rest of the network.
+In computer science terms, a pygmu composition is a _directed acyclic graph_ in 
+which the root node (Transport) "pulls" frames from the rest of the network.
 
 ## Install pygmu, run an example
 
@@ -130,6 +152,49 @@ If you are already running the pygmu shell:
 ```
 The `-f` means stop on first error.  The `-s` means search in the `tests/` directory for files that start with `test_xxx`
 
+### Coverage Tests
+
+After you have the unit tests running, hre are the commands that will make sure you've got good testing coverage.
+When you open the .html file, click on an individual file listed there.  Lines highlighted in red indicate that 
+they did not get run, and is a strong indicator that your unit tests need to excercise and test those lines.
+
+#### On Windows:
+
+```
+$ py -m coverage run -m unittest discover -f -s tests
+......................................................................
+----------------------------------------------------------------------
+Ran 152 tests in 0.038s
+OK
+
+$ py -m coverage html
+Wrote HTML report to htmlcov\index.html
+
+$ start htmlcov/index.html
+
+# Or all at once:
+
+py -m coverage run -m unittest discover -f -s tests && py -m coverage html ; start htmlcov/index.html
+```
+
+#### On macOS:
+
+(Typed from memory -- please correct if needed)
+
+```
+$ python -m coverage run -m unittest discover -f -s tests
+......................................................................
+----------------------------------------------------------------------
+Ran 152 tests in 0.038s
+OK
+
+$ python -m coverage html
+Wrote HTML report to htmlcov\index.html
+
+$ open htmlcov/index.html
+```
+
+
 ### Profiling
 Python has built-in profiling tools.  To use it:
 * Run the python script with the cProfile module, as shown below
@@ -170,165 +235,98 @@ two-dimensional [numpy arrrays](https://numpy.org/doc/stable/reference/generated
 `numpy` provides a truly dazziling assortment of functions that operate on arrays.  Here are some of the more common ones you might encounter as a pygmu developer.
 
 
-A buffer of single-channel (mono) data is represented by a single column of samples:
-
+A buffer of single-channel (mono) data is represented as a 2-D array with one row:
 ```
->>> a
-array([[0.],
-       [1.],
-       [2.],
-       [3.],
-       [4.]], dtype=float32)
+>>> a1 = np.array([np.arange(100, 105)], dtype=np.float32)
+array([[100., 101., 102., 103., 104.]], dtype=float32)
 ```
 
-Stereo frames have two columns, where column 0 is understood to be the left channel:
-
+As a convenience, a mono channel can also be represented by a 1-D array of samples:
 ```
->>> b
-array([[0., 1.],
-       [2., 3.],
-       [4., 5.],
-       [6., 7.],
-       [8., 9.]], dtype=float32)
-```
-To convert mono frames into stereo (with no gain change):
-```
->>> a.repeat(2, axis=1)
-array([[0., 0.],
-       [1., 1.],
-       [2., 2.],
-       [3., 3.],
-       [4., 4.]], dtype=float32)
+>>> a2 = np.arange(200, 205, dtype=np.float32)
+array([200., 201., 202., 203., 204.], dtype=float32) 
 ```
 
-To convert mono frames into stereo (applying 0.7 gain to left channel and 0.5 to right):
-
+Stereo frames have two rows, where row 0 is understood to be the left channel:
 ```
->>> np.dot(a, [[0.7, 0.5]])
-array([[0. , 0. ],
-       [0.7, 0.5],
-       [1.4, 1. ],
-       [2.1, 1.5],
-       [2.8, 2. ]])
+>>> b = np.array([np.arange(100, 105), np.arange(200, 205)], dtype=np.float32)
+array([[100., 101., 102., 103., 104.],                          
+       [200., 201., 202., 203., 204.]], dtype=float32) 
 ```
-
-To extract the left channel from stereo frames:
+You can use `np.vstack()` to convert a mono buffer into stereo without changing gain.  Note that you can use 1-D or 2-D arrays:
 ```
->>> b[:,0:1]
-array([[0.],
-       [2.],
-       [4.],
-       [6.],
-       [8.]], dtype=float32)
+>>> np.vstack((a1, a1))
+array([[100., 101., 102., 103., 104.],
+       [100., 101., 102., 103., 104.]], dtype=float32)
+>>> np.vstack((a2, a2))
+array([[100., 101., 102., 103., 104.],
+       [100., 101., 102., 103., 104.]], dtype=float32)
 ```
-
-This is an example of `slicing`.  The general syntax is:
+You can also use `np.vstack()` to "glue" two independent mono tracks into stereo, assuming they have the same length:
+```
+>>> a3=np.arange(300, 305, dtype=np.float32)
+>>> np.vstack((a2, a3))
+array([[200., 201., 202., 203., 204.],
+       [300., 301., 302., 303., 304.]], dtype=float32)
+```
+You can use 'slicing' to extract the left or right channel from stereo frames:
+```
+>>> b[0,:]
+array([100., 101., 102., 103., 104.], dtype=float32)
+>>> b[1,:]
+array([200., 201., 202., 203., 204.], dtype=float32)
+```
+You can think of that as "get all of row 0 from b" and "get all of row 1 from b" respectively.  The general syntax for slicing is:
 
     <array>[<row indexes>,<column indexes>]
 
-If \<row indeces\> has the form `j:k`, that's interpreted as starting at row j (inclusive) and ending at row k (exclusive).  If j is omitted, it is interpreted as 0.  If k is omitted, it is interpreted as the end of the axis.  And if either j or k are negative, they index from the end of the array.  So:
+If \<column indeces\> has the form `j:k`, that's interpreted as starting at column j (inclusive) and ending at column k (exclusive).  If j is omitted, it is interpreted as 0.  If k is omitted, it is interpreted as the end of the column.  And if either j or k are negative, they index from the end of the row.  So:
 
 ```
->>> b[1:3]
-array([[2., 3.],
-       [4., 5.]], dtype=float32)
->>> b[-4:3]       # -4 is samee as 2
-array([[2., 3.],
-       [4., 5.]], dtype=float32)
+>>> b[:, 1:3]
+array([[101., 102.],
+       [201., 202.]], dtype=float32)
+>>> b[:,-4:3]           # -4 is equivalent to 2
+array([[101., 102.],
+       [201., 202.]], dtype=float32)
 
 ``` 
-Column indeces work the same.  If you want slice that returns just the left or right channels as columns:
 
-```
->>> b[:,0:1]
-array([[0.],
-       [2.],
-       [4.],
-       [6.],
-       [8.]], dtype=float32)
->>> b[:,1:2]
-array([[1.],
-       [3.],
-       [5.],
-       [7.],
-       [9.]], dtype=float32)
-```
-
-Sometimes you'd like to extact a channel of data as a row rather than a column as required by many library functions like `scipy.signal.convolve()`, etc.  You do this by passing a scalar rather than a `j:k` range:
-
-```
->>> b[:,0]
-array([0., 2., 4., 6., 8.], dtype=float32)
->>> b[:,1]
-array([1., 3., 5., 7., 9.], dtype=float32)
-```
 numpy arrays support scalar operations which are "broadcast" over all the elements.  Therefore:
 ```
->>> a += 100
->>> a
-array([[100.],
-       [101.],
-       [102.],
-       [103.],
-       [104.]], dtype=float32)
+>>> a1 + 0.123
+array([[100.123, 101.123, 102.123, 103.123, 104.123]], dtype=float32)
 ```
 Slices can almost always appear on the left hand side of an assignment.  If you wanted to modify the left channel of a frames object:
 ```
->>> b[:,0:1] = a
+>>> b[0:1,] = a3
 >>> b
-array([[100.,   1.],
-       [101.,   3.],
-       [102.,   5.],
-       [103.,   7.],
-       [104.,   9.]], dtype=float32)
+array([[300., 301., 302., 303., 304.],
+       [200., 201., 202., 203., 204.]], dtype=float32)
 ```
-
 The `T` operator will transpose a column array into a row array and vice versa:
-
 ```
->>> a
-array([[100.],
-       [101.],
-       [102.],
-       [103.],
-       [104.]], dtype=float32)
->>> b
-array([[100.,   1.],
-       [101.,   3.],
-       [102.,   5.],
-       [103.,   7.],
-       [104.,   9.]], dtype=float32)
->>> c = a.T
->>> c
-array([[100., 101., 102., 103., 104.]], dtype=float32)
->>> d = b.T
->>> d
-array([[100., 101., 102., 103., 104.],
-       [  1.,   3.,   5.,   7.,   9.]], dtype=float32)
->>> c.T
-array([[100.],
-       [101.],
-       [102.],
-       [103.],
-       [104.]], dtype=float32)
->>> d.T
-array([[100.,   1.],
-       [101.,   3.],
-       [102.,   5.],
-       [103.,   7.],
-       [104.,   9.]], dtype=float32)
+>>> b.T
+array([[300., 200.],
+       [301., 201.],
+       [302., 202.],
+       [303., 203.],
+       [304., 204.]], dtype=float32)
+>>> b.T.T
+array([[300., 301., 302., 303., 304.],
+       [200., 201., 202., 203., 204.]], dtype=float32)
 ```
 
-#### Of channel_count and frame_count
+#### Of frame_count and channel_count
 
 A numpy array has a `shape` property, so:
 
 ```
 >>> b.shape
-(5, 2)
+(2, 5)
 ```
 
-This tells us that `b` is five frames long and has two channels (stereo).
+This tells us that `b` has two channels and is five frames long.
 
 #### The ubiquitous `reshape()` function
 
@@ -368,43 +366,48 @@ array([ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10., 11.], dtype=float3
 >>> a.reshape(1, 12)
 array([[ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10., 11.]], dtype=float32)
 ```
-To simplify things, `reshape()` lets you specify -1 as one of the arguments.  It
+As a convenience, `reshape()` lets you specify -1 as one of the arguments.  It
 will infer what that should be based on the other argument and the length of the
-underlying array.  In numpy, you'll often see the construct like this:
+underlying array:
 ```
->>> a.reshape(-1, 2)
-array([[ 0.,  1.],
-       [ 2.,  3.],
-       [ 4.,  5.],
-       [ 6.,  7.],
-       [ 8.,  9.],
-       [10., 11.]], dtype=float32)
+>>> a.reshape(1, -1)
+array([[ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10., 11.]], dtype=float32)
+>>> a.reshape(2, -1)
+array([[ 0.,  1.,  2.,  3.,  4.,  5.],
+       [ 6.,  7.,  8.,  9., 10., 11.]], dtype=float32)
+>>> a.reshape(3, -1)
+array([[ 0.,  1.,  2.,  3.],
+       [ 4.,  5.,  6.,  7.],
+       [ 8.,  9., 10., 11.]], dtype=float32)
 ```
-This can be interpreted as 'take whatever data is in a and return a frames
-object with two channels' (i.e. two columns), regardless of its original length.
 
 ### Utilities
 
-Command to print out info about all the soundfiles in the current directory (must have sox installed):
+Command to print out info about all the soundfiles in the current directory 
+(must have sox installed):
 
     Windows:    find . -name "*.wav" -print0 | xargs -0 sox.exe --i
-    OXS/Linux:  find . -name "*.wav" -print0 | xargs -0 sox --i
+    OSX/Linux:  find . -name "*.wav" -print0 | xargs -0 sox --i
 
 
 ### Todo
 
 * [done] Create pyg_exceptions for channel mismatch, frame rate mismatch, perhaps others.
-* Flesh out unit tests.
-* Add auto-stop feature to Transport to halt on first buffer of all zeros.
-* Add graphical interface to Transport
+* [never entirely done] Flesh out unit tests.
 * [done] add explanation of reshape(-1,1) to All about frames section
-* Add autoscale=n parameter to WavReaderPE to normalize amplitude, and/or create a batch
-  file to normalize all files in samples/
-* TimewarpPE needs help.  see examples/example_09.py.  enfoce single-channel timeline
+* [done] TimewarpPE needs help.  see examples/example_09.py.  enfoce single-channel timeline
 * BiQuadPE needs help.  see examples/example_11.py
 * FilterPE needs help.  see examples/filter_example.py
 * examples/piece_RA01_v1.py needs help: MixPE trying to mix mono and stereo for some seeds
+* [done] Create user-supplied f(x) processing element: output = user_function(input).  (Create `MapPE`)
+* [done] Rethink EnvDetectPE, CompLimPE, CompressorPE, LimiterAPE, LimiterPE.  (Create `MapPE`,
+give `EnvDetectPE` and `GainPE` a `units='db'` optional parameter.)
+* In `EnvDetectPE`, optionally support time constants (seconds) for attack and relase rather than 0.99 meaning "fast" and 0.01 meaning "slow".
 
+### Ponders
+
+* Should compressors / limiters accept multi-channel envelope data?
+* If a PE takes multple inputs, and inputs have different frame rates, should it: (1) raise an error, (2) print a warning, (3) silently accept the frame rate of the first input?  For now, we're implementing (1) (raise an error).  We could create a pass-through PE that discards frame rate as a universal adaptor.
 
 ### For future consideration
 

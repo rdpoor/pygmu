@@ -9,20 +9,20 @@ import pygmu as pg
 Test TimewarpPE
 """
 
-n_frames = 89576 / 4
+SRC_FRAMES = 89576 / 4
 FRAME_RATE = 48000
-
-semitone = pow(2.0, 1/12)
+SEMITONE = pow(2.0, 1/12)
 
 def make_timeline(pitches):
-    timeline = np.ndarray([0, 1], dtype=np.float32)
+    timeline = np.ndarray([1, 0], dtype=np.float32)
     start_frame = 0
     for p in pitches:
-        freq = semitone**p
-        ramp_dur = int(n_frames / freq)
-        ramp = pg.utils.ramp_frames(0, n_frames, ramp_dur, 1)
-        timeline = np.concatenate((timeline, ramp))
-    return pg.ArrayPE(timeline)
+        freq = SEMITONE**p
+        ramp_dur = int(SRC_FRAMES / freq)
+        ramp = np.linspace(0, SRC_FRAMES, ramp_dur, endpoint=False, dtype=np.float32)
+        timeline = np.append(timeline, ramp)
+    # TODO: ArrayPE should accept 1D array
+    return pg.ArrayPE(timeline.reshape(1, -1))
 
 def make_timeline2(mult, nframes=44000):
     timeline = np.tile(np.linspace(0, nframes,mult).reshape(-1, 1), (1, 2))

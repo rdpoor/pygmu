@@ -14,7 +14,7 @@ class CompressorPE(PygPE):
                  env_pe,
                  threshold_db = 0.0,
                  ratio = 2.0,
-                 post_gain_db = None):
+                 makeup_db = None):
         """
         Compressor / Limiter
 
@@ -22,7 +22,7 @@ class CompressorPE(PygPE):
         env_pe: output of envelope detector, 1.0 is nominal full-scale
         threshold_db: level above which compression takes effect
         ratio: compression ratio when input_db > thresh_db
-        post_gain_db: gain applied after compression.  If not
+        makeup_db: gain applied after compression.  If not
           specified, defaults to threshold_db. 
 
                                                .
@@ -30,7 +30,7 @@ class CompressorPE(PygPE):
                                    .
                              .
                        +
-    radio = 1:1      . |
+    ratio = 1:1      . |
                    .   |
                  .     |
                .       |
@@ -46,14 +46,14 @@ class CompressorPE(PygPE):
         self._env_pe = env_pe
         self._threshold_db = threshold_db
         self._m = 1/ratio
-        self._post_gain_db = post_gain_db
-        if post_gain_db is None:
-            self._post_gain_db = -threshold_db
+        self._makeup_db = makeup_db
+        if makeup_db is None:
+            self._makeup_db = -threshold_db
 
     def render(self, requested:Extent):
         overlap = self._src_pe.extent().intersect(requested)
         if overlap.is_empty():
-            return ut.const_frames(0.0, requested.duration(), self.channel_count())
+            return ut.const_frames(0.0, self.channel_count(), requested.duration())
         
         src = self._src_pe.render(requested)
         db_env = ut.ratio_to_db(self._env_pe.render(requested))
@@ -74,14 +74,14 @@ class CompressorPE(PygPE):
     def frame_rate(self):
         return self._src_pe.frame_rate()
 
-    def theshold_db(self):
+    def threshold_db(self):
         return self._threshold_db
 
     def ratio(self):
         return 1/self._m
 
-    def post_gain_db(self):
-        return self._post_gain_db
+    def makeup_db(self):
+        return self._makeup_db
 
     def compute_gain(self, db_env):
         # assume no compression
@@ -90,5 +90,5 @@ class CompressorPE(PygPE):
         compressed = np.where(db_env > self._threshold_db)
         out_db[compressed] = self._m * (db_env[compressed] - self._threshold_db) + self._threshold_db
         # gain = output / input (but we're still in db...)
-        gain_db = (out_db - db_env) + self._post_gain_db
+        gain_db = (out_db - db_env) + self._makeup_db
         return ut.db_to_ratio(gain_db)

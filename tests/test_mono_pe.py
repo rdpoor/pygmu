@@ -16,26 +16,26 @@ class TestMonoPE(unittest.TestCase):
 
     def test_render(self):
 
-        src = IdentityPE(channel_count=1)
+        src = IdentityPE()
         pe = MonoPE(src)
-        expect = np.array([[0], [1], [2], [3], [4]], dtype=np.float32)
+        expect = np.array([[0, 1, 2, 3, 4]], dtype=np.float32)
         got = pe.render(Extent(0, 5))
         np.testing.assert_array_almost_equal(got, expect)
 
-        src = IdentityPE(channel_count=2)
+        src = IdentityPE().spread(2)
         pe = MonoPE(src)
-        expect = np.array([[0], [2], [4], [6], [8]], dtype=np.float32)
+        expect = np.array([[0, 2, 4, 6, 8]], dtype=np.float32)
         got = pe.render(Extent(0, 5))
         np.testing.assert_array_almost_equal(got, expect)
 
-        src = IdentityPE(channel_count=2)
+        src = IdentityPE().spread()
         pe = MonoPE(src, attenuation = 0.5)
-        expect = np.array([[0], [1], [2], [3], [4]], dtype=np.float32)
+        expect = np.array([[0, 1, 2, 3, 4]], dtype=np.float32)
         got = pe.render(Extent(0, 5))
         np.testing.assert_array_almost_equal(got, expect)
 
     def test_extent(self):
-        src = IdentityPE(channel_count=1)
+        src = IdentityPE()
         expected_extent = Extent(2, 4)
 
         pe = MonoPE(src)
@@ -51,7 +51,7 @@ class TestMonoPE(unittest.TestCase):
         self.assertEqual(pe.frame_rate(), 1234)
 
     def test_channel_count(self):
-        src = IdentityPE(channel_count=2)
+        src = IdentityPE().spread(2)
         pe = MonoPE(src)
         self.assertEqual(pe.channel_count(), 1)
 

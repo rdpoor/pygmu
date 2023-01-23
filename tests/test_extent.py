@@ -333,3 +333,6 @@ class TestExtent(unittest.TestCase):
         self.assertTrue(a2.equals(a2.intersect(a0)))
         self.assertTrue(a2.intersect(a1).is_empty())
         self.assertTrue(a2.equals(a2.intersect(a2)))
+
+    def test_repr(self):
+        self.assertIsInstance(Extent().__repr__(), str)

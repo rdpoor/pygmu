@@ -101,11 +101,7 @@ class Extent(object):
         """
         Returns true if self and other refer to the same extent.
         """
-        if isinstance(other, Extent):
-            return self.s == other.s and self.e == other.e
-        else:
-            # can equal a scalar iff self has zero duration.
-            return self.s == other and self.e == other
+        return self.s == other.s and self.e == other.e
 
     # ================================================================
     # operations on two extents
