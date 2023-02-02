@@ -11,9 +11,9 @@ Play with pg.GaneshPE
 
 print("hit return after each example to hear the next")
 
-f1 = pg.WavReaderPE("samples/multisamples/HarmonicGuitar-C3.wav")
-f2 = pg.WavReaderPE("samples/multisamples/Seaward_Piano_ppp_D3.wav")
-f3 = pg.WavReaderPE("samples/multisamples/Violin_Undul_C3_RM.wav")
+f1 = pg.WavReaderPE("samples/multisamples/HarmonicGuitar-C3.wav").mono()
+f2 = pg.WavReaderPE("samples/multisamples/Seaward_Piano_ppp_D3.wav").mono()
+f3 = pg.WavReaderPE("samples/multisamples/Violin_Undul_C3_RM.wav").mono()
 
 print("Guitar")
 pg.Transport(f1).play()

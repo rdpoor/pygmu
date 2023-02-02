@@ -21,7 +21,8 @@ class InterpolatePE(PygPE):
         # request the relevant extent of the source, grab an extra frame at end for interpolation of the last frame(s)        
         interp_requested = Extent(round(requested.start() * self._speed_mult), round((requested.end()) * self._speed_mult) + self.channel_count()) 
         src_frames = self._src_pe.render(interp_requested)
-        dst_frames = ut.uninitialized_frames(requested.duration(), self.channel_count())
+        dst_frames = ut.uninitialized_frames(self.channel_count(),requested.duration())
+        print(src_frames.shape,dst_frames.shape)
         #dst_frames[0] = self._prev_frame_kludge
         for i in range(round(overlap.duration())):
             # idx_f is fractional index into src_frames.  linear interpolate...

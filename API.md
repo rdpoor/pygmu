@@ -112,6 +112,8 @@ mogrify()
 #### WavWriterPE
 
 ## Utilities
+     
+    .biquad(gain,freq,q,type)
 
     .delay(time)
         shifts the PE by time frames
@@ -135,7 +137,9 @@ mogrify()
     .reverse(infinite_end=55)
         reverse the frames, for pes of infinite extent, requires a non-infinite ending time
 
-    
+    .spread(channel_count=2)
+
+
 
 
     
