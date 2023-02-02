@@ -36,7 +36,7 @@ def good_gravy(src,window_start, window_duration, walk_rate, final_duration, fli
     even_odd = True
 
     while(cur_frame < final_frame):
-        g = src.crop(pg.Extent(st_frame, st_frame + window_frames)).delay(cur_frame).env(overlap_frames,overlap_frames)
+        g = src.crop(pg.Extent(st_frame, st_frame + window_frames)).delay(cur_frame).splice(overlap_frames,overlap_frames)
         if not even_odd:
             g = g.reverse(window_frames)
         els.append(g)
@@ -79,10 +79,10 @@ sourceA= pg.WavReaderPE("samples/ItsGonnaRain_Original.wav")
 # frag4a = delays(gravy4, 0.29,6,0.98).env(secs(2),100)
 
 
-frag1a = good_gravy(sourceA, 2.85, 0.07, 0.002, dur, True).pan(-40).env(secs(2),100)
-frag2a = good_gravy(sourceA, 3.13, 0.04, 0.005, dur, True).pan(10).env(secs(2),100)
-frag3a = good_gravy(sourceA, 3.83, 0.02, 0.002, dur, True).pan(35).env(secs(2),100)
-frag4a = good_gravy(sourceA, 14.13, 0.024, 0.0014, dur, True).pan(0).env(secs(2),100)
+frag1a = good_gravy(sourceA, 2.85, 0.07, 0.002, dur, True).pan(-40).splice(secs(2),100)
+frag2a = good_gravy(sourceA, 3.13, 0.04, 0.005, dur, True).pan(10).splice(secs(2),100)
+frag3a = good_gravy(sourceA, 3.83, 0.02, 0.002, dur, True).pan(35).splice(secs(2),100)
+frag4a = good_gravy(sourceA, 14.13, 0.024, 0.0014, dur, True).pan(0).splice(secs(2),100)
 
 
 elements = []
@@ -107,7 +107,7 @@ mosh =  pg.LimiterPE(pg.MixPE(*elements))
 mosh_del = delays(mosh, 0.52, 5, 0.57)
 
 mosh_del = mosh
-moshr =  mosh.reverse(dur).env(secs(2),100)
+moshr =  mosh.reverse(dur).splice(secs(2),100)
 all = pg.MixPE(mosh_del,moshr)
 all_del = delays(all, 0.4, 3, 0.57)
 

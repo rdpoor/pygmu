@@ -37,7 +37,7 @@ def loopWindow(src,insk,dur):
 
 def blit_note(pitch,t,dur,gain,harmonics):
     f = ut.pitch_to_freq(pitch)    
-    return pg.BlitSigPE(frequency=f, n_harmonics=harmonics, frame_rate=srate, waveform=pg.BlitSigPE.PULSE).crop(pg.Extent(0, secs(dur))).gain(gain).delay(secs(t)).env(100,100)
+    return pg.BlitSawPE(frequency=f, n_harmonics=harmonics, frame_rate=srate).crop(pg.Extent(0, secs(dur))).gain(gain).delay(secs(t)).splice(100,100)
     #return pg.BlitsigPE(frequency=f, n_harmonics=harmonics, channel_count=1, frame_rate=48000, waveform=pg.BlitsigPE.SAWTOOTH).crop(pg.Extent(0, secs(dur))).gain(gain).delay(secs(t)).env(500,1000)
 
 def render_cycle(pitches, pulses, dur, gain, harmonics, transpose=0, big_start=0):
@@ -89,9 +89,9 @@ elements = []
 gain = 0.17
 
 pitch = 36
-cycle_do_re = [0,-2,1]
-cycle_do_re2 = [0,2,-2,3]
-cycle_do_re3 = [-5,-3,0,2,-1]
+cycle_do_re = [0,-2,1,3,0]
+cycle_do_re2 = [2,2,-2,0]
+cycle_do_re3 = [-5,-3,0,2,-1,1]
 cycle_do_do = [6,7]
 cycle_abc = [0,4,3]
 cycle_xyz = [0,2,1,4,-1,1]
@@ -154,5 +154,6 @@ mixB = pg.MixPE(syrup_mixA, beatloop.gain(0.5))
 impulse = pg.WavReaderPE('samples/IR/Small Prehistoric Cave.wav')
 convolved = pg.ConvolvePE(mixB.gain(0.25), impulse)
 
-convolved.term_play('live',0)
+#convolved.term_play('live',0)
+convolved.play()
 

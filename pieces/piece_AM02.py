@@ -43,9 +43,9 @@ def mix_at(src, t, amp = 1):
 fade_in = secs(0.3)
 fade_out = secs(2.1)
 
-sourceA = pg.WavReaderPE("samples/KeyboardSonatainECKPiano.wav").crop(pg.Extent(start=0,end=secs(10))).env(secs(0.5),secs(0.5))
-sourceA2 = pg.WavReaderPE("samples/KeyboardSonatainECKPiano.wav").crop(pg.Extent(start=20,end=secs(30))).env(secs(0.5),secs(0.5))
-sourceB = pg.WavReaderPE("samples/PrettyGirl_Gleason.wav").crop(pg.Extent(start=20,end=secs(30))).env(secs(0.5),secs(0.5))
+sourceA = pg.WavReaderPE("samples/KeyboardSonatainECKPiano.wav").crop(pg.Extent(start=0,end=secs(10))).splice(secs(0.5),secs(0.5))
+sourceA2 = pg.WavReaderPE("samples/KeyboardSonatainECKPiano.wav").crop(pg.Extent(start=20,end=secs(30))).splice(secs(0.5),secs(0.5))
+sourceB = pg.WavReaderPE("samples/PrettyGirl_Gleason.wav").crop(pg.Extent(start=20,end=secs(30))).splice(secs(0.5),secs(0.5))
 sourceC = pg.WavReaderPE("samples/TamperClip93.wav")
 
 frag1 = pg.SplicePE(sourceA, fade_in, fade_out).reverse(10)
