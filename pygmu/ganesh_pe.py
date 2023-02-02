@@ -44,16 +44,17 @@ class GaneshPE(PygPE):
 		if delta < 0:
 			if extend:
 				# head is shorter than body: zero pad head
-				head_frames = np.concatenate(
-					(head_frames, ut.const_frames(ut.channel_count(head_frames), 0.0,  -delta)))
+				padding = ut.const_frames(0.0, ut.channel_count(head_frames), -delta)
+				# print(head_frames.shape, padding.shape)
+				head_frames = np.concatenate((head_frames, padding), axis=1)
 			else:
 				# head is shorter than body: truncate body
 				body_frames = body_frames[:,0:-delta]
 		elif delta > 0:
 			if extend:
 				# head is longer than body: zero pad body
-				body_frames = np.concatenate(
-					(body_frames, ut.const_frames(ut.channel_count(body_frames), 0.0,  delta)))
+				padding = ut.const_frames(0.0, ut.channel_count(body_frames), delta)
+				body_frames = np.concatenate((body_frames, padding), axis=1)
 			else:
 				# head is longer than body: truncate head
 				head_frames = head_frames[:,0:delta]
