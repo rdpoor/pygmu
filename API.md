@@ -113,6 +113,29 @@ mogrify()
 
 ## Utilities
 
+    .delay(time)
+        shifts the PE by time frames
+
     .gain(multiplier)
+
+    .splice(fade_in_duration, fade_out_duration)
+
+    .interpolate(speed_multiplier)
+
+    .limit_a(threshold_db=-10, headroom_db=3)
+        simple limiter with reasonable defaults
+
+    .loop(length)
+        infinite extent looping
+
+    .mono()
+
+    .pan(degree)
+
+    .reverse(infinite_end=55)
+        reverse the frames, for pes of infinite extent, requires a non-infinite ending time
+
+    
+
 
     
