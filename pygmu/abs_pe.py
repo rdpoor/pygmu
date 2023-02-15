@@ -8,6 +8,17 @@ class AbsPE(PygPE):
     """
 
     def __init__(self, src:PygPE):
+        """
+        Parameters
+        ----------
+        src : PygPE
+            A source stream
+
+        Returns:
+        --------
+        PygPE
+            A stream that renders the absolute value of the source stream.
+        """
         super(AbsPE, self).__init__()
         self._src_pe = src
 

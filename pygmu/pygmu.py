@@ -35,11 +35,12 @@ from print_pe import PrintPE
 from pwm_pe import PwmPE
 from pyg_exceptions import *
 from pyg_pe import PygPE
+from ramp_pe import RampPE
 from reverse_pe import ReversePE
 from segments_pe import SegmentsPE
 from sin_pe import SinPE
 from snippet_pe import SnippetPE
-from spatial_a_pe import SpatialAPE
+from spatial_pe import SpatialPE
 from splice_pe import SplicePE
 from spread_pe import SpreadPE
 from timewarp_pe import TimewarpPE

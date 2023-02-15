@@ -140,6 +140,65 @@ mogrify()
     .spread(channel_count=2)
 
 
+## Status / Checklist
 
+See: 
+* https://realpython.com/documenting-python-code/
+* https://requests.readthedocs.io/en/master/
+* https://github.com/requests/requests/tree/master/docs
 
-    
+Checklist:
+
+* name: name of the module
+* doc?: are the functions documented?
+* test%: unit test code coverage
+* m/s?: does it handle mono only?  or mono/stereo?
+* example?: is there example code (separate from unit test)?
+* notes: issues, comments, etc.
+
+| name | doc? | test% | m/s? | example? | notes |
+| ---- | ---- | ----- | -----| -------- | ----- |
+| `abs_pe.py` | y | 100 |   |   |   |
+| `array_pe.py` | y | 100 |   |   |   |
+| `biquad2_pe.py` | n | -na- |   |   | has glitches |
+| `blit_saw_pe.py` | n | 100 |   |   |   |
+| `cache_pe.py` | n | 100 |   |   |   |
+| `comb_pe.py` | n | 100 |   |   |   |
+| `comp_lim_pe.py` | n | 100 |   |   |   |
+| `compressor_pe.py` | n | 100 |   |   |   |
+| `const_pe.py` | n | 100 |   |   |   |
+| `convolve_pe.py` | n | 100 |   |   |   |
+| `crop_pe.py` | n | 100 |   |   |   |
+| `delay_pe.py` | n | 100 |   |   |   |
+| `env_detect_pe.py` | n | 100 | ms  |   |   |
+| `filter_pe.py` | n | 42 |   |   | deprecated?  |
+| `gain_db_pe.py` | n | n |   |   | replaced by gain_pe |
+| `gain_pe.py` | n | 100 |   |   |   |
+| `ganesh_pe.py` | n | 32 |   |   |   |
+| `gravy_pe.py` | n | 31 |   |   | deprecated? |
+| `identity_pe.py` | n | 100 |   |   |   |
+| `impulse_pe.py` | n | 100 |   |   |   |
+| `interpolate_pe.py` | n | 32 |   |   | replaced by timewarp? |
+| `limiter_a_pe.py` | n | 58 |   |   |   |
+| `limiter_pe.py` | n | 38 |   |   |   |
+| `loop_pe.py` | n | 100 |   |   |   |
+| `map_pe.py` | n | 50 |   |   |   |
+| `mix_pe.py` | n | 32 |   |   |   |
+| `mono_pe.py` | n | 100 |   |   |   |
+| `mul_pe.py` | n | 32 |   |   |   |
+| `noise_pe.py` | n | 100 |   |   |   |
+| `print_pe.py` | n | 50 |   |   |   |
+| `pwm_pe.py` | n | 100 |   |   |   |
+| `pyg_pe.py` | n | 62 |   |   |   |
+| `ramp_pe.py` | n | 91 |   |   |   |
+| `reverse_pe.py` | n | 29 |   |   |   |
+| `segments_pe.py` | n | 100 |   |   |   |
+| `sin_pe.py` | n | 100 |   |   |   |
+| `snippet_pe.py` | n | 50 |   |   |   |
+| `spatial_pe.py` | n | 41 |   |   |   |
+| `splice_pe.py` | n | 100 |   |   |   |
+| `spread_pe.py` | n | 100 |   |   |   |
+| `timewarp_pe.py` | n | 31 |   |   |   |
+| `tralfam_pe.py` | n | 19 |   |   |   |
+| `wav_reader_pe.py` | n | 32 |   |   |   |
+| `wav_writer_pe.py` | n | 36 |   |   |   |

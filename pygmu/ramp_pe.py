@@ -5,6 +5,8 @@ from pyg_gen import PygGen
 class RampPE(PygGen):
     """
     Generate a ramp with start time, end time, start value and end value.
+    Renders start_v before start time and end_v after end time, linearly
+    interpolates between the two.
     """
 
     def __init__(self, start_v, end_v, extent:Extent, frame_rate=None):
@@ -16,8 +18,6 @@ class RampPE(PygGen):
 
     def render(self, requested:Extent):
         overlap = requested.intersect(self.extent())
-        if overlap.is_empty():
-            return np.zeros(requested.duration(), dtype=np.float32).reshape(1, -1)
 
         # of frames to generate before, during and after the ramp
         # n_before = max(0, min(self.extent().start() - requested.start(), requested.duration()))

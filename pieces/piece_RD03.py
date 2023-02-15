@@ -84,7 +84,7 @@ def gen_fade_in():
         q = max(1, q * 0.85)
         snip = beat_loop.mono().crop(pg.Extent(int(s), int(e)))
         snip = pg.CombPE(snip, f0 = freq, q = q)
-        snip = pg.SpatialAPE(snip, degree=pan_degree)
+        snip = pg.SpatialPE(snip, degree=pan_degree)
         pes.append(snip)
         s = e
     return pg.MixPE(*pes).gain(0.25)
@@ -124,7 +124,7 @@ def gen_intro():
         e = s + n_frames
         freq = ut.pitch_to_freq(pitch+24)
         snip = beat_loop.crop(pg.Extent(s, e))
-        snip = pg.SpatialAPE(snip, degree = -45).gain(0.75)
+        snip = pg.SpatialPE(snip, degree = -45).gain(0.75)
         pes.append(pg.CombPE(snip, f0=freq, q=20))
         s = e
     s = beats(3 * 8)
@@ -132,7 +132,7 @@ def gen_intro():
         e = s + n_frames
         freq = ut.pitch_to_freq(pitch+12)
         snip = beat_loop.mono().crop(pg.Extent(s, e))
-        snip = pg.SpatialAPE(snip, degree = 45).gain(0.75)
+        snip = pg.SpatialPE(snip, degree = 45).gain(0.75)
         pes.append(pg.CombPE(snip, f0=freq, q=20))
         s = e
     return pg.MixPE(*pes)
@@ -146,11 +146,11 @@ def gen_verse_1():
         snip = beat_loop.mono().crop(pg.Extent(s, e))
 
         freq_l = ut.pitch_to_freq(pitch+24)
-        snip_l = pg.SpatialAPE(snip, degree = -45).gain(0.75)
+        snip_l = pg.SpatialPE(snip, degree = -45).gain(0.75)
         pes.append(pg.CombPE(snip_l, f0=freq_l, q=20))
 
         freq_r = ut.pitch_to_freq(pitch+12)
-        snip_r = pg.SpatialAPE(snip, degree = 45).gain(0.75)
+        snip_r = pg.SpatialPE(snip, degree = 45).gain(0.75)
         pes.append(pg.CombPE(snip_r, f0=freq_r, q=20))
         s = e
 
@@ -173,19 +173,19 @@ def gen_verse_2():
         beat_snip = beat_loop.mono().crop(pg.Extent(s, e))
 
         freq = ut.pitch_to_freq(pitch+24)
-        snip = pg.SpatialAPE(beat_snip, degree = -45).gain(0.75)
+        snip = pg.SpatialPE(beat_snip, degree = -45).gain(0.75)
         pes.append(pg.CombPE(snip, f0=freq, q=20))
 
         freq = ut.pitch_to_freq(pitch+12)
-        snip = pg.SpatialAPE(beat_snip, degree = 45).gain(0.75)
+        snip = pg.SpatialPE(beat_snip, degree = 45).gain(0.75)
         pes.append(pg.CombPE(snip, f0=freq, q=20))
 
         freq = ut.pitch_to_freq(pitch+24+2)
-        snip = pg.SpatialAPE(beat_snip, degree = 85).gain(0.85)
+        snip = pg.SpatialPE(beat_snip, degree = 85).gain(0.85)
         pes.append(pg.CombPE(snip, f0=freq, q=40))
 
         freq = ut.pitch_to_freq(pitch+12+7)
-        snip = pg.SpatialAPE(beat_snip, degree = -75).gain(0.80)
+        snip = pg.SpatialPE(beat_snip, degree = -75).gain(0.80)
         pes.append(pg.CombPE(snip, f0=freq, q=40))
         s = e
 
@@ -211,19 +211,19 @@ def gen_verse_3():
         beat_snip = beat_loop.mono().crop(pg.Extent(s, e))
 
         freq = ut.pitch_to_freq(pitch+24)
-        snip = pg.SpatialAPE(beat_snip, degree = -45).gain(0.75)
+        snip = pg.SpatialPE(beat_snip, degree = -45).gain(0.75)
         pes.append(pg.CombPE(snip, f0=freq, q=20))
 
         freq = ut.pitch_to_freq(pitch+12)
-        snip = pg.SpatialAPE(beat_snip, degree = 45).gain(0.75)
+        snip = pg.SpatialPE(beat_snip, degree = 45).gain(0.75)
         pes.append(pg.CombPE(snip, f0=freq, q=20))
 
         freq = ut.pitch_to_freq(pitch+24+2)
-        snip = pg.SpatialAPE(beat_snip, degree = 85).gain(0.75).delay(beats(0.5))
+        snip = pg.SpatialPE(beat_snip, degree = 85).gain(0.75).delay(beats(0.5))
         pes.append(pg.CombPE(snip, f0=freq, q=40))
 
         freq = ut.pitch_to_freq(pitch+12+7)
-        snip = pg.SpatialAPE(beat_snip, degree = -75).gain(0.72).delay(beats(0.25))
+        snip = pg.SpatialPE(beat_snip, degree = -75).gain(0.72).delay(beats(0.25))
         pes.append(pg.CombPE(snip, f0=freq, q=40))
         s = e
 
@@ -341,8 +341,8 @@ def gen_bridge_note(at, pitch, duration, legato):
     snip = snip.splice(10, 1000)
     snip = snip.delay(at)
     degree = ut.lerp(pitch, 60, 108, -90, 90)
-    unpanned = pg.SpatialAPE(snip, degree=0)
-    panned = pg.SpatialAPE(snip, degree=degree)
+    unpanned = pg.SpatialPE(snip, degree=0)
+    panned = pg.SpatialPE(snip, degree=degree)
     return pg.MixPE(unpanned.gain(0.4).delay(beats(0.2)), 
                     panned.gain(0.4))
 
@@ -355,19 +355,19 @@ def gen_verse_4():
         beat_snip = beat_loop.mono().crop(pg.Extent(s, e))
 
         freq = ut.pitch_to_freq(pitch+24)
-        snip = pg.SpatialAPE(beat_snip, degree = -45).gain(0.75)
+        snip = pg.SpatialPE(beat_snip, degree = -45).gain(0.75)
         pes.append(pg.CombPE(snip, f0=freq, q=20))
 
         freq = ut.pitch_to_freq(pitch+12)
-        snip = pg.SpatialAPE(beat_snip, degree = 45).gain(0.75)
+        snip = pg.SpatialPE(beat_snip, degree = 45).gain(0.75)
         pes.append(pg.CombPE(snip, f0=freq, q=20))
 
         freq = ut.pitch_to_freq(pitch+24+2)
-        snip = pg.SpatialAPE(beat_snip, degree = 85).gain(0.75).delay(beats(0.5))
+        snip = pg.SpatialPE(beat_snip, degree = 85).gain(0.75).delay(beats(0.5))
         pes.append(pg.CombPE(snip, f0=freq, q=40))
 
         freq = ut.pitch_to_freq(pitch+12+7)
-        snip = pg.SpatialAPE(beat_snip, degree = -75).gain(0.72).delay(beats(0.25))
+        snip = pg.SpatialPE(beat_snip, degree = -75).gain(0.72).delay(beats(0.25))
         pes.append(pg.CombPE(snip, f0=freq, q=40))
         s = e
 

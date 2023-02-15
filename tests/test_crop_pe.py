@@ -5,7 +5,7 @@ pygmu_dir = os.path.join( script_dir, '..', 'pygmu' )
 sys.path.append( pygmu_dir )
 import unittest
 import numpy as np
-from pygmu import (CropPE, Extent, IdentityPE, PygPE, SpatialAPE)
+from pygmu import (CropPE, Extent, IdentityPE, PygPE)
 
 class TestCropPE(unittest.TestCase):
 
@@ -40,6 +40,11 @@ class TestCropPE(unittest.TestCase):
 
         e = Extent(97, 102)     # partial overlap
         expect = np.array([[0., 0., 0., 100., 101.]], dtype=np.float32)
+        got = pe1.render(e)
+        np.testing.assert_array_almost_equal(got, expect)
+
+        e = Extent(100, 103)     # exact overlap
+        expect = np.array([[100, 101, 102]], dtype=np.float32)
         got = pe1.render(e)
         np.testing.assert_array_almost_equal(got, expect)
 

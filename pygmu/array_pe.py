@@ -9,13 +9,26 @@ class ArrayPE(PygGen):
     """
 
     def __init__(self, frames, frame_rate=None):
+        """
+        Parameters
+        ----------
+        frames : numpy array
+            A collection of frames.  The number of rows defines the number
+            of channels, the number of columns defines the number of frames.
+        frame_rate : integer, optional
+            The frame rate of the rendered samples.  If ommitted, defaults to
+            PygPE.frame_rate()        
+
+        Returns:
+        --------
+        PygPE
+            A stream that renders the elements of the frames.
+        """
         super(ArrayPE, self).__init__(frame_rate=frame_rate)
         self._frames = np.array(frames, dtype=np.float32)
-        n_channels = ut.channel_count(self._frames)
-        n_frames = ut.frame_count(self._frames)
         # ArrayPE frames always start at t=0
-        self._extent = Extent(start=0, end=n_frames)
-        self._channel_count = n_channels
+        self._extent = Extent(start=0, end=ut.frame_count(self._frames))
+        self._channel_count = ut.channel_count(self._frames)
 
     def render(self, requested:Extent):
         intersection = requested.intersect(self.extent())

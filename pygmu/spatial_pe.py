@@ -11,13 +11,12 @@ https://www.martinjaroszewicz.com/book/spatial_audio.html
 https://jeffvautin.com/2015/03/computing-panning-curves/
 """
 
-class SpatialAPE(PygPE):
+class SpatialPE(PygPE):
     """
     Locate a sound source into a stereo sound field, version A.
     This version:
     * accepts mono or stereo (mixing to mono)
     * accepts fixed "theta": 0 = front, -pi = hard left, pi = hard right
-    * accepts two fixed gain terms for left and right.  
     * renders a stereo output
     """
 
@@ -36,7 +35,7 @@ class SpatialAPE(PygPE):
           'linear' - left amplitude ramps linearly 1.0 to 0.0, right from 0.0 to 1.0, 0.5 at center
           'cosine' - left ramps by cosine from 1.0 to 0.0, right ramps by sin, 0.7 at center
         """
-        super(SpatialAPE, self).__init__()
+        super(SpatialPE, self).__init__()
         self._src_pe = src_pe
         self.set_frame_rate(frame_rate, src_pe)
 
@@ -105,7 +104,7 @@ class SpatialAPE(PygPE):
         self._frame_rate = frame_rate or src_pe.frame_rate()
         if self._frame_rate is not None:
             if src_pe.frame_rate()  is not None and src_pe.frame_rate() != self._frame_rate:
-                print("CompPE warning: overriding input frame_rate of {} with {}".format(
+                print("SpatialPE warning: overriding input frame_rate of {} with {}".format(
                     src_pe.frame_rate(), frame_rate))
         else:
             if src_pe.frame_rate() is None:

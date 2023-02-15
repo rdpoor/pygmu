@@ -1,7 +1,12 @@
+import os
+import sys
 import unittest
+import numpy as np
 import math
-from pygmu import Extent
-
+script_dir = os.path.dirname( __file__ )
+pygmu_dir = os.path.join( script_dir, '..', 'pygmu' )
+sys.path.append( pygmu_dir )
+from pygmu import (Extent)
 class TestExtent(unittest.TestCase):
 
     def test_constructors(self):

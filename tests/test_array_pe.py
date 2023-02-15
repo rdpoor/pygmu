@@ -43,6 +43,11 @@ class TestArrayPE(unittest.TestCase):
         got = self.pe1.render(e)
         np.testing.assert_array_almost_equal(got, expect)
 
+        e = Extent(0, 3)      # exact overlap
+        expect = np.array([[-2., 0., 2.]], dtype=np.float32)
+        got = self.pe1.render(e)
+        np.testing.assert_array_almost_equal(got, expect)
+
         e = Extent(-1, 4)     # full overlap
         expect = np.array([[0., -2., 0., 2., 0.]], dtype=np.float32)
         got = self.pe1.render(e)

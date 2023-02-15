@@ -130,10 +130,12 @@ Run an example:
 
 ## Developer's Corner
 
-Here's the WIP formula for getting tkinter up and running on macOS:
+### Keeping it real
 
-pipenv install Tk inter
-brew install python-tk@3.10
+The file API.md documents pygmu's functions.  To be official, each function:
+1. Must be documented in API.md
+2. Must have a corresponding test in tests/
+3. Must have an appropirate import line in pygmu/pygmu.py
 
 ### Running the unit tests
 If you haven't launched the pygmu shell:
@@ -151,6 +153,11 @@ If you are already running the pygmu shell:
     $ python -m unittest discover -f -s tests
 ```
 The `-f` means stop on first error.  The `-s` means search in the `tests/` directory for files that start with `test_xxx`
+
+You can also test an individual file like this:
+```
+    $ python -m unittest tests/test_something.py
+```
 
 ### Coverage Tests
 
@@ -403,6 +410,15 @@ Command to print out info about all the soundfiles in the current directory
 * [done] Rethink EnvDetectPE, CompLimPE, CompressorPE, LimiterAPE, LimiterPE.  (Create `MapPE`,
 give `EnvDetectPE` and `GainPE` a `units='db'` optional parameter.)
 * In `EnvDetectPE`, optionally support time constants (seconds) for attack and relase rather than 0.99 meaning "fast" and 0.01 meaning "slow".
+* Incorporate tkintr
+
+### Installing tkintr
+
+Here's the WIP formula for getting tkinter up and running on macOS:
+
+pipenv install Tk inter
+brew install python-tk@3.10
+
 
 ### Ponders
 

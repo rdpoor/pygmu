@@ -44,24 +44,22 @@ class ConvolvePE(PygPE):
         # normalize filter amplitude
         filter_rms = np.sqrt(np.mean(np.square(self._filter_frames)))
         self._filter_frames = self._filter_frames / filter_rms
-        filter_dur = filter_pe.extent().duration()
-        self._extent = Extent(src_pe.extent().start(), src_pe.extent().end() + filter_dur -1)
+        N = filter_pe.extent().duration()
+        self._extent = Extent(src_pe.extent().start(), src_pe.extent().end() + N - 1)
 
     def render(self, requested:Extent):
 
-        s = requested.start()
-        e = requested.end()
-        N = self._filter_pe.extent().duration()
-        # We ask the src_pe to render from s-N to e, where N is the length of the filter.  
-        # This lets the convolve function compute all the state leading up to s...e.
-        src_request = Extent(s-N, e)
-
-        overlap = src_request.intersect(requested)
-        # TODO: Unit test code coverage shows that the following is never executed.
-        # Figure out the correct logic for no overlap...
+        overlap = self._extent.intersect(requested)
         if overlap.is_empty():
             return ut.const_frames(0.0, self.channel_count(), requested.duration())
 
+        s = requested.start()
+        e = requested.end()
+
+        # We ask the src_pe to render from s-N to e, where N is the length of the filter.   
+        # This lets the convolve function compute all the state leading up to s...e. 
+        N = self._filter_pe.extent().duration()
+        src_request = Extent(s-N, e)
         src_frames = self._src_pe.render(src_request)
 
         if self._src_pe.channel_count() == 1 and self._filter_pe.channel_count() == 1:
