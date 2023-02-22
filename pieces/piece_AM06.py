@@ -23,7 +23,7 @@ def delays(src, secs, howmany = 1, decay = 1):
 def mix_at(src, t, amp = 1):
     return pg.DelayPE(src,t).gain(amp)
 
-reverb_path = 'samples/IR/Large Wide Echo Hall.wav'
+reverb_path = 'samples/IR/Conic Long Echo Hall.wav'
 
 impulse = pg.WavReaderPE(reverb_path)
 
@@ -38,13 +38,10 @@ Faund4 = pg.TimewarpPE(Faun0, pg.IdentityPE().gain(0.666))
 Faund12 = pg.TimewarpPE(Faun0, pg.IdentityPE().gain(0.333)).crop(pg.Extent(0,secs(36))).splice(100,secs(1))
 Faund24 = pg.TimewarpPE(Faun0, pg.IdentityPE().gain(0.1666)).crop(pg.Extent(0,secs(76))).splice(100,secs(1))
 
-FaundR4 = pg.TimewarpPE(FaunRev, pg.IdentityPE().gain(0.666)).splice(secs(1.5),secs(1))
-FaundR12 = pg.TimewarpPE(FaunRev, pg.IdentityPE().gain(0.333)).splice(secs(1.5),secs(1))
-FaundR24 = pg.TimewarpPE(FaunRev, pg.IdentityPE().gain(0.1666)).splice(secs(1.5),secs(1))
+FaundR4 = pg.TimewarpPE(FaunRev, pg.IdentityPE().gain(0.666)).crop(pg.Extent(0,secs(36))).splice(secs(1.5),secs(1))
+FaundR12 = pg.TimewarpPE(FaunRev, pg.IdentityPE().gain(0.333)).crop(pg.Extent(0,secs(36))).splice(secs(1.5),secs(1))
+FaundR24 = pg.TimewarpPE(FaunRev, pg.IdentityPE().gain(0.1666)).crop(pg.Extent(0,secs(36))).splice(secs(1.5),secs(1))
 
-
-# FaundR4.play()
-# FaundR12.play()
 
 elements = []
 
@@ -75,7 +72,7 @@ elements.append(delays(mix_at(Faun0,secs(t),gain/3).pan(10),1.7,4,0.5))
 # elements.append(mix_at(Claire,secs(ct),gain * 10).pan(-30))
 
 
-mosh = pg.MixPE(*elements).crop(pg.Extent(0,secs(75))).splice(10,secs(1.4))
+mosh = pg.MixPE(*elements).crop(pg.Extent(0,secs(73.8))).splice(10,secs(2.4))
 
 convolved = pg.ConvolvePE(mosh.gain(0.08), impulse)
 

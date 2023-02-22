@@ -132,10 +132,15 @@ mogrify()
 
     .mono()
 
-    .pan(degree)
+    .pan(degree=0, curve='cosine')
+        degree: -90 = hard left, 0 = center, 90 = hard right
+        curve: one of the following:  As theta goes from hard left to hard right:
+          'none' - no amplitude scaling -- time delay only
+          'linear' - left amplitude ramps linearly 1.0 to 0.0, right from 0.0 to 1.0, 0.5 at center
+          'cosine' - left ramps by cosine from 1.0 to 0.0, right ramps by sin, 0.7 at center
 
     .reverse(infinite_end=55)
-        reverse the frames, for pes of infinite extent, requires a non-infinite ending time
+        reverse the frames, for pes of infinite extent, requires a non-infinite ending time (infinite_end) in seconds
 
     .spread(channel_count=2)
 
