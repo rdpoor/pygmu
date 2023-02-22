@@ -44,10 +44,11 @@ def soundPE(filename):
     return pg.ArrayPE(frames)
 
 def delays(src, secs, howmany = 1, decay = 1):
-    frame_rate = src.frame_rate()
+    frame_rate = 48000
     delay_units = []
-    amp = 1
+    amp = 1.0
     for i in range(1, howmany):
+        print(frame_rate)
         delay_units.append(src.delay(int(i * secs * frame_rate)).gain(amp))
         amp *= decay
     return pg.MixPE(src,*delay_units)
@@ -76,13 +77,12 @@ frag5 = delays(frag3, 0.7, 18, 0.76)
 elements = [frag5, frag1.delay(secs(3)), frag2.delay(secs(3)), frag1.delay(secs(8)), frag2.delay(secs(10)), frag5.delay(secs(18))]
 
 mosh = pg.MixPE(*elements)
-mosh2 = mosh.crop(pg.Extent(start=0,end=720000)).env(fade_in, fade_out).reverse(16).env(secs(0.01),secs(7))
+mosh2 = mosh.crop(pg.Extent(start=0,end=720000)).splice(fade_in, fade_out).reverse(16).splice(secs(0.01),secs(7))
 
 mosh3 = pg.MixPE(mosh,mosh2.delay(secs(5.5)))
 
 wet_mix = delays(mosh3, 0.5, 4, 0.7).gain(2)
 
-wet_mix.play()
-
-
-
+pg.Transport(sourceA).play()
+pg.Transport(sourceB).play()
+pg.Transport(sourceC).play()

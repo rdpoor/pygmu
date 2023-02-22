@@ -15,7 +15,7 @@ src = pg.NoisePE(gain=0.5, frame_rate=FRAME_RATE).crop(pg.Extent(0,5*44100))
 
 # constant f0, constant Q
 # gain_db is ignored for lowpass
-flt = pg.BiquadPE(src, 0.0, 330.0, 40, "lowpass")
+flt = pg.Biquad2PE(src, 0.0, 330.0, 40, "lowpass")
 dst = pg.WavWriterPE(flt, "test.wav")
 pg.FtsTransport(dst).play()
 pg.Transport(pg.WavReaderPE("test.wav")).play()
