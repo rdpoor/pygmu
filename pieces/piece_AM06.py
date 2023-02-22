@@ -43,8 +43,8 @@ FaundR12 = pg.TimewarpPE(FaunRev, pg.IdentityPE().gain(0.333)).splice(secs(1.5),
 FaundR24 = pg.TimewarpPE(FaunRev, pg.IdentityPE().gain(0.1666)).splice(secs(1.5),secs(1))
 
 
-FaundR4.play()
-FaundR12.play()
+# FaundR4.play()
+# FaundR12.play()
 
 elements = []
 
