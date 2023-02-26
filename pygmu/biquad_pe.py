@@ -45,6 +45,11 @@ class BiquadPE(PygPE):
 
         self._coeffs = None
 
+        self._x1 = 0
+        self._x2 = 0
+        self._y1 = 0
+        self._y2 = 0
+
     def extent(self):
         return self._src.extent()
 
@@ -70,22 +75,22 @@ class BiquadPE(PygPE):
         wide variety of second-order filters.
         """
         n_frames = requested.duration()
-        X = src.render(requested)
+        X = self._src.render(requested)
         Y = np.zeros((1, n_frames))
         # unpack for inner loop
         a1 = self._coeffs[A1]
         a2 = self._coeffs[A2]
         b0 = self._coeffs[B0]
-        b1 = self,_coeffs[B1]
+        b1 = self._coeffs[B1]
         b2 = self._coeffs[B2]
         x2 = self._x2
         x1 = self._x1
         y2 = self._y2
         y1 = self._y1
-        for i in np.arange(len(X)):
-            x0 = X[i]
+        for i in np.arange(n_frames):
+            x0 = X[0, i]
             y0 = (b0*x0 + b1*x1 + b2*x2) - (a1*y1 + a2*y2)
-            Y[i] = y0
+            Y[0, i] = y0
             x2 = x1
             x1 = x0
             y2 = y1
@@ -95,6 +100,8 @@ class BiquadPE(PygPE):
         self._x1 = x1
         self._y2 = y2
         self._y1 = y1
+
+        return Y
 
     def default_coeffs(self, f0, q):
         """

@@ -151,3 +151,9 @@ class TestBiquadPE(unittest.TestCase):
             0.5077154615422355,
             -0.9704464169452813,
             0.46464098976543])
+
+    def test_render(self):
+        src = ArrayPE(np.zeros([1, 5], dtype=np.float32), frame_rate=44100)
+        pe = BQLowPassPE(src, f0=440, q=20)
+        frames = pe.render(src.extent());
+        self.assertEqual(frames.size, src.extent().duration())
