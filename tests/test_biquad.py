@@ -157,3 +157,17 @@ class TestBiquadPE(unittest.TestCase):
         pe = BQLowPassPE(src, f0=440, q=20)
         frames = pe.render(src.extent());
         self.assertEqual(frames.size, src.extent().duration())
+
+    def test_render2(self):
+        src = ArrayPE([[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]], frame_rate=44100)
+        pe = BQLowPassPE(src, f0=440, q=2)
+        frames = pe.render(src.extent());
+        # derived from known working example (but warrants confirmation)
+        np.testing.assert_array_almost_equal(
+            frames,
+            [[0.        , 0.00096702, 0.00480155, 0.01236733, 0.02352002,
+              0.03810586, 0.05596255, 0.07692014, 0.10080193, 0.12742535,
+              0.15660288, 0.18814286, 0.22185046, 0.25752842, 0.29497797,
+              0.33399963, 0.37439395, 0.41596237, 0.45850787, 0.50183575]])
+
+
