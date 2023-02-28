@@ -1,8 +1,10 @@
 import numpy as np
 from abs_pe import AbsPE
 from array_pe import ArrayPE
-from biquad2_pe import (Biquad2PE, BQLowPassPE, BQHighPassPE, BQBandPassPE,
-		BQBandRejectPE, BQAllPassPE, BQPeakPE, BQLowShelfPE, BQHighShelfPE)
+from biquad_pe import (BiquadPE, BQLowPassPE, BQHighPassPE, BQBandPassPE,
+        BQBandRejectPE, BQAllPassPE, BQPeakPE, BQLowShelfPE, BQHighShelfPE)
+from biquad2_pe import (Biquad2PE, BQ2LowPassPE, BQ2HighPassPE, BQ2BandPassPE,
+        BQ2BandRejectPE, BQ2AllPassPE, BQ2PeakPE, BQ2LowShelfPE, BQ2HighShelfPE)
 from blit_saw_pe import BlitSawPE
 from cache_pe import CachePE
 from comb_pe import CombPE

@@ -6,6 +6,17 @@ from pyg_pe import PygPE
 import pyg_exceptions as pyx
 import utils as ut
 
+"""
+Biquad filter.
+
+This version is supposed to be more efficient, but it seems not to be.  The two
+tricks:
+
+* coefficients are arranged [b0, b1, b2, -a1, -a2]
+* state is arranged         [x0, x1, x2,  y1,  y2]
+
+This lets us use the dot product operator in the inner loop to compute y0.
+
 # Work in progress.  See also:
 # https://github.com/hosackm/BiquadFilter/blob/master/Biquad.h
 # https://github.com/thestk/stk/blob/master/include/Biquad.h
@@ -20,15 +31,17 @@ import utils as ut
 # * stereo, verify
 # * stereo, variable F0, verify
 # * stereo, variable bandwidth, verify
+"""
 
-# A0 = 0  -- alwasy assumed to be 1.0
-A1 = 0
-A2 = 1
-B0 = 2
-B1 = 3
-B2 = 4
-
-class BiquadPE(PygPE):
+class Biquad2PE(PygPE):
+    """
+    Implement a biquad filter with response:
+        H(z) = (b0 + b1*z^-1 + b2*z^-2) / (a1*z^-1 + a2*z^2)
+    using "direct form 1":
+        y[n] = (b0*x[n] + b1*x[n-1] + b2*x[n-2]) - (a1*y[n-1] + a2*y[n-2])
+    Using appropriate choices of [a1, a2, b0, b1, b2], you can implment a
+    wide variety of second-order filters.
+    """
 
     def __init__(self, src, frame_rate=None):
         self._src = src
@@ -40,16 +53,12 @@ class BiquadPE(PygPE):
         if self.frame_rate() is None:
             raise pyx.FrameRateMismatch("frame_rate must be specified")
 
-        if self.channel_count() != 1:
-            raise pyx.ChannelCountMismatch("only mono sources are supported")
-
-        self._coeffs = np.ndarray(5, dtype=np.float32)
-
-        # set up initial state
-        self._x1 = 0
-        self._x2 = 0
-        self._y1 = 0
-        self._y2 = 0
+        self._coeffs = np.zeros(5, dtype=np.float32)
+        if self.channel_count() == 1:
+            self._state = np.zeros(5, dtype=np.float32)
+        else:
+            # TODO: optimize stereo case
+            self._state = np.zeros((self.channel_count(), 5), dtype=np.float32)
 
     def extent(self):
         return self._src.extent()
@@ -60,69 +69,37 @@ class BiquadPE(PygPE):
     def channel_count(self):
         return self._src.channel_count()
 
-    def render(self, requested):
-        """
-        Implement a biquad filter with response:
-          H(z) = (b0 + b1*z^-1 + b2*z^-2) / (a1*z^-1 + a2*z^2)
-        using "direct form 1":
-          y[n] = (b0*x[n] + b1*x[n-1] + b2*x[n-2]) - (a1*y[n-1] + a2*y[n-2])
-        Using appropriate choices of [a1, a2, b0, b1, b2], you can implment a
-        wide variety of second-order filters.
-        """
-        n_frames = requested.duration()
-        X = self._src.render(requested)
-        Y = np.zeros((1, n_frames))
-        # unpack for inner loop
-        a1 = self._coeffs[A1]
-        a2 = self._coeffs[A2]
-        b0 = self._coeffs[B0]
-        b1 = self._coeffs[B1]
-        b2 = self._coeffs[B2]
-        x2 = self._x2
-        x1 = self._x1
-        y2 = self._y2
-        y1 = self._y1
-        for i in np.arange(n_frames):
-            x0 = X[0, i]
-            y0 = (b0*x0 + b1*x1 + b2*x2) - (a1*y1 + a2*y2)
-            Y[0, i] = y0
-            x2 = x1
-            x1 = x0
-            y2 = y1
-            y1 = y0
-        # repack for next frame...
-        self._x2 = x2
-        self._x1 = x1
-        self._y2 = y2
-        self._y1 = y1
-
-        return Y
-
     def set_coefficients(self, a1, a2, b0, b1, b2):
-        self._coeffs[A1] = a1
-        self._coeffs[A2] = a2
-        self._coeffs[B0] = b0
-        self._coeffs[B1] = b1
-        self._coeffs[B2] = b2
+        # Arranging the coefficients like this lets us use np.dot() for
+        # efficiency in the inner loop -- see render()
+        self._coeffs[0] = b0
+        self._coeffs[1] = b1
+        self._coeffs[2] = b2
+        self._coeffs[3] = -a1
+        self._coeffs[4] = -a2
 
     def get_coefficients(self):
-        # lazy instantiation of coefficient array
-        return self._coeffs
+        # primarily for unit tests, unpack the coefficients to return the
+        # canonical form: a0, a1, b0, b1, b2
+        return [-self._coeffs[3], -self._coeffs[4], self._coeffs[0], self._coeffs[1], self._coeffs[2]]
 
-    def default_coeffs(self, f0, q):
-        """
-        Some of the common filters use identical parameters for the denominator
-        (a1, a2), and shared values K and norm in the denominator.
-        """
-        coeffs = self.coeffs()
-        K = np.tan(np.pi * f0 / self.frame_rate())
-        K2 = K * K
-        norm = 1 / (1 + K/q + K2)
-
-        coeffs[A1] = 2 * (K2 - 1) * norm
-        coeffs[A2] = (1 - K/q + K2) * norm
-
-        return coeffs, norm, K
+    def render(self, requested):
+        n_frames = requested.duration()
+        X = self._src.render(requested)
+        Y = np.zeros((self.channel_count(), n_frames), dtype=np.float32)
+        for i in np.arange(n_frames):
+            # from previous step,                   state = [x1, x2, y1, y2, y3]
+            x0 = X[:, i:i+1]
+            self._state[:,4:5] = x0               # state = [x1, x2, y1, y2, x0]
+            self._state = np.roll(self._state, 1) # state = [x0, x1, x2, y1, y2]
+            # state has the form   [x0, x1, x2,  y1,  y2]
+            # coeffs have the form [b0, b1, b2, -a1, -a2]
+            # use .dot to compute y0 = (b0*x0 + b1*x1 + b2*x2) - (a1*y1 + a2*y2)
+            y0 = np.dot(self._state, self._coeffs)
+            Y[:, i:i+1] = y0
+            self._state[:,2:3] = y0               # state = [x0, x1, y0, y1, y2]
+            # print(self._state)
+        return Y
 
     def default_coeffs(self, f0, q):
         """
@@ -138,10 +115,7 @@ class BiquadPE(PygPE):
 
         return a1, a2, norm, K
 
-# Following is a suite of subclasses of Biquad2.  Each one initializes the
-# filter coefficients according to the filter type.
-
-class BQLowPassPE(BiquadPE):
+class BQLowPassPE(Biquad2PE):
     def __init__(self, src_pe, f0=440, q=20, frame_rate=None):
         super().__init__(src_pe, frame_rate)
 
@@ -151,7 +125,7 @@ class BQLowPassPE(BiquadPE):
         b2 = b0
         self.set_coefficients(a1, a2, b0, b1, b2)
 
-class BQHighPassPE(BiquadPE):
+class BQHighPassPE(Biquad2PE):
     def __init__(self, src_pe, f0=440, q=20, frame_rate=None):
         super().__init__(src_pe, frame_rate)
         a1, a2, norm, K = self.default_coeffs(f0, q)
@@ -160,7 +134,7 @@ class BQHighPassPE(BiquadPE):
         b2 = b0
         self.set_coefficients(a1, a2, b0, b1, b2)
 
-class BQBandPassPE(BiquadPE):
+class BQBandPassPE(Biquad2PE):
     def __init__(self, src_pe, f0=440, q=20, frame_rate=None):
         """
         Has 0db gain at f0
@@ -172,7 +146,7 @@ class BQBandPassPE(BiquadPE):
         b2 = -b0
         self.set_coefficients(a1, a2, b0, b1, b2)
 
-class BQBandRejectPE(BiquadPE):
+class BQBandRejectPE(Biquad2PE):
     def __init__(self, src_pe, f0=440, q=20, frame_rate=None):
         """
         Has 0db gain everywhere except in the vicinity of f0
@@ -184,7 +158,7 @@ class BQBandRejectPE(BiquadPE):
         b2 = b0
         self.set_coefficients(a1, a2, b0, b1, b2)
 
-class BQAllPassPE(BiquadPE):
+class BQAllPassPE(Biquad2PE):
     def __init__(self, src_pe, f0=440, q=20, frame_rate=None):
         super().__init__(src_pe, frame_rate)
         """
@@ -196,7 +170,7 @@ class BQAllPassPE(BiquadPE):
         b2 = 1
         self.set_coefficients(a1, a2, b0, b1, b2)
 
-class BQPeakPE(BiquadPE):
+class BQPeakPE(Biquad2PE):
     def __init__(self, src_pe, f0=440, q=20, gain_db=0, frame_rate=None):
         """
         Serves as both a peak filter when gain_db > 0 and a notch filter when
@@ -224,7 +198,7 @@ class BQPeakPE(BiquadPE):
             b2 = (1 - K/q + K2) * norm
         self.set_coefficients(a1, a2, b0, b1, b2)
 
-class BQLowShelfPE(BiquadPE):
+class BQLowShelfPE(Biquad2PE):
     def __init__(self, src_pe, f0=440, gain_db=0, frame_rate=None):
         """
         Has gain_db below f0, has 0db gain above f0.
@@ -251,7 +225,7 @@ class BQLowShelfPE(BiquadPE):
             a2 = (1 - math.sqrt(2*V) * K + V * K2) * norm;
         self.set_coefficients(a1, a2, b0, b1, b2)
 
-class BQHighShelfPE(BiquadPE):
+class BQHighShelfPE(Biquad2PE):
     def __init__(self, src_pe, f0=440, gain_db=0, frame_rate=None):
         super().__init__(src_pe, frame_rate)
         K = np.tan(np.pi * f0 / self.frame_rate())

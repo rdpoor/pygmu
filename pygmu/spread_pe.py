@@ -9,7 +9,7 @@ Spread a single-channel streeam into N channels.
 
 class SpreadPE(PygPE):
     """
-    Spread a single-channle source equally into N channels
+    Spread a single-channel source equally into N channels
     """
 
     def __init__(self, src_pe, channel_count=2):

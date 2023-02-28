@@ -5,36 +5,39 @@ pygmu_dir = os.path.join( script_dir, '..', 'pygmu' )
 sys.path.append( pygmu_dir )
 import unittest
 import numpy as np
-from pygmu import (ArrayPE, BiquadPE, BQLowPassPE, BQHighPassPE, BQBandPassPE,
-        BQBandRejectPE, BQAllPassPE, BQPeakPE, BQLowShelfPE, BQHighShelfPE,
+from pygmu import (ArrayPE, Biquad2PE, BQ2LowPassPE, BQ2HighPassPE, BQ2BandPassPE,
+        BQ2BandRejectPE, BQ2AllPassPE, BQ2PeakPE, BQ2LowShelfPE, BQ2HighShelfPE,
         Extent, ChannelCountMismatch, FrameRateMismatch)
 
-class TestBiquadPE(unittest.TestCase):
+class TestBiquad2PE(unittest.TestCase):
 
     def test_init(self):
         # Mono source
         src = ArrayPE(np.zeros([1, 5], dtype=np.float32), frame_rate=1234)
-        pe = BQLowPassPE(src, f0=440, q=20)
-        self.assertIsInstance(pe, BiquadPE)
+        pe = BQ2LowPassPE(src, f0=440, q=20)
+        self.assertIsInstance(pe, Biquad2PE)
         self.assertTrue(pe.extent().equals(src.extent()))
         self.assertEqual(pe.channel_count(), src.channel_count())
         self.assertEqual(pe.frame_rate(), src.frame_rate())
 
-        # BiquadPE requires a known frame rate
+        # Biquad2PE requires a known frame rate
         src = ArrayPE(np.zeros([1, 5], dtype=np.float32), frame_rate=None)
         with self.assertRaises(FrameRateMismatch):
-            pe = BiquadPE(src)
+            pe = Biquad2PE(src)
 
-        # BiquadPE forbids all except a mono source
-        src = ArrayPE(np.zeros([2, 5], dtype=np.float32), frame_rate=None)
-        with self.assertRaises(ChannelCountMismatch):
-            pe = BiquadPE(src, frame_rate=1234)
+        # Biquad2PE accepts a stereo source
+        src = ArrayPE(np.zeros([2, 5], dtype=np.float32), frame_rate=44100)
+        pe = BQ2LowPassPE(src, f0=440, q=20)
+        self.assertIsInstance(pe, Biquad2PE)
+        self.assertTrue(pe.extent().equals(src.extent()))
+        self.assertEqual(pe.channel_count(), src.channel_count())
+        self.assertEqual(pe.frame_rate(), src.frame_rate())
 
     def test_coeffs_a(self):
         # test coefficients derived from
         #   https://www.earlevel.com/main/2021/09/02/biquad-calculator-v3/
         src = ArrayPE(np.zeros([1, 5], dtype=np.float32), frame_rate=44100)
-        pe = BQLowPassPE(src, f0=440, q=20)
+        pe = BQ2LowPassPE(src, f0=440, q=20)
         np.testing.assert_array_almost_equal(
             pe.get_coefficients(),
             [-1.9929499544928433,
@@ -42,7 +45,7 @@ class TestBiquadPE(unittest.TestCase):
             0.0009806319105117329,
             0.0019612638210234658,
             0.0009806319105117329])
-        pe = BQHighPassPE(src, f0=440, q=20)
+        pe = BQ2HighPassPE(src, f0=440, q=20)
         np.testing.assert_array_almost_equal(
             pe.get_coefficients(),
             [-1.9929499544928433,
@@ -50,7 +53,7 @@ class TestBiquadPE(unittest.TestCase):
             0.9974556091569333,
             -1.9949112183138666,
             0.9974556091569333])
-        pe = BQBandPassPE(src, f0=440, q=20)
+        pe = BQ2BandPassPE(src, f0=440, q=20)
         np.testing.assert_array_almost_equal(
             pe.get_coefficients(),
             [-1.9929499544928433,
@@ -58,7 +61,7 @@ class TestBiquadPE(unittest.TestCase):
             0.0015637589325549896,
             0,
             -0.0015637589325549896])
-        pe = BQBandRejectPE(src, f0=440, q=20)
+        pe = BQ2BandRejectPE(src, f0=440, q=20)
         np.testing.assert_array_almost_equal(
             pe.get_coefficients(),
             [-1.9929499544928433,
@@ -66,7 +69,7 @@ class TestBiquadPE(unittest.TestCase):
             0.998436241067445,
             -1.9929499544928433,
             0.998436241067445])
-        pe = BQAllPassPE(src, f0=440, q=20)
+        pe = BQ2AllPassPE(src, f0=440, q=20)
         np.testing.assert_array_almost_equal(
             pe.get_coefficients(),
             [-1.9929499544928433,
@@ -79,7 +82,7 @@ class TestBiquadPE(unittest.TestCase):
         # test coefficients derived from
         #   https://www.earlevel.com/main/2021/09/02/biquad-calculator-v3/
         src = ArrayPE(np.zeros([1, 5], dtype=np.float32), frame_rate=44100)
-        pe = BQPeakPE(src, f0=440, q=20, gain_db=6)
+        pe = BQ2PeakPE(src, f0=440, q=20, gain_db=6)
         np.testing.assert_array_almost_equal(
             pe.get_coefficients(),
             [-1.9929499544928433,
@@ -87,7 +90,7 @@ class TestBiquadPE(unittest.TestCase):
             1.0015563503352678,
             -1.9929499544928433,
             0.9953161317996221])
-        pe = BQPeakPE(src, f0=440, q=20, gain_db=0)
+        pe = BQ2PeakPE(src, f0=440, q=20, gain_db=0)
         np.testing.assert_array_almost_equal(
             pe.get_coefficients(),
             [-1.9929499544928433,
@@ -95,7 +98,7 @@ class TestBiquadPE(unittest.TestCase):
             1,
             -1.9929499544928433,
             0.99687248213489])
-        pe = BQPeakPE(src, f0=440, q=20, gain_db=-6)
+        pe = BQ2PeakPE(src, f0=440, q=20, gain_db=-6)
         np.testing.assert_array_almost_equal(
             pe.get_coefficients(),
             [-1.989853046037509,
@@ -103,7 +106,7 @@ class TestBiquadPE(unittest.TestCase):
             0.9984460681271236,
             -1.989853046037509,
             0.9953234102117071])
-        pe = BQLowShelfPE(src, f0=440, gain_db=6)
+        pe = BQ2LowShelfPE(src, f0=440, gain_db=6)
         np.testing.assert_array_almost_equal(
             pe.get_coefficients(),
             [-1.9113981953542545,
@@ -111,7 +114,7 @@ class TestBiquadPE(unittest.TestCase):
             1.0184358472917574,
             -1.909526098318444,
             0.8985964624230943])
-        pe = BQLowShelfPE(src, f0=440, gain_db=0)
+        pe = BQ2LowShelfPE(src, f0=440, gain_db=0)
         np.testing.assert_array_almost_equal(
             pe.get_coefficients(),
             [-1.9113981953542545,
@@ -119,7 +122,7 @@ class TestBiquadPE(unittest.TestCase):
             1,
             -1.9113981953542545,
             0.9151602126790416])
-        pe = BQLowShelfPE(src, f0=440, gain_db=-6)
+        pe = BQ2LowShelfPE(src, f0=440, gain_db=-6)
         np.testing.assert_array_almost_equal(
             pe.get_coefficients(),
             [-1.8749596289214383,
@@ -127,7 +130,7 @@ class TestBiquadPE(unittest.TestCase):
             0.9818978806168475,
             -1.8767978370332095,
             0.8985938732544143])
-        pe = BQHighShelfPE(src, f0=440, gain_db=6)
+        pe = BQ2HighShelfPE(src, f0=440, gain_db=6)
         np.testing.assert_array_almost_equal(
             pe.get_coefficients(),
             [-1.9113981953542545,
@@ -135,7 +138,7 @@ class TestBiquadPE(unittest.TestCase):
             1.9696071436595646,
             -3.8156128851256788,
             1.8497677587909012])
-        pe = BQHighShelfPE(src, f0=440, gain_db=0)
+        pe = BQ2HighShelfPE(src, f0=440, gain_db=0)
         np.testing.assert_array_almost_equal(
             pe.get_coefficients(),
             [-1.9113981953542545,
@@ -143,7 +146,7 @@ class TestBiquadPE(unittest.TestCase):
             1,
             -1.9113981953542545,
             0.9151602126790416])
-        pe = BQHighShelfPE(src, f0=440, gain_db=-6)
+        pe = BQ2HighShelfPE(src, f0=440, gain_db=-6)
         np.testing.assert_array_almost_equal(
             pe.get_coefficients(),
             [-1.9372456570380847,
@@ -154,13 +157,13 @@ class TestBiquadPE(unittest.TestCase):
 
     def test_render(self):
         src = ArrayPE(np.zeros([1, 5], dtype=np.float32), frame_rate=44100)
-        pe = BQLowPassPE(src, f0=440, q=20)
+        pe = BQ2LowPassPE(src, f0=440, q=20)
         frames = pe.render(src.extent());
         self.assertEqual(frames.size, src.extent().duration())
 
     def test_render2(self):
         src = ArrayPE([[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]], frame_rate=44100)
-        pe = BQLowPassPE(src, f0=440, q=2)
+        pe = BQ2LowPassPE(src, f0=440, q=2)
         frames = pe.render(src.extent());
         # derived from known working example (but warrants confirmation)
         np.testing.assert_array_almost_equal(

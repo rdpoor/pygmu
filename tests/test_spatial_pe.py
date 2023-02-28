@@ -15,7 +15,8 @@ class TestSpatialPE(unittest.TestCase):
         pass
 
     def test_init(self):
-        self.assertIsInstance((SpatialPE(ConstPE(0.0))), SpatialPE)
+        src = ConstPE(0.0, frame_rate=1234)
+        self.assertIsInstance((SpatialPE(src)), SpatialPE)
 
     def test_render(self):
         pass
