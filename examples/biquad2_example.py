@@ -11,8 +11,8 @@ Test BiquadPE
 
 FRAME_RATE = 48000
 
-src_l = pg.NoisePE(gain=0.5, frame_rate=FRAME_RATE).pan(-90)
-src_r = pg.NoisePE(gain=0.5, frame_rate=FRAME_RATE).pan(90)
-src = pg.MixPE(src_l, src_r)
-flt = pg.BQ2BandPassPE(src, f0=330, q=400).gain(100)
+src = pg.MixPE(
+    pg.NoisePE(gain=0.5, frame_rate=FRAME_RATE).pan(-90),
+    pg.NoisePE(gain=0.5, frame_rate=FRAME_RATE).pan(90))
+flt = pg.BQ2BandPassPE(src, f0=330, q=20).gain(10)
 pg.Transport(flt).play()
