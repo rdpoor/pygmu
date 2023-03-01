@@ -38,7 +38,6 @@ from pwm_pe import PwmPE
 from pyg_exceptions import *
 from pyg_pe import PygPE
 from ramp_pe import RampPE
-from rate_warp_pe import RateWarpPE
 from reverse_pe import ReversePE
 from segments_pe import SegmentsPE
 from sin_pe import SinPE
@@ -50,5 +49,6 @@ from timewarp_pe import TimewarpPE
 from tralfam_pe import TralfamPE
 from transport import Transport
 import utils
+from warp_speed_pe import WarpSpeedPE
 from wav_reader_pe import WavReaderPE
 from wav_writer_pe import WavWriterPE

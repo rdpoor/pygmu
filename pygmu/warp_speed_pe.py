@@ -5,13 +5,13 @@ from pyg_pe import PygPE
 import utils as ut
 import pyg_exceptions as pyx
 
-class RateWarpPE(PygPE):
+class WarpSpeedPE(PygPE):
     """
     Variable rate / resampling using linear interpolation.
     """
 
     def __init__(self, src_pe, rate, frame=0):
-        super(RateWarpPE).__init__()
+        super(WarpSpeedPE).__init__()
 
         self._src_pe = src_pe
         self._rate = rate

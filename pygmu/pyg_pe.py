@@ -91,8 +91,8 @@ class PygPE(object):
     def play(self):
         return pg.Transport(self).play()
 
-    def rate(self, rate):
-        return pg.RateWarp(self, rate)
+    def speed(self, speed):
+        return pg.WarpSpeedPE(self, speed)
 
     def reverse(self, infinite_end):
         return pg.ReversePE(self, infinite_end)
