@@ -158,7 +158,13 @@ You can also test an individual file like this:
 ```
     $ python -m unittest tests/test_something.py
 ```
-
+You can even run a single function within a test file like this:
+```
+# On Windows:
+$ py -m unittest tests.test_rate_warp_pe.TestRateWarpPE.test_render_p0r0_f0
+# On macOS, Linux:
+$ python -m unittest tests.test_rate_warp_pe.TestRateWarpPE.test_render_p0r0_f0
+```
 ### Coverage Tests
 
 After you have the unit tests running, hre are the commands that will make sure you've got good testing coverage.

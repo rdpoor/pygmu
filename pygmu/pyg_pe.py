@@ -91,6 +91,9 @@ class PygPE(object):
     def play(self):
         return pg.Transport(self).play()
 
+    def rate(self, rate):
+        return pg.RateWarp(self, rate)
+
     def reverse(self, infinite_end):
         return pg.ReversePE(self, infinite_end)
 
@@ -109,4 +112,4 @@ class PygPE(object):
     def wav_writer(self, filename):
         return pg.WavWriterPE(self, filename)
 
-import pygmu as pg #down here to avoid a circular dependency
+import pygmu as pg # down here to avoid a circular dependency

@@ -38,6 +38,7 @@ from pwm_pe import PwmPE
 from pyg_exceptions import *
 from pyg_pe import PygPE
 from ramp_pe import RampPE
+from rate_warp_pe import RateWarpPE
 from reverse_pe import ReversePE
 from segments_pe import SegmentsPE
 from sin_pe import SinPE
