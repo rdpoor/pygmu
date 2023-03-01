@@ -42,6 +42,8 @@ FaundR4 = pg.TimewarpPE(FaunRev, pg.IdentityPE().gain(0.666)).crop(pg.Extent(0,s
 FaundR12 = pg.TimewarpPE(FaunRev, pg.IdentityPE().gain(0.333)).crop(pg.Extent(0,secs(36))).splice(secs(1.5),secs(1))
 FaundR24 = pg.TimewarpPE(FaunRev, pg.IdentityPE().gain(0.1666)).crop(pg.Extent(0,secs(36))).splice(secs(1.5),secs(1))
 
+Faund12_HP = pg.BQ2HighPassPE(Faund12, f0=330, q=8).gain(0.8)
+FaundR12_HP = pg.BQ2BandPassPE(FaundR12, f0=330, q=8).gain(0.8)
 
 elements = []
 
@@ -51,13 +53,13 @@ t = 0
 elements.append(mix_at(Faund4,secs(t),gain).pan(90))
 
 t += 2.5
-elements.append(delays(mix_at(Faund12,secs(t),gain).pan(-120),0.7,3,0.5))
+elements.append(delays(mix_at(Faund12_HP,secs(t),gain).pan(-120),0.7,3,0.5))
 
 t += 3
 elements.append(mix_at(Faund24,secs(t),gain).pan(20))
 
 t += 24
-elements.append(mix_at(FaundR12,secs(t),gain).pan(-120))
+elements.append(mix_at(FaundR12_HP,secs(t),gain).pan(-120))
 t += 1.6
 elements.append(mix_at(FaundR4,secs(t),gain).pan(90))
 

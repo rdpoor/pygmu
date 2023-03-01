@@ -109,6 +109,7 @@ mogrify()
 #### SpreadPE
 #### TimewarpPE
 #### TralfamPE
+#### WarpSpeedPE
 #### WavWriterPE
 
 ## Utilities
