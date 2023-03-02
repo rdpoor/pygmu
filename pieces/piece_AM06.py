@@ -42,6 +42,8 @@ FaundR4 = pg.TimewarpPE(FaunRev, pg.IdentityPE().gain(0.666)).crop(pg.Extent(0,s
 FaundR12 = pg.TimewarpPE(FaunRev, pg.IdentityPE().gain(0.333)).crop(pg.Extent(0,secs(36))).splice(secs(1.5),secs(1))
 FaundR24 = pg.TimewarpPE(FaunRev, pg.IdentityPE().gain(0.1666)).crop(pg.Extent(0,secs(36))).splice(secs(1.5),secs(1))
 
+Faund12_HP = pg.BQ2HighPassPE(Faund12, f0=330, q=8).gain(0.8)
+FaundR12_HP = pg.BQ2BandPassPE(FaundR12, f0=330, q=8).gain(0.8)
 
 elements = []
 
@@ -51,13 +53,13 @@ t = 0
 elements.append(mix_at(Faund4,secs(t),gain).pan(90))
 
 t += 2.5
-elements.append(delays(mix_at(Faund12,secs(t),gain).pan(-120),0.7,3,0.5))
+elements.append(delays(mix_at(Faund12_HP,secs(t),gain).pan(-120),0.7,3,0.5))
 
 t += 3
 elements.append(mix_at(Faund24,secs(t),gain).pan(20))
 
 t += 24
-elements.append(mix_at(FaundR12,secs(t),gain).pan(-120))
+elements.append(mix_at(FaundR12_HP,secs(t),gain).pan(-120))
 t += 1.6
 elements.append(mix_at(FaundR4,secs(t),gain).pan(90))
 
@@ -71,15 +73,24 @@ elements.append(delays(mix_at(Faun0,secs(t),gain/3).pan(10),1.7,4,0.5))
 # ct = 70
 # elements.append(mix_at(Claire,secs(ct),gain * 10).pan(-30))
 
-
 mosh = pg.MixPE(*elements).crop(pg.Extent(0,secs(73.8))).splice(10,secs(2.4))
 
-convolved = pg.ConvolvePE(mosh.gain(0.08), impulse)
+# NOTE --investigate the weirdness of using warp_speed in this way -- seems to interact with the delay offset strangely
+#mosh2 = mosh.warp_speed(0.71)
+mosh2 = mosh.gain(1.2)
+
+elements2 = [mosh]
+elements2.append(mix_at(mosh2,secs(14),gain))
+
+
+
+jimmy = pg.MixPE(*elements2)
+
+
+convolved = pg.ConvolvePE(jimmy.gain(0.08), impulse)
 
 dst = pg.WavWriterPE(convolved, "test.wav")
 pg.FtsTransport(dst).play()
 pg.Transport(pg.WavReaderPE("test.wav")).play()
-
-#pg.Transport(convolved).play()
 
 
