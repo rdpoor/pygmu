@@ -2,7 +2,7 @@ import numpy as np
 import sys
 import extent
 import array_pe
-import timewarp_pe
+import warp_speed_pe
 import sounddevice as sd
 
 STATE_STOPPED = 0
@@ -44,6 +44,7 @@ class T2(object):
         else:
             self.channel_count = channel_count
         self._stream = None
+        self._warper = warp_speed_pe.WarpSpeedPE(self._root_pe, 1.0)
         self.reset()
 
     def callback(self, outdata, n_frames, time, status):
@@ -62,27 +63,19 @@ class T2(object):
             outdata[:] = self._root_pe.render(requested).T
             self._frame = end_frame
         else:
-            end_x = self._frame + n_frames
-            end_y = self._frame + n_frames * self._speed
-            requested = extent.Extent(self._frame, end_x)
-            timeline = np.linspace(
-                self._frame,
-                end_y,
-                n_frames,
-                endpoint = False,
-                dtype = np.float32).reshape(1, -1)
-            timeline_pe = array_pe.ArrayPE(timeline)
-            warper = timewarp_pe.TimewarpPE(self._root_pe, timeline_pe)
+            self._warper.set_speed(self._speed)
+            self._warper.set_frame(self._frame)
+            requested = extent.Extent(int(self._frame), int(self._frame) + n_frames)
             # Use the .T operator (transpose) to convert pygmu row form to
             # sounddevice column form.
-            outdata[:] = warper.render(requested).T
-            self._frame = int(round(end_y))
+            outdata[:] = self._warper.render(requested).T
+            self._frame = self._warper.get_frame()
 
     def play(self, frame=None, speed=None):
         """
-        Start or resume playing samples from the current frame.  For scrubbing,
-        speed sets the playback speed: 1.0 is normal, -1.0 is reverse, 0.1
-        is very slow forward, etc.
+        Start, resume or continue playing samples from the current frame.  For
+        jog, set the frame.  For shuttle, set speed: 1.0 is normal, -1.0 is
+        reverse, 0.1 is very slow forward, etc.
         """
         if self._stream is None:
             self._stream = sd.OutputStream(
@@ -137,7 +130,7 @@ class T2(object):
         Pause playback without modifying the current position or speed ratio.
         Note: the DAC continues to run, but will be fed buffers of zeros.
         """
-        self._is_paused = True
+        self._state = STATE_PAUSED
 
     def stop(self):
         """

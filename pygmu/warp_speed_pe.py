@@ -10,20 +10,32 @@ class WarpSpeedPE(PygPE):
     Variable rate / resampling using linear interpolation.
     """
 
-    def __init__(self, src_pe, rate, frame=0):
+    def __init__(self, src_pe, speed, frame=0):
         super(WarpSpeedPE).__init__()
 
         self._src_pe = src_pe
-        self._rate = rate
-        if isinstance(self._rate, PygPE) and self._rate.channel_count() != 1:
+        self._speed = speed
+        if isinstance(self._speed, PygPE) and self._speed.channel_count() != 1:
             raise pyx.ChannelCountMismatch("dynamic rate must be single channel")
         self._frame = frame
 
+    def set_frame(self, frame):
+        self._frame = frame
+
+    def get_frame(self):
+        return self._frame
+
+    def set_speed(self, speed):
+        self._speed = speed
+
+    def get_speed(self):
+        return self._speed
+
     def render(self, requested):
-        if isinstance(self._rate, numbers.Number):
-            # constant rate
+        if isinstance(self._speed, numbers.Number):
+            # constant speed
             t0 = self._frame
-            t1 = t0 + requested.duration() * self._rate
+            t1 = t0 + requested.duration() * self._speed
             src_t0 = int(round(t0))
             src_t1 = int(round(t1))
             if src_t1 < src_t0:
@@ -45,7 +57,7 @@ class WarpSpeedPE(PygPE):
             times = np.linspace(
                 t0,
                 t1,
-                num=requested.duration(),
+                num=int(requested.duration()),
                 endpoint=False,
                 dtype=np.float32)
             dst_channels = []
@@ -63,15 +75,15 @@ class WarpSpeedPE(PygPE):
             return dst_frames
 
         else:
-            raise(RuntimeError("dynamic rates not yet supported"))
+            raise(RuntimeError("dynamic speeds not yet supported"))
 
     def extent(self):
-        if isinstance(self._rate, numbers.Number):
+        if isinstance(self._speed, numbers.Number):
             t0 = self._src_pe.extent().start()
-            t1 = t0 + self._src_pe.extent().duration() * self._rate
+            t1 = t0 + self._src_pe.extent().duration() * self._speed
             return Extent(t0, t1)
         else:
-            raise(RuntimeError("dynamic rates not yet supported"))
+            raise(RuntimeError("dynamic speeds not yet supported"))
 
     def frame_rate(self):
         return self._src_pe.frame_rate()

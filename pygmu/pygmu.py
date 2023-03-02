@@ -45,6 +45,7 @@ from snippet_pe import SnippetPE
 from spatial_pe import SpatialPE
 from splice_pe import SplicePE
 from spread_pe import SpreadPE
+from t2 import T2
 from timewarp_pe import TimewarpPE
 from tralfam_pe import TralfamPE
 from transport import Transport
