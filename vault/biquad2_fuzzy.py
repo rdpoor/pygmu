@@ -31,16 +31,38 @@ Plum0 = pg.WavReaderPE("samples/TamperFrame_SugarPlumFaries_Edit2.wav").crop(pg.
 PlumA = Plum0.warp_speed(0.5)
 PlumB = Plum0.warp_speed(0.35)
 
+
+Drummy = pg.WavReaderPE("samples/TamperFrame_SwingTheory.wav").crop(pg.Extent(secs(0.1),secs(6))).delay(-secs(0.1)).gain(0.5)
+
+PlumAThin1 = pg.BQ2HighPassPE(Drummy, f0=520, q=44).gain(0.08)
+PlumAThin2 = pg.BQ2BandPassPE(Drummy, f0=520, q=14).gain(0.8)
+
+PlumAThin2.play()
+
+limited = PlumAThin2.limit_a(threshold_db=-30, headroom_db=5)
+limited.play()
+
+src = PlumAThin2
+env = pg.EnvDetectPE(src.delay(-1150), attack=0.04, release=0.3)
+compressed = pg.CompressorPE(src, env, ratio=3.0, threshold_db=-30, makeup_db=14)
+pg.Transport(compressed).play()
+
+
+#test = delays(PlumAThin1,0.7,7,0.75)
+test = delays(PlumAThin1,0.7,3,0.75)
+test.play()
+
+
 elements = []
 
 gain = 0.8
 
 t = 0
-elements.append(mix_at(PlumA,secs(t),gain))
+# elements.append(mix_at(PlumAThin1,secs(t),gain))
 
-t += 5.5
-#elements.append(delays(mix_at(PlumB,secs(t),gain).pan(-120),0.7,3,0.5))
-elements.append(mix_at(PlumB,secs(t),gain))
+# t += 5.5
+elements.append(delays(mix_at(PlumAThin1,secs(t),gain),0.7,7,0.75))
+#elements.append(mix_at(PlumAThin1,secs(t),gain))
 
 mosh = pg.MixPE(*elements)
 mosh.play()
