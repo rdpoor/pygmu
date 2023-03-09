@@ -49,7 +49,7 @@ def delays(src, secs, howmany = 1, decay = 1):
     amp = 1.0
     for i in range(1, howmany):
         print(frame_rate)
-        delay_units.append(src.delay(int(i * secs * frame_rate)).gain(amp))
+        delay_units.append(src.time_shift(int(i * secs * frame_rate)).gain(amp))
         amp *= decay
     return pg.MixPE(src,*delay_units)
 
@@ -65,21 +65,21 @@ fade_out = secs(2.1)
 
 sourceA = pg.WavReaderPE("samples/Tamper_MagnifyingFrame1.wav")
 sourceB = pg.WavReaderPE("samples/TamperClip38.wav")
-sourceC = mogrify("samples/TamperClip38.wav").crop(pg.Extent(start=140000)).delay(-140000)
+sourceC = mogrify("samples/TamperClip38.wav").crop(pg.Extent(start=140000)).time_shift(-140000)
 
 frag1 = pg.SplicePE(sourceA, fade_in, fade_out).reverse(5)
 frag2 = pg.SplicePE(sourceB, fade_in, fade_out).reverse(5)
 frag3 = pg.SplicePE(sourceC, fade_in * 4, fade_out).gain(2)
 
-frag4 = pg.MixPE(frag3,frag3.delay(20000).gain(0.8),frag3.delay(40000).gain(0.6))
+frag4 = pg.MixPE(frag3,frag3.time_shift(20000).gain(0.8),frag3.time_shift(40000).gain(0.6))
 frag5 = delays(frag3, 0.7, 18, 0.76)
 
-elements = [frag5, frag1.delay(secs(3)), frag2.delay(secs(3)), frag1.delay(secs(8)), frag2.delay(secs(10)), frag5.delay(secs(18))]
+elements = [frag5, frag1.time_shift(secs(3)), frag2.time_shift(secs(3)), frag1.time_shift(secs(8)), frag2.time_shift(secs(10)), frag5.time_shift(secs(18))]
 
 mosh = pg.MixPE(*elements)
 mosh2 = mosh.crop(pg.Extent(start=0,end=720000)).splice(fade_in, fade_out).reverse(16).splice(secs(0.01),secs(7))
 
-mosh3 = pg.MixPE(mosh,mosh2.delay(secs(5.5)))
+mosh3 = pg.MixPE(mosh,mosh2.time_shift(secs(5.5)))
 
 wet_mix = delays(mosh3, 0.5, 4, 0.7).gain(2)
 

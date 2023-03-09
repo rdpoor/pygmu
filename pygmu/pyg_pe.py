@@ -58,8 +58,8 @@ class PygPE(object):
     def crop(self, extent):
         return pg.CropPE(self, extent)
 
-    def delay(self, delay):
-        return pg.DelayPE(self, delay)
+    def time_shift(self, delay):
+        return pg.TimeShiftPE(self, delay)
 
     def mul(self, fac):
         return pg.MulPE(self, fac)

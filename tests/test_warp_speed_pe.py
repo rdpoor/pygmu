@@ -142,7 +142,7 @@ class TestWarpSpeedPE(unittest.TestCase):
         # change speed...
         speed = 0.5
         delay = self.requested.end() * speed - pe.get_src_frame() # -45
-        pe = WarpSpeedPE(self.src_pe.delay(delay), speed=speed)
+        pe = WarpSpeedPE(self.src_pe.time_shift(delay), speed=speed)
         # render the next 10 frames, starting where the previous request ended
         t0 = self.requested.end()
         t1 = t0 + self.requested.duration()
@@ -152,7 +152,7 @@ class TestWarpSpeedPE(unittest.TestCase):
         got = pe.render(Extent(t0, t1))
         np.testing.assert_array_almost_equal(got, expect)
         # src_frame = 20 because the most recent call to pe.render() requested
-        # src frames from 15 to 20.  The src_pe.delay() positioned the "read
+        # src frames from 15 to 20.  The src_pe.time_shift() positioned the "read
         # head" properly to get continuity
         src_frame = pe.get_src_frame()
         self.assertEqual(src_frame, 20)
@@ -184,7 +184,7 @@ class TestWarpSpeedPE(unittest.TestCase):
         # change speed...
         speed = 2.0
         delay = self.requested.end() * speed - pe.get_src_frame() # 45
-        pe = WarpSpeedPE(self.src_pe.delay(delay), speed=speed)
+        pe = WarpSpeedPE(self.src_pe.time_shift(delay), speed=speed)
         # render the next 10 frames, starting where the previous request ended
         t0 = self.requested.end()
         t1 = t0 + self.requested.duration()
@@ -194,7 +194,7 @@ class TestWarpSpeedPE(unittest.TestCase):
         got = pe.render(Extent(t0, t1))
         np.testing.assert_array_almost_equal(got, expect)
         # src_frame = 80 because the most recent call to pe.render() requested
-        # src frames from 60 to 80.  The src_pe.delay() positioned the "read
+        # src frames from 60 to 80.  The src_pe.time_shift() positioned the "read
         # head" properly to get continuity
         src_frame = pe.get_src_frame()
         self.assertEqual(src_frame, 80)

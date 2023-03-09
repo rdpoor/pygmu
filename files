@@ -9,7 +9,7 @@
 (echo const_pe.py && python -m coverage run -m unittest tests/test_const_pe.py && python -m coverage report | grep const_pe.py)
 (echo convolve_pe.py && python -m coverage run -m unittest tests/test_convolve_pe.py && python -m coverage report | grep convolve_pe.py)
 (echo crop_pe.py && python -m coverage run -m unittest tests/test_crop_pe.py && python -m coverage report | grep crop_pe.py)
-(echo delay_pe.py && python -m coverage run -m unittest tests/test_delay_pe.py && python -m coverage report | grep delay_pe.py)
+(echo time_shift_pe.py && python -m coverage run -m unittest tests/test_time_shift_pe.py && python -m coverage report | grep time_shift_pe.py)
 (echo env_detect_pe.py && python -m coverage run -m unittest tests/test_env_detect_pe.py && python -m coverage report | grep env_detect_pe.py)
 (echo extent.py && python -m coverage run -m unittest tests/test_extent.py && python -m coverage report | grep extent.py)
 # (echo filter_pe.py && python -m coverage run -m unittest tests/test_filter_pe.py && python -m coverage report | grep filter_pe.py)

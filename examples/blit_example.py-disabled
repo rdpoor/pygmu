@@ -21,7 +21,7 @@ for h in [4, 9, 0]:
         for w in ['sawtooth', 'pulse']:
             f = ut.pitch_to_freq(pitch)
             src = pg.BlitSigPE(frequency=f, n_harmonics=h, frame_rate=FRAME_RATE, waveform=w)
-            pes.append(src.crop(pg.Extent(0, stof(dur))).delay(stof(t)))
+            pes.append(src.crop(pg.Extent(0, stof(dur))).time_shift(stof(t)))
             t += dur
 mix = pg.MixPE(*pes).gain(0.3)
 # mix = pg.WavWriterPE(mix, "examples/blit_example.wav")

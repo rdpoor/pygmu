@@ -21,7 +21,7 @@ FRAME_RATE = beat.frame_rate()
 def beats(b):
     return int(b * beat_duration)
 
-middle_8_beat = beat.delay(beats(-7)).crop(pg.Extent(0, beats(1))).loop(beats(1))
+middle_8_beat = beat.time_shift(beats(-7)).crop(pg.Extent(0, beats(1))).loop(beats(1))
 
 middle_8_motif = [
     ["g5", "q", 20],
@@ -63,7 +63,7 @@ middle_8_motif = [
 # bridge_a: 16 beats just repeated note, bridge_motif
 # bridge_b: 16 beats: add plucked melody
 # v4: 16 beats: same as v3
-# v5: 16 beats: v4 + (motif, motif+9, motif+12, motif+21).delay(0.25)
+# v5: 16 beats: v4 + (motif, motif+9, motif+12, motif+21).time_shift(0.25)
 # fade_out: "clock running down", panned center - left - right...
 
 frames_per_quarter = beat_duration
@@ -219,11 +219,11 @@ def gen_verse_3():
         pes.append(pg.CombPE(snip, f0=freq, q=20))
 
         freq = ut.pitch_to_freq(pitch+24+2)
-        snip = pg.SpatialPE(beat_snip, degree = 85).gain(0.75).delay(beats(0.5))
+        snip = pg.SpatialPE(beat_snip, degree = 85).gain(0.75).time_shift(beats(0.5))
         pes.append(pg.CombPE(snip, f0=freq, q=40))
 
         freq = ut.pitch_to_freq(pitch+12+7)
-        snip = pg.SpatialPE(beat_snip, degree = -75).gain(0.72).delay(beats(0.25))
+        snip = pg.SpatialPE(beat_snip, degree = -75).gain(0.72).time_shift(beats(0.25))
         pes.append(pg.CombPE(snip, f0=freq, q=40))
         s = e
 
@@ -258,19 +258,19 @@ motif_bridge = [
 
 
 def gen_bridge():
-    bridge_snip = beat_loop.delay(beats(1))
+    bridge_snip = beat_loop.time_shift(beats(1))
     pes = []
     s = 0
     for pitch, n_frames in motif_bridge + motif_bridge + motif_bridge + motif_bridge:
         e = s + n_frames
         freq = ut.pitch_to_freq(pitch)
-        snip = bridge_snip.crop(pg.Extent(0, n_frames)).delay(s).gain(0.5)
+        snip = bridge_snip.crop(pg.Extent(0, n_frames)).time_shift(s).gain(0.5)
         pes.append(pg.CombPE(snip, f0=freq, q=40))
         s = e
     # kick enters partway through the bridge
     s = beats(8)
     for i in range(24):
-        kick = beat_loop.crop(pg.Extent(0, beats(0.25))).delay(s + beats(i)).gain(0.1)
+        kick = beat_loop.crop(pg.Extent(0, beats(0.25))).time_shift(s + beats(i)).gain(0.1)
         pes.append(kick)
     return pg.MixPE(*pes)
 
@@ -333,17 +333,17 @@ def closest(x, values):
     return values[idx]
 
 def gen_bridge_note(at, pitch, duration, legato):
-    bridge_snip = beat_loop.delay(beats(1))
+    bridge_snip = beat_loop.time_shift(beats(1))
     freq = ut.pitch_to_freq(pitch)
     # snip = pg.CombPE(bridge_snip, f0=freq, q=180).crop(pg.Extent(0, int(duration * legato)))
     # snip = pg.ReversePE(snip)
     snip = pg.SinPE(frequency=freq, frame_rate=FRAME_RATE).crop(pg.Extent(0, int(duration * legato))).gain(0.1)
     snip = snip.splice(10, 1000)
-    snip = snip.delay(at)
+    snip = snip.time_shift(at)
     degree = ut.lerp(pitch, 60, 108, -90, 90)
     unpanned = pg.SpatialPE(snip, degree=0)
     panned = pg.SpatialPE(snip, degree=degree)
-    return pg.MixPE(unpanned.gain(0.4).delay(beats(0.2)), 
+    return pg.MixPE(unpanned.gain(0.4).time_shift(beats(0.2)),
                     panned.gain(0.4))
 
 def gen_verse_4():
@@ -363,11 +363,11 @@ def gen_verse_4():
         pes.append(pg.CombPE(snip, f0=freq, q=20))
 
         freq = ut.pitch_to_freq(pitch+24+2)
-        snip = pg.SpatialPE(beat_snip, degree = 85).gain(0.75).delay(beats(0.5))
+        snip = pg.SpatialPE(beat_snip, degree = 85).gain(0.75).time_shift(beats(0.5))
         pes.append(pg.CombPE(snip, f0=freq, q=40))
 
         freq = ut.pitch_to_freq(pitch+12+7)
-        snip = pg.SpatialPE(beat_snip, degree = -75).gain(0.72).delay(beats(0.25))
+        snip = pg.SpatialPE(beat_snip, degree = -75).gain(0.72).time_shift(beats(0.25))
         pes.append(pg.CombPE(snip, f0=freq, q=40))
         s = e
 
@@ -404,29 +404,29 @@ def gen_outro():
     # "clock running down" effect with increasing delay and decreasing gain
     # use the last sixteenth note of the previous section as the snip to
     # repeat.  Note that we delay it by -15.75 so it (now) starts at t=0.
-    outro_snip = v3.crop(pg.Extent(beats(15.75))).delay(beats(-15.75))
+    outro_snip = v3.crop(pg.Extent(beats(15.75))).time_shift(beats(-15.75))
     s = 0       # initial snip start time
     dt = 0.25   # initial inter-snip delay 
     g = 1.0     # initial snip gain
     for i in range(17):
         # add snip to the sequence of snips...
-        pes.append(outro_snip.delay(beats(s)).gain(g))
+        pes.append(outro_snip.time_shift(beats(s)).gain(g))
         g = g * 0.8   # decrease gain
         dt += 0.07    # increase delay
         s += dt       # start time of next snip
     return pg.MixPE(*pes)
 
 mix = pg.MixPE(
-    gen_fade_in().delay(beats(0)),
-    gen_intro().delay(beats(16)),
-    gen_verse_1().delay(beats(56)),
-    gen_verse_2().delay(beats(72)),
-    gen_verse_3().delay(beats(88)),
-    gen_bridge().delay(beats(104)),
-    gen_bridge_melody().delay(beats(104+8)),
-    gen_verse_4().delay(beats(136)),
-    gen_verse_4().delay(beats(152)),
-    gen_outro().delay(beats(168)),
+    gen_fade_in().time_shift(beats(0)),
+    gen_intro().time_shift(beats(16)),
+    gen_verse_1().time_shift(beats(56)),
+    gen_verse_2().time_shift(beats(72)),
+    gen_verse_3().time_shift(beats(88)),
+    gen_bridge().time_shift(beats(104)),
+    gen_bridge_melody().time_shift(beats(104+8)),
+    gen_verse_4().time_shift(beats(136)),
+    gen_verse_4().time_shift(beats(152)),
+    gen_outro().time_shift(beats(168)),
     )
 
 # For testing the individual sections in isolation, uncomment one at a time.
@@ -437,7 +437,7 @@ mix = pg.MixPE(
 # mix = gen_verse_3() 
 # mix = gen_bridge()
 # mix = gen_bridge_melody()
-# mix = pg.MixPE(gen_bridge(), gen_bridge_melody().delay(beats(8)))
+# mix = pg.MixPE(gen_bridge(), gen_bridge_melody().time_shift(beats(8)))
 # mix = gen_verse_4()
 # mix = gen_outro()
 print("mix.extent() =", mix.extent())

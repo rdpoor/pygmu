@@ -7,7 +7,7 @@ import pygmu as pg
 
 # seq is a little helper function that delays a pe for a given amount
 def seq(snippet, at):
-    return pg.DelayPE(snippet, at)
+    return pg.TimeShiftPE(snippet, at)
 
 # q is the number of frames in a quarter note
 q = int(89576 / 4)     # quarter note duration

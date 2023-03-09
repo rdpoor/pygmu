@@ -1,5 +1,5 @@
 from crop_pe import CropPE
-from delay_pe import DelayPE
+from time_shift_pe import TimeShiftPE
 from extent import Extent
 from pyg_pe import PygPE
 from wav_reader_pe import WavReaderPE
@@ -20,7 +20,7 @@ class SnippetPE(PygPE):
 
         Note that SnippetPE comprises upto three other PE's: a WavReader to
         read the data from a .wav file, a CropPE to limit what's played, and
-        a DelayPE to offset according to the sync_point.
+        a TimeShiftPE to offset according to the sync_point.
         """
         super(SnippetPE, self).__init__()
         self._src_pe = WavReaderPE(filename)
@@ -29,7 +29,7 @@ class SnippetPE(PygPE):
             self._src_pe = CropPE(self._src_pe, crop)
             self._extent = self._extent.intersect(crop)
         if sync_point != 0:
-            self._src_pe = DelayPE(self._src_pe, -sync_point)
+            self._src_pe = TimeShiftPE(self._src_pe, -sync_point)
 
     def render(self, requested:Extent):
         return self._src_pe.render(requested)

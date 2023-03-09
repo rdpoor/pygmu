@@ -89,7 +89,7 @@ mogrify()
 #### CompressorPE
 #### ConvolvePE
 #### CropPE
-#### DelayPE
+#### TimeShiftPE
 #### EnvDetectPE
 #### FilterPE
 #### GainPE
@@ -116,7 +116,7 @@ mogrify()
      
     .biquad(gain,freq,q,type)
 
-    .delay(time)
+    .time_shift(time)
         shifts the PE by time frames
 
     .gain(multiplier)
@@ -175,7 +175,7 @@ Checklist:
 | `const_pe.py` | n | 100 |   |   |   |
 | `convolve_pe.py` | n | 100 |   |   |   |
 | `crop_pe.py` | n | 100 |   |   |   |
-| `delay_pe.py` | n | 100 |   |   |   |
+| `time_shift_pe.py` | n | 100 |   |   |   |
 | `env_detect_pe.py` | n | 100 | ms  |   |   |
 | `filter_pe.py` | n | 42 |   |   | deprecated?  |
 | `gain_db_pe.py` | n | n |   |   | replaced by gain_pe |

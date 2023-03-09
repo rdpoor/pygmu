@@ -6,7 +6,7 @@ sys.path.append( pygmu_dir )
 import pygmu as pg
 
 def loopWindow(src,insk,dur):
-    return pg.LoopPE(src.crop(pg.Extent(insk)).delay(-insk), dur)
+    return pg.LoopPE(src.crop(pg.Extent(insk)).time_shift(-insk), dur)
 
 def secs(s):
     return int(s * 48000)
