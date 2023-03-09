@@ -50,7 +50,6 @@ pg.Transport(compressed).play()
 
 #test = delays(PlumAThin1,0.7,7,0.75)
 test = delays(PlumAThin1,0.7,3,0.75)
-test.play()
 
 
 elements = []
@@ -64,8 +63,10 @@ t = 0
 elements.append(delays(mix_at(PlumAThin1,secs(t),gain),0.7,7,0.75))
 #elements.append(mix_at(PlumAThin1,secs(t),gain))
 
-mosh = pg.MixPE(*elements)
-mosh.play()
+
+dst = pg.WavWriterPE(mosh, "test.wav")
+pg.FtsTransport(dst).play()
+pg.Transport(pg.WavReaderPE("test.wav")).play()
 
 
 # convolved = pg.ConvolvePE(mosh.gain(0.08), impulse)

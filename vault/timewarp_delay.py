@@ -33,10 +33,15 @@ theory0.play()
 mosh2 = theory0.warp_speed(0.71)
 #mosh2 = pg.WarpSpeedPE(theory0, 0.71).delay(secs(5))
 mosh2.play()
+
+mosh2.delay(secs(5))
+mosh2.play()
+
 #mosh2 = theory0.gain(1.2)
 #
 elements2 = [theory0]
 elements2.append(mix_at(mosh2,secs(5),0.8))
+
 
 
 jimmy = pg.MixPE(*elements2)

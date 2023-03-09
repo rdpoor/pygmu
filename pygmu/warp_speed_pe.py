@@ -80,7 +80,7 @@ class WarpSpeedPE(PygPE):
     def extent(self):
         if isinstance(self._speed, numbers.Number):
             t0 = self._src_pe.extent().start()
-            t1 = t0 + self._src_pe.extent().duration() * self._speed
+            t1 = t0 + self._src_pe.extent().duration() / self._speed
             return Extent(t0, t1)
         else:
             raise(RuntimeError("dynamic speeds not yet supported"))
