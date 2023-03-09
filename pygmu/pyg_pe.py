@@ -109,7 +109,7 @@ class PygPE(object):
     def tralfam(self):
         return pg.TralfamPE(self)
 
-    def warp_speed(self, rate):
+    def warp_speed(self, rate, frame=0):
         return pg.WarpSpeedPE(self, rate)
     
     def wav_writer(self, filename):

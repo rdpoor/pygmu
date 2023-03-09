@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import numbers
 from extent import Extent
@@ -10,20 +11,24 @@ class WarpSpeedPE(PygPE):
     Variable rate / resampling using linear interpolation.
     """
 
-    def __init__(self, src_pe, speed, frame=0):
+    def __init__(self, src_pe, speed=1.0):
         super(WarpSpeedPE).__init__()
 
         self._src_pe = src_pe
         self._speed = speed
-        if isinstance(self._speed, PygPE) and self._speed.channel_count() != 1:
-            raise pyx.ChannelCountMismatch("dynamic rate must be single channel")
-        self._frame = frame
+        try:
+            # python-esque technique to check for numeric speed.
+            # "ask forgiveness, not permission"
+            self._speed = speed * 1.0
+        except TypeError:
+            raise pyx.ArgumentError("WarpSpeed rate argument must be a number")
 
-    def set_frame(self, frame):
-        self._frame = frame
-
-    def get_frame(self):
-        return self._frame
+    def get_src_frame(self):
+        """
+        Return the last rendered frame number.  This is useful if you want to
+        change the speed and not introduce a discontinuity.
+        """
+        return self._src_frame
 
     def set_speed(self, speed):
         self._speed = speed
@@ -33,36 +38,37 @@ class WarpSpeedPE(PygPE):
 
     def render(self, requested):
         if isinstance(self._speed, numbers.Number):
-            # constant speed
-            t0 = self._frame
-            t1 = t0 + requested.duration() * self._speed
-            src_t0 = int(round(t0))
-            src_t1 = int(round(t1))
+            # constant speed.
+            t0 = requested.start() * self._speed
+            t1 = requested.end() * self._speed
+            src_t0 = t0
+            src_t1 = t1
             if src_t1 < src_t0:
-                # need to fetch frames in positive time order: swap
+                # enforce src_t0 <= src_t1
                 src_t1, src_t0 = src_t0, src_t1
-            # extra sample at each end for interpolation.  Note: t1 is
-            # exclusive bounds, so +2 rather than +1
-            src_t0 -= 1
-            src_t1 += 2
-
             # src_t0 and src_t1 define the extent of the source frames we need
-            extent = Extent(src_t0, src_t1)
-            src_frames = self._src_pe.render(Extent(src_t0, src_t1))
+            # to request from the source.  Since src_t1 is exclusive, we add 1.
+            src_t0 = int(math.floor(src_t0))
+            src_t1 = int(math.floor(src_t1)) + 1
+
+            src_extent = Extent(src_t0, src_t1)
+            src_frames = self._src_pe.render(src_extent)
 
             # xp[n] is the frame number of src_frames[n]
-            xp = np.arange(extent.start(), extent.end())
+            xp = np.arange(src_extent.start(), src_extent.end())
 
-            # times defines the frame #s at which to evaluate src_frames
+            # times defines the frame #s at which to evaluate src_frames.
+            # Note times are generally non-integer.
             times = np.linspace(
-                t0,
-                t1,
+                t0,              # inclusive
+                t1,              # exclusive
                 num=int(requested.duration()),
                 endpoint=False,
                 dtype=np.float32)
             dst_channels = []
             for fp in src_frames:
-                # print(t0, t1, src_t0, src_t1)
+                # use np.interp() to compute samples at the given times
+                # print("t0, t1, src_t0, src_t1: ", t0, t1, src_t0, src_t1)
                 # print("times:", times)
                 # print("xp:", xp)
                 # print("fp:", fp)
@@ -71,18 +77,25 @@ class WarpSpeedPE(PygPE):
                 dst_channels.append(samples)
             dst_frames = np.vstack(dst_channels)
 
-            self._frame = t1  # update frame for next call to render()
+            self._src_frame = t1  # update frame for get_src_frame()
             return dst_frames
 
         else:
             raise(RuntimeError("dynamic speeds not yet supported"))
 
     def extent(self):
-        if isinstance(self._speed, numbers.Number):
-            t0 = self._src_pe.extent().start()
-            t1 = t0 + self._src_pe.extent().duration() / self._speed
-            return Extent(t0, t1)
-        else:
+        if self._speed == 0:
+            # infinitely long...
+            return Extent()
+        try:
+            t0 = self._src_pe.extent().start() / self._speed
+            t1 = self._src_pe.extent().end() / self._speed
+            # print("t0, t1 =", t0, t1)
+            if t1 > t0:
+                return Extent(t0, t1)
+            else:
+                return Extent(t1, t0)
+        except TypeError:
             raise(RuntimeError("dynamic speeds not yet supported"))
 
     def frame_rate(self):

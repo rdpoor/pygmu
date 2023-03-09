@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 class Extent(object):
     """
@@ -19,8 +20,20 @@ class Extent(object):
     NULL_EXTENT = (0, 0)
 
     def __init__(self, start = NINF, end = PINF):
-        self.s = start
-        self.e = max(end, start)
+        if math.isinf(start):
+            if start > 0:
+                start = self.PINF
+            else:
+                start = self.NINF
+        if math.isinf(end):
+            if end > 0:
+                end = self.PINF
+            else:
+                end = self.NINF
+        if end > start:
+            self.s, self.e = start, end
+        else:
+            self.s, self.e = end, start
 
     def __repr__(self):
         st = str(self.s)
