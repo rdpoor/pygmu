@@ -13,8 +13,7 @@ class T2(object):
 
     def __init__(
         self,
-        root_pe,
-        file=None,
+        src_pe,
         output_device=None,
         frame_rate=None,
         blocksize=None,
@@ -22,54 +21,63 @@ class T2(object):
         latency=None,
         channel_count=None):
         """
-        Create a Transport object that will read samples from root_pe.  If file
-        is None, Transport will render samples into a temporary file and delete
-        the file upon completion or a call to Transport.stop().  If file names a
-        writable filename, the sample data will be saved in that file.  And if
-        it is the special symbol REAL_TIME, samples will be rendered without
-        writing an intermediate file.
+        Create a Transport object that will read and play samples from src_pe,
+        with the added ability to change speed and jump to different frames.
         """
-        self._root_pe = root_pe
-        self._file = file
+        self._src_pe = src_pe
+        self._src_frame = 0
         self._output_device = output_device
         if frame_rate is None:
-            self._frame_rate = root_pe.frame_rate()
+            self._frame_rate = src_pe.frame_rate()
         else:
             self._frame_rate = frame_rate
         self._blocksize = blocksize
         self._dtype = dtype
         self._latency = latency
         if channel_count is None:
-            self._channel_count = root_pe.channel_count()
+            self._channel_count = src_pe.channel_count()
         else:
             self.channel_count = channel_count
         self._stream = None
-        self._warper = warp_speed_pe.WarpSpeedPE(self._root_pe, 1.0)
+        self._warper = warp_speed_pe.WarpSpeedPE(self._src_pe, speed=1.0)
         self.reset()
 
     def callback(self, outdata, n_frames, time, status):
         if status:
             print(status)
+
         if self._state == STATE_STOPPED:
             raise sd.CallbackStop()
-        elif self._state == STATE_PAUSED:
+
+        elif self._state == STATE_PAUSED or self._speed == 0:
+            # Continue to stream buffers of zeros while paused
             outdata[:] = np.zeros((n_frames, self._channel_count))
+
         elif self._speed == 1.0:
             # 1:1 playback speed
-            end_frame = self._frame + n_frames
-            requested = extent.Extent(self._frame, end_frame)
+            start_frame = self._src_frame
+            end_frame = start_frame + n_frames
+            requested = extent.Extent(int(start_frame), int(end_frame))
             # Use the .T operator (transpose) to convert pygmu row form to
             # sounddevice column form.
-            outdata[:] = self._root_pe.render(requested).T
-            self._frame = end_frame
+            outdata[:] = self._src_pe.render(requested).T
+            self._src_frame = end_frame
+
         else:
+            # Use WarpSpeed to adjust the playback speed
             self._warper.set_speed(self._speed)
-            self._warper.set_frame(self._frame)
-            requested = extent.Extent(int(self._frame), int(self._frame) + n_frames)
+            # Implementation note: if you ask WarpSpeed to render frame F at
+            # speed S, it will request frame F*S from the source. We want to
+            # render self._src_frame from the source, so we request frame
+            # self._src_frame / S
+            start_frame = self._src_frame / self._speed
+            end_frame = start_frame + n_frames
+            requested = extent.Extent(int(start_frame), int(end_frame))
             # Use the .T operator (transpose) to convert pygmu row form to
             # sounddevice column form.
             outdata[:] = self._warper.render(requested).T
-            self._frame = self._warper.get_frame()
+            # Note next starting frame
+            self._src_frame = self._src_frame + (n_frames * self._speed)
 
     def play(self, frame=None, speed=None):
         """
@@ -102,13 +110,13 @@ class T2(object):
         Return the current frame position.  (Also valid while the transport is
         running.
         """
-        return self._frame
+        return self._src_frame
 
     def set_frame(self, frame):
         """
         Jog to the specified frame, whether or not the transport is running.
         """
-        self._frame = frame
+        self._src_frame = frame
 
     def get_speed(self):
         """
@@ -140,6 +148,7 @@ class T2(object):
         self.reset()
 
     def reset(self):
-        self._frame = 0
+        self._src_frame = 0
         self._speed = 1.0
         self._state = STATE_STOPPED
+        self._stream = None
