@@ -20,6 +20,7 @@ The best way to run this:
 """
 
 src = pg.WavReaderPE("samples/TamperFrame_AfternoonOfAFaun.wav")
+print(src.extent())
 t2 = pg.T2(src)
 
 
