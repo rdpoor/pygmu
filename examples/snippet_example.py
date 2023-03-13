@@ -6,7 +6,7 @@ sys.path.append( pygmu_dir )
 import pygmu as pg
 
 def seq(snippet, at):
-    return pg.DelayPE(snippet, at)
+    return pg.TimeShiftPE(snippet, at)
 
 q = int(89576 / 4)     # quarter note duration
 

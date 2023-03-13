@@ -20,7 +20,7 @@ class TestSpreadPE(unittest.TestCase):
         self.pe_default = SpreadPE(self.src)
 
     def test_init(self):
-        # verify that creating a DelayPE returns an instance of DelayPE
+        # verify that creating a TimeShiftPE returns an instance of TimeShiftPE
         self.assertIsInstance(self.pe1, SpreadPE)
         self.assertEqual(self.pe1.channel_count(), 1)
         self.assertEqual(self.pe1.extent(), self.src.extent())

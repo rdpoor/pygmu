@@ -14,13 +14,13 @@ def delays(src, secs, howmany = 1, decay = 1):
     delay_units = []
     amp = 1
     for i in range(1, howmany):
-        #delay_units.append(src.delay(int(i * secs * frame_rate)).gain(amp).pan(random.uniform(-90,90)))
-        delay_units.append(src.delay(int(i * secs * frame_rate)).gain(amp))
+        #delay_units.append(src.time_shift(int(i * secs * frame_rate)).gain(amp).pan(random.uniform(-90,90)))
+        delay_units.append(src.time_shift(int(i * secs * frame_rate)).gain(amp))
         amp *= decay
     return pg.MixPE(src,*delay_units)
 
 def mix_at(src, t, amp = 1):
-    return pg.DelayPE(src,t).gain(amp)
+    return pg.TimeShiftPE(src,t).gain(amp)
 
 
 def good_gravy(src,window_start, window_duration, walk_rate, final_duration, flip_flag):
@@ -36,7 +36,7 @@ def good_gravy(src,window_start, window_duration, walk_rate, final_duration, fli
     even_odd = True
 
     while(cur_frame < final_frame):
-        g = src.crop(pg.Extent(st_frame, st_frame + window_frames)).delay(cur_frame).splice(overlap_frames,overlap_frames)
+        g = src.crop(pg.Extent(st_frame, st_frame + window_frames)).time_shift(cur_frame).splice(overlap_frames,overlap_frames)
         if not even_odd:
             g = g.reverse(window_frames)
         els.append(g)

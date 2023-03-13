@@ -29,7 +29,7 @@ def delays(src, secs, howmany = 1, decay = 1):
     delay_units = []
     amp = 1
     for i in range(1, howmany):
-        delay_units.append(src.delay(int(i * secs * frame_rate)).gain(amp))
+        delay_units.append(src.time_shift(int(i * secs * frame_rate)).gain(amp))
         amp *= decay
     return pg.MixPE(src,*delay_units)
 
@@ -37,7 +37,7 @@ def secs(s):
     return int(s * 48000)
 
 def mix_at(src, t, amp = 1):
-    return pg.DelayPE(src,t).gain(amp)
+    return pg.TimeShiftPE(src,t).gain(amp)
  
 
 fade_in = secs(0.3)

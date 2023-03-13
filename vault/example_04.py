@@ -8,7 +8,7 @@ import pygmu as pg
 def seq(filename, at_frame, amp):
     wav = pg.WavReaderPE(filename)
     # return the wav file, delayed by at_frame and attenuated by amp
-    return pg.DelayPE(pg.MulPE(wav, pg.ConstPE(amp)), int(at_frame))
+    return pg.TimeShiftPE(pg.MulPE(wav, pg.ConstPE(amp)), int(at_frame))
 
 q = 89576 / 4     # quarter note duration
 mew_offset = 3000

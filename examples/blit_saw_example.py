@@ -20,13 +20,13 @@ for n_harmonics in [4, 9, 0]:
     for pitch in [38, 45, 52, 59, 66, 73]:
         freq = ut.pitch_to_freq(pitch)
         src = pg.BlitSawPE(frequency=freq, n_harmonics=n_harmonics, frame_rate=frame_rate)
-        pes.append(src.crop(pg.Extent(0, stof(dur))).delay(stof(t)))
+        pes.append(src.crop(pg.Extent(0, stof(dur))).time_shift(stof(t)))
         t += dur
 for n_harmonics in [4, 9, 0]:
     # ramp pitch from 38 to 73 over dur * 6 seconds
     freq_pe = pg.RampPE(ut.mtof(38), ut.mtof(73), pg.Extent(0, stof(dur*6)))
     blit_pe = pg.BlitSawPE(frequency=freq_pe, n_harmonics=n_harmonics, frame_rate=frame_rate)
-    pes.append(blit_pe.crop(freq_pe.extent()).delay(stof(t)))
+    pes.append(blit_pe.crop(freq_pe.extent()).time_shift(stof(t)))
     t += dur * 6
 mix = pg.MixPE(*pes).gain(0.3)
 

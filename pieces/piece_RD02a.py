@@ -26,7 +26,7 @@ def beat_to_frame(b):
 	return int(b * q_note)
 
 def snip(pe, s, e):
-	return pe.crop(pg.Extent(int(s), int(e))).delay(int(-s))
+	return pe.crop(pg.Extent(int(s), int(e))).time_shift(int(-s))
 
 and_the = snip(words, 0, 25208)
 typical = snip(words, 25208, 55196)
@@ -51,10 +51,10 @@ def tuned_snip(snip, beat, pitch, q):
 		pe = pg.Biquad2PE(snip, 0, f0, q, "lowpass")
 	else:
 		pe = snip
-	return pe.delay(int(beat * q_note))
+	return pe.time_shift(int(beat * q_note))
 
 mix = pg.MixPE(
-	beat.delay(beat_to_frame(4)).gain(0.2).crop(pg.Extent(0, int(32 * q_note))),
+	beat.time_shift(beat_to_frame(4)).gain(0.2).crop(pg.Extent(0, int(32 * q_note))),
 	tuned_snip(typical, 0, 65, 256),
 	tuned_snip(typical, 1, 65, 256),
 	tuned_snip(typical, 2, 65, 256),

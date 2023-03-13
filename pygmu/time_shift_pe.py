@@ -1,5 +1,5 @@
 """
-DelayPE - time varying delay
+TimeShiftPE - time varying delay
 """
 
 import numpy as np
@@ -7,13 +7,13 @@ from extent import Extent
 from pyg_pe import PygPE
 import pyg_exceptions as pyx
 
-class DelayPE(PygPE):
+class TimeShiftPE(PygPE):
 	"""
 	Delay by a fixed or variable number of frames.
 	"""
 
 	def __init__(self, src_pe:PygPE, delay=0):
-	    super(DelayPE, self).__init__()
+	    super(TimeShiftPE, self).__init__()
 	    self._src_pe = src_pe
 	    self._delay = delay
 	    if isinstance(delay, PygPE):

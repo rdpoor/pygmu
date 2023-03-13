@@ -15,6 +15,7 @@ class WarpSpeedPE(PygPE):
         super(WarpSpeedPE).__init__()
 
         self._src_pe = src_pe
+        self._src_frame = 0
         self._speed = speed
         try:
             # python-esque technique to check for numeric speed.
@@ -25,8 +26,10 @@ class WarpSpeedPE(PygPE):
 
     def get_src_frame(self):
         """
-        Return the last rendered frame number.  This is useful if you want to
-        change the speed and not introduce a discontinuity.
+        Return the last rendered frame number, which can be fractional.  This is
+        useful for changing the speed without introducing a discontinuity.
+
+        NOTE: this may be buggy.
         """
         return self._src_frame
 

@@ -29,7 +29,7 @@ class Tobin(object):
 				pe = tobin
 			else:
 				pe = tobin.gen_pes()
-			pes.append(pe.delay(start_time * self._duration))
+			pes.append(pe.time_shift(start_time * self._duration))
 		return pg.Mix(*pes)
 
 
@@ -120,11 +120,11 @@ def load_up():
 	pes = []
 	for f in files:
 		pe = one_beat(f, 0)
-		pes.append(pe.delay(t))
+		pes.append(pe.time_shift(t))
 		t += pe.extent().duration()
 	for f in files:
 		pe = one_beat(f, 1)
-		pes.append(pe.delay(t))
+		pes.append(pe.time_shift(t))
 		t += pe.extent().duration()
 	return pg.MixPE(*pes)
 

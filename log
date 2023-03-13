@@ -19,8 +19,8 @@ pygmu/convolve_pe.py           61      0   100%
 tests/test_convolve_pe.py      81      0   100%
 pygmu/crop_pe.py             28      1    96%
 tests/test_crop_pe.py        75      0   100%
-pygmu/delay_pe.py            37      0   100%
-tests/test_delay_pe.py      106      0   100%
+pygmu/time_shift_pe.py            37      0   100%
+tests/test_time_shift_pe.py      106      0   100%
 pygmu/env_detect_pe.py           38      0   100%
 tests/test_env_detect_pe.py      80      0   100%
 pygmu/gain_pe.py             36      0   100%

@@ -15,7 +15,7 @@ def secs(s):
     return int(s * srate)
 
 def mix_at(src, t, amp = 1):
-    return pg.DelayPE(src,t).gain(amp)
+    return pg.TimeShiftPE(src,t).gain(amp)
 
 def sterofy(frames):
     # convert horizontal mono array into stero frames (2 columns, N rows)
@@ -27,18 +27,18 @@ def delays(src, secs, howmany = 1, decay = 1):
     amp = 1 / howmany
     print('---------',src.channel_count())
     for i in range(1, howmany + 1):
-        #delay_units.append(src.delay(int(i * secs * frame_rate)).gain(amp).lowpass(500))
-        delay_units.append(src.delay(int(i * secs * frame_rate)).gain(amp))
+        #delay_units.append(src.time_shift(int(i * secs * frame_rate)).gain(amp).lowpass(500))
+        delay_units.append(src.time_shift(int(i * secs * frame_rate)).gain(amp))
         amp *= decay
     return pg.MixPE(src.gain(2/howmany),*delay_units)
     
 def loopWindow(src,insk,dur):
-    return pg.LoopPE(src.crop(pg.Extent(insk)).delay(-insk), dur)
+    return pg.LoopPE(src.crop(pg.Extent(insk)).time_shift(-insk), dur)
 
 def blit_note(pitch,t,dur,gain,harmonics):
     f = ut.pitch_to_freq(pitch)    
-    return pg.BlitSawPE(frequency=f, n_harmonics=harmonics, frame_rate=srate).crop(pg.Extent(0, secs(dur))).gain(gain).delay(secs(t)).splice(100,100)
-    #return pg.BlitsigPE(frequency=f, n_harmonics=harmonics, channel_count=1, frame_rate=48000, waveform=pg.BlitsigPE.SAWTOOTH).crop(pg.Extent(0, secs(dur))).gain(gain).delay(secs(t)).env(500,1000)
+    return pg.BlitSawPE(frequency=f, n_harmonics=harmonics, frame_rate=srate).crop(pg.Extent(0, secs(dur))).gain(gain).time_shift(secs(t)).splice(100,100)
+    #return pg.BlitsigPE(frequency=f, n_harmonics=harmonics, channel_count=1, frame_rate=48000, waveform=pg.BlitsigPE.SAWTOOTH).crop(pg.Extent(0, secs(dur))).gain(gain).time_shift(secs(t)).env(500,1000)
 
 def render_cycle(pitches, pulses, dur, gain, harmonics, transpose=0, big_start=0):
     pi = 0

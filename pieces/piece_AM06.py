@@ -15,13 +15,13 @@ def delays(src, secs, howmany = 1, decay = 1):
     delay_units = []
     amp = 1
     for i in range(1, howmany):
-        #delay_units.append(src.delay(int(i * secs * frame_rate)).gain(amp).pan(random.uniform(-90,90)))
-        delay_units.append(src.delay(int(i * secs * frame_rate)).gain(amp))
+        #delay_units.append(src.time_shift(int(i * secs * frame_rate)).gain(amp).pan(random.uniform(-90,90)))
+        delay_units.append(src.time_shift(int(i * secs * frame_rate)).gain(amp))
         amp *= decay
     return pg.MixPE(src,*delay_units)
 
 def mix_at(src, t, amp = 1):
-    return pg.DelayPE(src,t).gain(amp)
+    return pg.TimeShiftPE(src,t).gain(amp)
 
 reverb_path = 'samples/IR/Conic Long Echo Hall.wav'
 

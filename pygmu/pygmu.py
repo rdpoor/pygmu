@@ -13,7 +13,7 @@ from compressor_pe import CompressorPE
 from const_pe import ConstPE
 from convolve_pe import ConvolvePE
 from crop_pe import CropPE
-from delay_pe import DelayPE
+from time_shift_pe import TimeShiftPE
 from env_detect_pe import EnvDetectPE
 from extent import Extent
 from filter_pe import FilterPE

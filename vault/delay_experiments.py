@@ -12,14 +12,14 @@ FRAME_RATE = 48000
 
 # mixing original with time-varying delay == flanging
 source = pg.WavReaderPE("samples/Tamper_MagnifyingFrame1.wav").gain(3)
-warped = pg.DelayPE(source, pg.SinPE(frequency=82, amplitude=30.0, frame_rate=FRAME_RATE))
-# DelayPE with a time-varying delay has infinite extent.  Crop it to the length of the original
+warped = pg.TimeShiftPE(source, pg.SinPE(frequency=82, amplitude=30.0, frame_rate=FRAME_RATE))
+# TimeShiftPE with a time-varying delay has infinite extent.  Crop it to the length of the original
 warped = warped.crop(source.extent())
 
-warped2 = pg.DelayPE(source, pg.SinPE(frequency=4306, amplitude=114.0, frame_rate=FRAME_RATE))
+warped2 = pg.TimeShiftPE(source, pg.SinPE(frequency=4306, amplitude=114.0, frame_rate=FRAME_RATE))
 warped2 = warped2.crop(source.extent())
 
-warped3 = pg.DelayPE(source, pg.SinPE(frequency=2612, amplitude=14.0, frame_rate=FRAME_RATE))
+warped3 = pg.TimeShiftPE(source, pg.SinPE(frequency=2612, amplitude=14.0, frame_rate=FRAME_RATE))
 warped3 = warped3.crop(source.extent())
 
 def helloCallBack():

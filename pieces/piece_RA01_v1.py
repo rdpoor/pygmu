@@ -79,7 +79,7 @@ def round_to_2(x):
 	return round(x, -2)
 
 def snip(pe, s, e, gain=1):
-	return pe.crop(pg.Extent(int(s), int(e))).delay(int(-s)).gain(gain)
+	return pe.crop(pg.Extent(int(s), int(e))).time_shift(int(-s)).gain(gain)
 
 and_the = snip(words, 0, 25208,9)
 typical = snip(words, 25208, 55196,6)
@@ -136,11 +136,11 @@ snips = [
 	know]
 
 def boop(t, snip, g, degree):
-	return snip.delay(t).gain(g).pan(degree)
+	return snip.time_shift(t).gain(g).pan(degree)
 
 def doop(t, snip, g, degree, speed_mult):
-	#return snip.env(2000,2000).gain(g).pan(degree).delay(t)
-	return snip.env(2000,2000).gain(g).interpolate(speed_mult).delay(t)
+	#return snip.env(2000,2000).gain(g).pan(degree).time_shift(t)
+	return snip.env(2000,2000).gain(g).interpolate(speed_mult).time_shift(t)
 
 
 def ostinato(s, dur):
