@@ -48,7 +48,7 @@ def choose_snip():
 def tuned_snip(snip, beat, pitch, q):
 	f0 = ut.pitch_to_freq(pitch)
 	if q > 0:
-		pe = pg.Biquad2PE(snip, 0, f0, q, "lowpass")
+		pe = pg.BQ2LowPassPE(snip, f0, q)
 	else:
 		pe = snip
 	return pe.time_shift(int(beat * q_note))
@@ -105,9 +105,4 @@ mix = pg.MixPE(
 	)
 
 # Biquad2PE runs fast enough to render in real time...
-# pg.Transport(mix).play()
-filename = "examples/piece_RD02a.wav"
-dst = pg.WavWriterPE(mix, filename)
-pg.FtsTransport(dst).play()
-
-pg.Transport(pg.WavReaderPE(filename)).play()
+pg.Transport(mix).play()

@@ -82,7 +82,7 @@ class Biquad2PE(PygPE):
 
 class BQ2LowPassPE(Biquad2PE):
     def __init__(self, src_pe, f0=440, q=20, frame_rate=None):
-        super().__init__(src_pe, frame_rate)
+        super().__init__(src_pe, frame_rate=frame_rate)
 
         a1, a2, norm, K = self.default_coeffs(f0, q)
         b0 = K * K * norm
@@ -92,7 +92,7 @@ class BQ2LowPassPE(Biquad2PE):
 
 class BQ2HighPassPE(Biquad2PE):
     def __init__(self, src_pe, f0=440, q=20, frame_rate=None):
-        super().__init__(src_pe, frame_rate)
+        super().__init__(src_pe, frame_rate=frame_rate)
         a1, a2, norm, K = self.default_coeffs(f0, q)
         b0 = norm
         b1 = -2 * b0
@@ -104,7 +104,7 @@ class BQ2BandPassPE(Biquad2PE):
         """
         Has 0db gain at f0
         """
-        super().__init__(src_pe, frame_rate)
+        super().__init__(src_pe, frame_rate=frame_rate)
         a1, a2, norm, K = self.default_coeffs(f0, q)
         b0 = K * (norm / q)
         b1 = 0.0
@@ -116,7 +116,7 @@ class BQ2BandRejectPE(Biquad2PE):
         """
         Has 0db gain everywhere except in the vicinity of f0
         """
-        super().__init__(src_pe, frame_rate)
+        super().__init__(src_pe, frame_rate=frame_rate)
         a1, a2, norm, K = self.default_coeffs(f0, q)
         b0 = (K * K + 1) * norm
         b1 = 2 * (K * K -1) * norm
@@ -125,7 +125,7 @@ class BQ2BandRejectPE(Biquad2PE):
 
 class BQ2AllPassPE(Biquad2PE):
     def __init__(self, src_pe, f0=440, q=20, frame_rate=None):
-        super().__init__(src_pe, frame_rate)
+        super().__init__(src_pe, frame_rate=frame_rate)
         """
         Has 0db gain everywhere, for real!
         """
@@ -141,7 +141,7 @@ class BQ2PeakPE(Biquad2PE):
         Serves as both a peak filter when gain_db > 0 and a notch filter when
         gain_db < 0.  Has 0db gain everywhere except around f0.
         """
-        super().__init__(src_pe, frame_rate)
+        super().__init__(src_pe, frame_rate=frame_rate)
         K = np.tan(np.pi * f0 / self.frame_rate())
         K2 = K*K
         V = math.pow(10, abs(gain_db) / 20);
@@ -168,7 +168,7 @@ class BQ2LowShelfPE(Biquad2PE):
         """
         Has gain_db below f0, has 0db gain above f0.
         """
-        super().__init__(src_pe, frame_rate)
+        super().__init__(src_pe, frame_rate=frame_rate)
         K = np.tan(np.pi * f0 / self.frame_rate())
         K2 = K*K
         V = math.pow(10, abs(gain_db) / 20);
@@ -192,7 +192,7 @@ class BQ2LowShelfPE(Biquad2PE):
 
 class BQ2HighShelfPE(Biquad2PE):
     def __init__(self, src_pe, f0=440, gain_db=0, frame_rate=None):
-        super().__init__(src_pe, frame_rate)
+        super().__init__(src_pe, frame_rate=frame_rate)
         K = np.tan(np.pi * f0 / self.frame_rate())
         K2 = K*K
         V = math.pow(10, abs(gain_db) / 20);
