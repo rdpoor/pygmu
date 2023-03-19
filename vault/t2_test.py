@@ -4,13 +4,13 @@ import time
 import numpy as np
 script_dir = os.path.dirname( __file__ )
 pygmu_dir = os.path.join( script_dir, '..', 'pygmu' )
-print(pygmu_dir)
 sys.path.append( pygmu_dir )
 import pygmu as pg
-#import t2A as T2A
+import pygui as pui
+
 
 """
-Test T2A
+Test T2
 
 The best way to run this:
 
@@ -27,3 +27,5 @@ t2 = pg.T2(src)
 
 
 t2.play()
+
+pui.start_pygui()
