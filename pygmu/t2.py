@@ -19,7 +19,8 @@ class T2(object):
         blocksize=None,
         dtype=np.float32,
         latency=None,
-        channel_count=None):
+        channel_count=None,
+        who_cares=None):
         """
         Create a Transport object that will read and play samples from src_pe,
         with the added ability to change speed and jump to different frames.
@@ -78,6 +79,8 @@ class T2(object):
             outdata[:] = self._warper.render(requested).T
             # Note next starting frame
             self._src_frame = self._src_frame + (n_frames * self._speed)
+        if self.who_cares:
+            self.who_cares(self._src_frame)
 
     def play(self, frame=None, speed=None):
         """
