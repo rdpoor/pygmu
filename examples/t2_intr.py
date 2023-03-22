@@ -19,13 +19,14 @@ shuttle |                                  ||        |
 """
 
 import tkinter as tk
+import numpy as np
 
 class PygmuPlayer:
         playback_state = 'stopped'
         mouse_is_down = False
         t2_driver = None
-        def __init__(self):
-                print('bang')
+        # def __init__(self):
+        #         print('bang')
               
         def onPlayButtonHit(self):
                 if self.playback_state == 'stopped':
@@ -42,23 +43,29 @@ class PygmuPlayer:
 
         def onJogChanged(self, q):
                 frame = (jog.get() / 100) * self.t2_driver._src_pe.extent().end()
-                #self.t2_driver.set_frame(frame)
+                if jog.user_is_interacting:
+                        self.t2_driver.set_frame(frame)
 
         def onJogFinishedChanging(self, evt):
-                print('onJogFinishedChanging')
                 frame = (jog.get() / 100) * self.t2_driver._src_pe.extent().end()
                 self.t2_driver.set_frame(frame)
                 
         def onShuttleChanged(self, evt):
-                print('onShuttleChanged',shuttle.get())
-                spd = shuttle.get()
-                if spd == 0:
-                        return
+                ndx = shuttle.get()
+                if ndx < 7:
+                      pow = 6 - ndx                
+                else:
+                      pow = ndx - 6
+                spd = (2 ** (pow - 3))
+                if ndx < 6:
+                        spd = -spd
+                elif ndx == 6:
+                        spd = 1
                 self.t2_driver.set_speed(spd)
 
         def onShuttleFinishedChanging(self, evt):
                 self.t2_driver.set_speed(1)
-                shuttle.set(1)
+                shuttle.set(6)
 
         def onT2Update(self, fr):
                 prog = fr / self.t2_driver._src_pe.extent().end()
@@ -78,14 +85,24 @@ root.title("Pygmu Player")
 
 root.protocol("WM_DELETE_WINDOW", onWindowClose)
 
-#toplevel = tk.Toplevel()
-#canvas = tk.Canvas(root, bg='white', width=50, height=50)
-#checkbutton = tk.Checkbutton(root, text="Checkbutton")
-#panedwindow = tk.PanedWindow(root, sashrelief=tk.SUNKEN)
-#scrollbar.pack(padx=5, pady=5)
 labelframe = tk.LabelFrame(root, text="", padx=5, pady=5)
 
-import tkinter as tk
+
+class PygJogger(tk.Scale):
+    
+    def __init__(self, master=None, commandFinished=None, **kwargs):
+        super().__init__(master, **kwargs)
+        self.commandFinished = commandFinished
+        self.user_is_interacting = False
+        self.bind("<ButtonPress-1>", self.onMouseDown)
+        self.bind("<ButtonRelease-1>", self.onMouseUp)
+    # Override methods or add new ones as needed
+    def onMouseDown(self, evt):
+        self.user_is_interacting = True
+    def onMouseUp(self, evt):
+        self.user_is_interacting = False
+        if self.commandFinished:
+              self.commandFinished(evt)
 
 def on_value_change(scale, tick_values, value):
     nearest_tick_value = min(tick_values, key=lambda x: abs(x - float(value)))
@@ -111,14 +128,14 @@ def create_custom_scale(master, tick_values, from_, to, orient=tk.HORIZONTAL, **
 
     return scale
 
+jog = PygJogger(root, orient=tk.HORIZONTAL, command=player.onJogChanged, length=400, commandFinished = player.onJogFinishedChanging)
 
-
-jog = tk.Scale(root, orient=tk.HORIZONTAL, command=player.onJogChanged, length=400)
-jog.bind("<ButtonRelease-1>", player.onJogFinishedChanging)
-shuttle = tk.Scale(root, from_=-4, to=4, tickinterval=1, orient=tk.HORIZONTAL, command=player.onShuttleChanged, length=400)
-#shuttle = create_custom_scale(root, tick_values=[-4, -2, -1, -0.5, 0.5, 1, 2, 4], from_=-4, to=4, length=400, orient=tk.HORIZONTAL)
+#jog.bind("<ButtonPress-1>", player.onJogFinishedChanging)
+#jog.bind("<ButtonRelease-1>", player.onJogFinishedChanging)
+#shuttle = tk.Scale(root, from_=-4, to=4, tickinterval=1, orient=tk.HORIZONTAL, command=player.onShuttleChanged, length=400)
+shuttle = create_custom_scale(root, tick_values=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], from_=1, to=11, length=400, orient=tk.HORIZONTAL)
 shuttle.bind("<ButtonRelease-1>", player.onShuttleFinishedChanging)
-shuttle.set(1)
+shuttle.set(6)
 
 text = tk.Text(root, width=15, height=3)
 
