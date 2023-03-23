@@ -276,3 +276,15 @@ root.mainloop()
 # improve scale ticks displays, appearance
 # wave canvas above jog
 # sd.CallbackStop
+
+# If so, I'd suggest the following:
+# the middle of the Shuttle (speed) slider denotes zero speed (aka paused)
+# to the left is progressively faster (reverse), to the right is progressively faster (forward)
+# when not clicked on, the Shuttle (speed) slider snaps to the middle. 
+# when you click anywhere in the shuttle slider area, the slider snaps to where you clicked and the speed is set accordingly.
+# when you slide to the middle, the speed becomes zero.
+# I previously suggested that the shuttle slider be continuous and not just quantized to powers of two.  It might be interesting to try:
+# no quantization
+# quantize to powers of two
+# quantize to powers of 2/n (n steps per octave)
+# ... and see which one feels best.
