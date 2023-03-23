@@ -21,6 +21,7 @@ shuttle |                                  ||        |
 import tkinter as tk
 import numpy as np
 import sounddevice as sd
+from PIL import Image, ImageTk
 
 class PygmuPlayer:
         playback_state = 'stopped'
@@ -111,6 +112,8 @@ root.title("Pygmu Player")
 root.protocol("WM_DELETE_WINDOW", onWindowClose)
 
 labelframe = tk.LabelFrame(root, text="", padx=5, pady=5)
+jogframe = tk.LabelFrame(root, text="", padx=9, pady=5)
+shuttleframe = tk.LabelFrame(root, text="", padx=9, pady=5)
 
 
 class PygJogger(tk.Scale):
@@ -122,8 +125,17 @@ class PygJogger(tk.Scale):
         self.bind("<ButtonPress-1>", self.onMouseDown)
         self.bind("<ButtonRelease-1>", self.onMouseUp)
     # Override methods or add new ones as needed
-    def onMouseDown(self, evt):
+    def onMouseDown(self, event):
         self.user_is_interacting = True
+        value_range = self["to"] - self["from"]
+        if self["orient"] == tk.HORIZONTAL:
+                position = (event.x - (self["sliderlength"] / 2)) / (self["length"]) * 1.5 #strange fudge factor
+                new_value = self["from"] + (position * value_range)
+        else:
+                position = (event.y - (self["sliderlength"] / 2)) / (self["length"]) * 1.5 #strange fudge factor
+                new_value = self["from"] + (1 - position) * value_range
+        self.set(new_value)
+
     def onMouseUp(self, evt):
         self.user_is_interacting = False
         if self.commandFinished:
@@ -153,29 +165,53 @@ def create_custom_scale(master, tick_values, from_, to, orient=tk.HORIZONTAL, **
 
     return scale
 
-jog = PygJogger(root, orient=tk.HORIZONTAL,
+def create_rounded_frame(parent, width, height, corner_radius, **kwargs):
+    canvas = tk.Canvas(parent, width=width, height=height, **kwargs)
+    canvas.create_rectangle(corner_radius, 0, width - corner_radius, height, outline="blue", fill="white")
+    canvas.create_rectangle(0, corner_radius, width, height - corner_radius, outline="", fill="white")
+    canvas.create_arc(corner_radius, corner_radius, 0, 0, start=90, extent=90, outline="", fill="white")
+    canvas.create_arc(width - corner_radius, corner_radius, width, 0, start=0, extent=90, outline="", fill="white")
+    canvas.create_arc(corner_radius, height - corner_radius, 0, height, start=180, extent=90, outline="", fill="white")
+    canvas.create_arc(width - corner_radius, height - corner_radius, width, height, start=270, extent=90, outline="", fill="white")
+    return canvas
+
+def create_imaged_frame(parent, width, height, img_path):
+    # Open and resize the image
+    img = Image.open(img_path).resize((width, height), Image.ANTIALIAS)
+    img = ImageTk.PhotoImage(img)
+
+    # Create a Label widget with the image as background
+    label = tk.Label(parent, image=img, width=width, height=height)
+    label.image = img  # Store a reference to the image to avoid garbage collection
+
+    return label
+
+#jogframe = create_imaged_frame(root, 200, 140, 'vault/images/concertBlurBG2.png')
+
+
+jog = PygJogger(jogframe, orient=tk.HORIZONTAL,
                 sliderrelief=tk.FLAT,
                 highlightthickness=0,
+                showvalue=False,
                 bd=0,
-                bg='#313131',
-                #fg='orange',
-                sliderlength=14,
-                troughcolor='gray',
-                activebackground='green',
+                bg='#777777',
+                sliderlength=22,
+                troughcolor='#313131',
+                activebackground='#888888',
                 command=player.onJogChanged, length=400, commandFinished = player.onJogFinishedChanging)
 
 #jog.bind("<ButtonPress-1>", player.onJogFinishedChanging)
 #jog.bind("<ButtonRelease-1>", player.onJogFinishedChanging)
 #shuttle = tk.Scale(root, from_=-4, to=4, tickinterval=1, orient=tk.HORIZONTAL, command=player.onShuttleChanged, length=400)
-shuttle = create_custom_scale(root, tick_values=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], from_=1, to=11,
+shuttle = create_custom_scale(shuttleframe, tick_values=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], from_=1, to=11,
                 sliderrelief=tk.FLAT,
                 highlightthickness=0,
+                showvalue=False,
                 bd=0,
-                bg='#313131',
-                #fg='orange',
-                sliderlength=14,
-                troughcolor='gray',
-                activebackground='green',            
+                bg='#777777',
+                sliderlength=22,
+                troughcolor='#313131',
+                activebackground='#888888',           
                 length=400, 
                 orient=tk.HORIZONTAL)
 shuttle.bind("<ButtonRelease-1>", player.onShuttleFinishedChanging)
@@ -190,9 +226,12 @@ text = tk.Text(root, width=15, height=3)
 # canvas.pack(padx=5, pady=5)
 # checkbutton.pack(padx=5, pady=5)
 labelframe.pack(padx=5, pady=5)
+jogframe.pack(padx=5, pady=5)
+shuttleframe.pack(padx=5, pady=5)
+
 # Menu: See below for adding the menu bar at the top of the window
-jog.pack(padx=15, pady=5)
-shuttle.pack(padx=15, pady=5)
+jog.pack(padx=0, pady=0)
+shuttle.pack(padx=0, pady=0)
 meter_canvas.pack(padx=15, pady=5)
 
 ###############################################################################
