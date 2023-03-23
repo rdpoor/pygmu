@@ -20,7 +20,8 @@ class T2(object):
         dtype=np.float32,
         latency=None,
         channel_count=None,
-        who_cares=None):
+        skp=0,
+        now_playing_callback=None):
         """
         Create a Transport object that will read and play samples from src_pe,
         with the added ability to change speed and jump to different frames.
@@ -28,6 +29,7 @@ class T2(object):
         self._src_pe = src_pe
         self._src_frame = 0
         self._output_device = output_device
+        self.skp = 0
         if frame_rate is None:
             self._frame_rate = src_pe.frame_rate()
         else:
@@ -79,8 +81,12 @@ class T2(object):
             outdata[:] = self._warper.render(requested).T
             # Note next starting frame
             self._src_frame = self._src_frame + (n_frames * self._speed)
-        if self.who_cares:
-            self.who_cares(self._src_frame)
+
+        if self.now_playing_callback:
+            self.skp = self.skp + 1 # experimentally skipping n frames to reduce dropouts
+            if self.skp > 2:
+                self.now_playing_callback(self._src_frame, np.sqrt(np.mean(np.square(outdata))))
+                self.skp = 0
 
     def play(self, frame=None, speed=None):
         """

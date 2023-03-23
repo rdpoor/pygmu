@@ -20,14 +20,16 @@ shuttle |                                  ||        |
 
 import tkinter as tk
 import numpy as np
+import sounddevice as sd
 
 class PygmuPlayer:
         playback_state = 'stopped'
-        mouse_is_down = False
         t2_driver = None
-        # def __init__(self):
-        #         print('bang')
-              
+        def __init__(self):
+                self.last_meter_n = 0
+                self.stop_flag = False
+                self.mouse_is_down = False
+
         def onPlayButtonHit(self):
                 if self.playback_state == 'stopped':
                         self.t2_driver.play()
@@ -67,20 +69,43 @@ class PygmuPlayer:
                 self.t2_driver.set_speed(1)
                 shuttle.set(6)
 
-        def onT2Update(self, fr):
+        def showAmp(self,a):
+                h = 8
+                n = round(a *165)
+                if n == self.last_meter_n:
+                       return
+                self.last_meter_n = n
+                x0 = 6
+                x1 = 28
+                y0 = 154 - (n * h)
+                meter_canvas.delete('all')
+                while (n > 0):
+                        meter_canvas.create_line(x0, y0, x1, y0, fill='green', width=h - 1)
+                        y0 = y0 + h
+                        n = n - 1
+                        #print(x0, y0, x1, y0 + h)
+
+
+
+        def onT2Update(self, fr, amp):
+                if self.stop_flag:
+                        raise sd.CallbackStop
                 prog = fr / self.t2_driver._src_pe.extent().end()
                 jog.set(prog * 100)
+                self.showAmp(amp)
 
 player = PygmuPlayer()
 
 def onWindowClose():
+        player.stop_flag = True
         print('onWindowClose')
-        player.t2_driver.pause()
-        root.withdraw()
+        #player.t2_driver.pause()
+        #root.withdraw()
+        root.after(100, root.destroy)
 
 # Create the main window
 root = tk.Tk()
-root.geometry('300x200-5+40')
+root.geometry('300x300-5+40')
 root.title("Pygmu Player")
 
 root.protocol("WM_DELETE_WINDOW", onWindowClose)
@@ -128,14 +153,36 @@ def create_custom_scale(master, tick_values, from_, to, orient=tk.HORIZONTAL, **
 
     return scale
 
-jog = PygJogger(root, orient=tk.HORIZONTAL, command=player.onJogChanged, length=400, commandFinished = player.onJogFinishedChanging)
+jog = PygJogger(root, orient=tk.HORIZONTAL,
+                sliderrelief=tk.FLAT,
+                highlightthickness=0,
+                bd=0,
+                bg='#313131',
+                #fg='orange',
+                sliderlength=14,
+                troughcolor='gray',
+                activebackground='green',
+                command=player.onJogChanged, length=400, commandFinished = player.onJogFinishedChanging)
 
 #jog.bind("<ButtonPress-1>", player.onJogFinishedChanging)
 #jog.bind("<ButtonRelease-1>", player.onJogFinishedChanging)
 #shuttle = tk.Scale(root, from_=-4, to=4, tickinterval=1, orient=tk.HORIZONTAL, command=player.onShuttleChanged, length=400)
-shuttle = create_custom_scale(root, tick_values=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], from_=1, to=11, length=400, orient=tk.HORIZONTAL)
+shuttle = create_custom_scale(root, tick_values=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], from_=1, to=11,
+                sliderrelief=tk.FLAT,
+                highlightthickness=0,
+                bd=0,
+                bg='#313131',
+                #fg='orange',
+                sliderlength=14,
+                troughcolor='gray',
+                activebackground='green',            
+                length=400, 
+                orient=tk.HORIZONTAL)
 shuttle.bind("<ButtonRelease-1>", player.onShuttleFinishedChanging)
 shuttle.set(6)
+
+meter_canvas = tk.Canvas(root, bg="#212121", height=150, width=30)
+
 
 text = tk.Text(root, width=15, height=3)
 
@@ -146,6 +193,7 @@ labelframe.pack(padx=5, pady=5)
 # Menu: See below for adding the menu bar at the top of the window
 jog.pack(padx=15, pady=5)
 shuttle.pack(padx=15, pady=5)
+meter_canvas.pack(padx=15, pady=5)
 
 ###############################################################################
 # Add stuff to the widgets (if necessary)
@@ -173,7 +221,7 @@ import pygmu as pg
 
 src = pg.WavReaderPE("samples/TamperFrame_AfternoonOfAFaun.wav")
 t2 = pg.T2(src)
-t2.who_cares = player.onT2Update
+t2.now_playing_callback = player.onT2Update
 player.t2_driver = t2
 
 root.mainloop()
@@ -181,9 +229,11 @@ root.mainloop()
 
 
 # TODO
+# VU Meter -- led stack on canvas, cool font
 # Birth near mouse
 # update jog from t2 callbacks
 # metering
 # display pos secs
 # improve scale ticks displays, appearance
 # wave canvas above jog
+# sd.CallbackStop
