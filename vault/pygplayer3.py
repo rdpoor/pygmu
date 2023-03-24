@@ -84,11 +84,12 @@ class PygmuPlayer:
         user_spd = 0
         recent_x = []
         current_frame = 0
+        frame_amps = None
         def __init__(self):
                 self.last_meter_n = 0
                 self.stop_flag = False
                 self.mouse_is_down = False
-
+                self.frame_amps = np.zeros(440, dtype=np.float32)
                 # Create the main window
                 self.root = tk.Tk()
                 position = self.load_window_position()
@@ -263,12 +264,21 @@ class PygmuPlayer:
                         self.jog.set(prog * 100)
                 self.showAmp(amp)
                 self.time_text.set(f"{fr/48000:.2f}")
-                x = prog * 440
-                if round(x) % 2 == 0:
-                      col = 'yellow'
+                x = round(prog * 440)
+                self.frame_amps[x] = amp
+                self.draw_wave
+               
+        def draw_wave(self):
+            self.wave_canvas.delete('all')
+            for x, amp in enumerate(self.frame_amps):
+                if amp == 0:
+                    continue
+                if x % 2 == 0:
+                    col = 'yellow'
                 else:
-                      col = 'gray'
+                    col = 'gray'
                 self.wave_canvas.create_line(x, 50, x, 50 - amp * 280, fill=col, width=0.15)
+
 
         def save_window_position(self):
             x = self.root.winfo_x()
