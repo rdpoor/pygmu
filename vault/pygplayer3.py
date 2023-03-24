@@ -114,7 +114,13 @@ class PygmuPlayer:
                 self.wave_canvas.bind("<ButtonPress-1>", self.onMouseDownWaveCanvas)
                 self.wave_canvas.bind("<ButtonRelease-1>", self.onMouseUpWaveCanvas)
                 self.wave_canvas.bind("<B1-Motion>", self.onMouseMoveWaveCanvas)
-                
+
+                self.jog_canvas = tk.Canvas(self.root, bg="#212121", height=20, width=440)
+                self.jog_canvas.bind("<ButtonPress-1>", self.onMouseDownWaveCanvas)
+                self.jog_canvas.bind("<ButtonRelease-1>", self.onMouseUpWaveCanvas)
+                self.jog_canvas.bind("<B1-Motion>", self.onMouseMoveWaveCanvas)
+
+
                 self.meter_canvas = tk.Canvas(self.root, bg="#212121", height=150, width=30)
 
                 self.jogframe = tk.LabelFrame(self.root, text="", padx=9, pady=5)
@@ -150,7 +156,8 @@ class PygmuPlayer:
                 self.labelframe.pack(padx=5, pady=5)
                 self.rewind_button.pack(side=tk.LEFT)
                 self.play_button.pack(side=tk.LEFT)
-                self.wave_canvas.pack(padx=15, pady=5)
+                self.wave_canvas.pack(padx=15, pady=0)
+                self.jog_canvas.pack(padx=15, pady=0)
                 self.meter_canvas.pack(padx=15, pady=5)
                 self.jogframe.pack(padx=5, pady=5)
                 self.jog.pack(padx=0, pady=0)
@@ -168,7 +175,6 @@ class PygmuPlayer:
                 self.play_button['text'] = 'Play'
 
         def onPlayButtonHit(self):
-                print('onPlayButtonHit',self.playback_state)
                 if self.playback_state == 'stopped':
                         self.startPlaying()
                 elif self.playback_state == 'playing':
@@ -179,8 +185,8 @@ class PygmuPlayer:
 
         def onJogChanged(self, q):
                 frame = (self.jog.get() / 100) * self.t2_driver._src_pe.extent().end()
-                if self.jog.user_is_interacting:
-                        self.t2_driver.set_frame(frame)
+                # if self.jog.user_is_interacting:
+                #         self.t2_driver.set_frame(frame)
 
         def onJogFinishedChanging(self, evt):
                 frame = (self.jog.get() / 100) * self.t2_driver._src_pe.extent().end()
@@ -208,12 +214,16 @@ class PygmuPlayer:
                 self.shuttle.set(6)
 
         def onMouseDownWaveCanvas(self, event):
+                self.wave_down_x = event.x
                 x_norm = (event.x / 440)
                 self.wave_canvase_st_frame = x_norm * self.t2_driver._src_pe.extent().end()
                 self.recent_x = []
-                prog = self.current_frame / self.t2_driver._src_pe.extent().end()
-                #self.recent_x.append([prog * 440, time.time()])
-                #print(x_norm,prog)
+
+                frame = x_norm * self.t2_driver._src_pe.extent().end()
+                self.t2_driver.set_frame(frame)
+
+                #prog = self.current_frame / self.t2_driver._src_pe.extent().end()
+                #self.recent_x.append([prog, time.time()]) # this gooses the speed if we've clicked far from playhead, could jump instead
 
         def onMouseMoveWaveCanvas(self, event):
                 x_norm = (event.x / 440)
@@ -221,7 +231,7 @@ class PygmuPlayer:
                 frame = x_norm * self.t2_driver._src_pe.extent().end()
                 # figure out what to do with speed based on playback situation
                 # should keep a smoothed running average of the x velocity of the mouse
-                n = variable = min(4, len(self.recent_x))
+                n = variable = min(8, len(self.recent_x))
                 if n < 2:
                     return
                 x0 = self.recent_x[-n]
@@ -229,16 +239,23 @@ class PygmuPlayer:
                 vx = (xl[0] - x0[0]) * 440 / ((xl[1] - x0[1])) # pixels per sec
                 src_px = 440 / (self.t2_driver._src_pe.extent().end() / 48000) # pixels per sec of the src_pe
                 spd = vx / (1 * src_px)
-                #print(vx, src_px, spd)
+                spd = min(max(spd, -38), 38)
+                # if abs(spd) < 0.05:
+                #     print('ass',spd)
+                #     spd = 0.05 * np.sign(spd)
+                if spd == 0:
+                    spd = 0.05
                 self.t2_driver.set_speed(spd)
 
         def onMouseUpWaveCanvas(self, event):
-                frame = (event.x / 440) * self.t2_driver._src_pe.extent().end()
-                if self.wave_canvase_st_frame == frame:
-                    self.t2_driver.set_frame(frame)
-                    print('no drag')
-                else:
-                    print('drag')
+            self.t2_driver.set_speed(1)
+                # if abs(self.wave_down_x - event.x) < 3:
+                #     x_norm = (event.x / 440)
+                #     frame = x_norm * self.t2_driver._src_pe.extent().end()
+                #     self.t2_driver.set_frame(frame)
+                #     print('no drag')
+                # else:
+                #     print('drag')
 
         def showAmp(self,a):
                 h = 8
@@ -260,25 +277,33 @@ class PygmuPlayer:
                 if self.stop_flag:
                         raise sd.CallbackStop
                 prog = fr / self.t2_driver._src_pe.extent().end()
-                if self.jog.user_is_interacting == False:
-                        self.jog.set(prog * 100)
+                # if self.jog.user_is_interacting == False:
+                #         self.jog.set(prog * 100)
                 self.showAmp(amp)
                 self.time_text.set(f"{fr/48000:.2f}")
                 x = round(prog * 440)
                 self.frame_amps[x] = amp
-                self.draw_wave
+                col = 'yellow'
+                if x % 2 == 0:
+                    col = '#434343'
+
+                self.wave_canvas.create_line(x,50,x,50-amp * 280, fill=col)
+                self.jog_canvas.delete('all')
+                self.jog_canvas.create_line(x,0,x,20, fill='yellow')
+                #self.draw_wave()
                
         def draw_wave(self):
-            self.wave_canvas.delete('all')
-            for x, amp in enumerate(self.frame_amps):
-                if amp == 0:
-                    continue
-                if x % 2 == 0:
-                    col = 'yellow'
-                else:
-                    col = 'gray'
-                self.wave_canvas.create_line(x, 50, x, 50 - amp * 280, fill=col, width=0.15)
+        # Use NumPy vectorized operations to compute the y-coordinates
+            y_coords = 50 - self.frame_amps * 280
 
+            # Generate a list of (x, y) coordinate pairs
+            x_coords = np.arange(len(self.frame_amps))
+            points = np.column_stack((x_coords, y_coords)).flatten()
+
+            # Draw all the line segments in one call STILL surprisingly slow
+            col = 'yellow'
+            self.wave_canvas.delete('all')
+            self.wave_canvas.create_line(*points, fill=col)
 
         def save_window_position(self):
             x = self.root.winfo_x()
@@ -319,10 +344,11 @@ player.root.mainloop()
 
 # TODO
 # display spd
-# wave canvas just replace jog altogether IF we can redraw the canvas each time to show the current position
+# ROB: more robust scrubbing -- graceful l0's if I ask for out of bounds
 # VU Meter -- led stack on canvas, cool font
 # V2, actual pics of a VU meter, choose pic based on amp
 # use an Image bg on the slider knob -- will require a custom slider class
+# zoomabkle wave form, for more precise scrubbing?
 
 # Rob:
 # the middle of the Shuttle (speed) slider denotes zero speed (aka paused)
