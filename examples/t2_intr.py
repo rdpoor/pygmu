@@ -22,6 +22,22 @@ import tkinter as tk
 import numpy as np
 import sounddevice as sd
 from PIL import Image, ImageTk
+import yaml
+
+def save_window_position():
+    x = root.winfo_x()
+    y = root.winfo_y()
+    with open("user/window_position.yaml", "w") as f:
+        yaml.dump({"window_x": x, "window_y": y}, f)
+
+def load_window_position():
+    try:
+        with open("user/window_position.yaml", "r") as f:
+            position = yaml.safe_load(f)
+            return position["window_x"], position["window_y"]
+    except FileNotFoundError:
+        return None
+
 
 class PygmuPlayer:
         playback_state = 'stopped'
@@ -31,15 +47,22 @@ class PygmuPlayer:
                 self.stop_flag = False
                 self.mouse_is_down = False
 
+        def startPlaying(self):
+                self.t2_driver.play()
+                self.playback_state = 'playing'
+                play_button['text'] = 'Pause'
+        def pausePlaying(self):
+                self.t2_driver.pause()
+                self.playback_state = 'stopped'
+                play_button['text'] = 'Play'
+
         def onPlayButtonHit(self):
+                print('onPlayButtonHit',self.playback_state)
                 if self.playback_state == 'stopped':
-                        self.t2_driver.play()
-                        self.playback_state = 'playing'
-                        play_button['text'] = 'Pause'
+                        self.startPlaying()
                 elif self.playback_state == 'playing':
-                        self.t2_driver.pause()
-                        self.playback_state = 'stopped'
-                        play_button['text'] = 'Play'
+                        self.pausePlaying()
+
 
         def onRewindButtonHit(self):
                 self.t2_driver.set_frame(0)
@@ -54,17 +77,21 @@ class PygmuPlayer:
                 self.t2_driver.set_frame(frame)
                 
         def onShuttleChanged(self, evt):
+                mid_ndx = 6
+                null_stopped = self.playback_state == 'stopped'
                 ndx = shuttle.get()
                 if ndx < 7:
-                      pow = 6 - ndx                
+                      pow = mid_ndx - ndx                
                 else:
-                      pow = ndx - 6
+                      pow = ndx - mid_ndx
                 spd = (2 ** (pow - 3))
                 if ndx < 6:
                         spd = -spd
                 elif ndx == 6:
                         spd = 1
                 self.t2_driver.set_speed(spd)
+                if null_stopped and ndx != mid_ndx:
+                      self.startPlaying()
 
         def onShuttleFinishedChanging(self, evt):
                 self.t2_driver.set_speed(1)
@@ -72,7 +99,7 @@ class PygmuPlayer:
 
         def showAmp(self,a):
                 h = 8
-                n = round(a *165)
+                n = round(a * 165)
                 if n == self.last_meter_n:
                        return
                 self.last_meter_n = n
@@ -84,29 +111,38 @@ class PygmuPlayer:
                         meter_canvas.create_line(x0, y0, x1, y0, fill='green', width=h - 1)
                         y0 = y0 + h
                         n = n - 1
-                        #print(x0, y0, x1, y0 + h)
-
-
 
         def onT2Update(self, fr, amp):
                 if self.stop_flag:
                         raise sd.CallbackStop
                 prog = fr / self.t2_driver._src_pe.extent().end()
-                jog.set(prog * 100)
+                if jog.user_is_interacting == False:
+                        jog.set(prog * 100)
                 self.showAmp(amp)
+                time_text.set(f"{fr/48000:.2f}")
+                x = prog * 440
+                if round(x) % 2 == 0:
+                      col = 'yellow'
+                else:
+                      col = 'gray'
+                wave_canvas.create_line(x, 50, x, 50 - amp * 280, fill=col, width=0.15)
 
 player = PygmuPlayer()
 
 def onWindowClose():
         player.stop_flag = True
-        print('onWindowClose')
-        #player.t2_driver.pause()
-        #root.withdraw()
-        root.after(100, root.destroy)
+        save_window_position()
+        root.after(50, root.destroy)
 
 # Create the main window
 root = tk.Tk()
-root.geometry('300x300-5+40')
+
+position = load_window_position()
+if position:
+        root.geometry(f"+{position[0]}+{position[1]}")
+else:
+        root.geometry('300x300-5+40')
+
 root.title("Pygmu Player")
 
 root.protocol("WM_DELETE_WINDOW", onWindowClose)
@@ -124,22 +160,29 @@ class PygJogger(tk.Scale):
         self.user_is_interacting = False
         self.bind("<ButtonPress-1>", self.onMouseDown)
         self.bind("<ButtonRelease-1>", self.onMouseUp)
-    # Override methods or add new ones as needed
     def onMouseDown(self, event):
         self.user_is_interacting = True
+
+    def onMouseUp(self, event):
+
+        slider_position = self.get()
+        # Convert the slider's position (in scale units) to the corresponding pixel coordinate
+        slider_pixel_position = self.coords(slider_position)
+        if slider_pixel_position[0] - 9 <= event.x <= slider_pixel_position[0] + 9:
+                return # clicked on the little slider knob, so this is probably the beginning of a grab/slide
         value_range = self["to"] - self["from"]
         if self["orient"] == tk.HORIZONTAL:
-                position = (event.x - (self["sliderlength"] / 2)) / (self["length"]) * 1.5 #strange fudge factor
+                position = (event.x - (self["sliderlength"] / 2)) / (self["length"]) * 1.05 #strange fudge factor
                 new_value = self["from"] + (position * value_range)
         else:
-                position = (event.y - (self["sliderlength"] / 2)) / (self["length"]) * 1.5 #strange fudge factor
+                position = (event.y - (self["sliderlength"] / 2)) / (self["length"]) * 1.05 #strange fudge factor
                 new_value = self["from"] + (1 - position) * value_range
         self.set(new_value)
 
-    def onMouseUp(self, evt):
-        self.user_is_interacting = False
         if self.commandFinished:
-              self.commandFinished(evt)
+              self.commandFinished(event)
+
+        self.user_is_interacting = False
 
 def on_value_change(scale, tick_values, value):
     nearest_tick_value = min(tick_values, key=lambda x: abs(x - float(value)))
@@ -159,9 +202,6 @@ def create_custom_scale(master, tick_values, from_, to, orient=tk.HORIZONTAL, **
             x = scale["sliderlength"] // 2
             y = (1 - position) * (scale["length"] - 2*scale["sliderlength"]) + scale["sliderlength"]
             anchor = "w"
-
-       # label = tk.Label(master, text=str(tick_value))
-       # label.place(in_=scale, x=x, y=y, anchor=anchor)
 
     return scale
 
@@ -186,9 +226,6 @@ def create_imaged_frame(parent, width, height, img_path):
 
     return label
 
-#jogframe = create_imaged_frame(root, 200, 140, 'vault/images/concertBlurBG2.png')
-
-
 jog = PygJogger(jogframe, orient=tk.HORIZONTAL,
                 sliderrelief=tk.FLAT,
                 highlightthickness=0,
@@ -200,10 +237,9 @@ jog = PygJogger(jogframe, orient=tk.HORIZONTAL,
                 activebackground='#888888',
                 command=player.onJogChanged, length=400, commandFinished = player.onJogFinishedChanging)
 
-#jog.bind("<ButtonPress-1>", player.onJogFinishedChanging)
-#jog.bind("<ButtonRelease-1>", player.onJogFinishedChanging)
-#shuttle = tk.Scale(root, from_=-4, to=4, tickinterval=1, orient=tk.HORIZONTAL, command=player.onShuttleChanged, length=400)
-shuttle = create_custom_scale(shuttleframe, tick_values=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], from_=1, to=11,
+shuttle = create_custom_scale(shuttleframe, 
+                tick_values=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                from_=1, to=11,
                 sliderrelief=tk.FLAT,
                 highlightthickness=0,
                 showvalue=False,
@@ -212,42 +248,36 @@ shuttle = create_custom_scale(shuttleframe, tick_values=[1, 2, 3, 4, 5, 6, 7, 8,
                 sliderlength=22,
                 troughcolor='#313131',
                 activebackground='#888888',           
-                length=400, 
+                length=400,
                 orient=tk.HORIZONTAL)
 shuttle.bind("<ButtonRelease-1>", player.onShuttleFinishedChanging)
 shuttle.set(6)
 
 meter_canvas = tk.Canvas(root, bg="#212121", height=150, width=30)
+wave_canvas = tk.Canvas(root, bg="#212121", height=50, width=440)
+
+time_text = tk.StringVar()
+time_text.set("0.00")
+time_label = tk.Label(labelframe, textvariable=time_text, font=("Arial", 11)).pack(anchor='w')
 
 
 text = tk.Text(root, width=15, height=3)
 
 # Lay out widgets
-# canvas.pack(padx=5, pady=5)
-# checkbutton.pack(padx=5, pady=5)
 labelframe.pack(padx=5, pady=5)
 jogframe.pack(padx=5, pady=5)
 shuttleframe.pack(padx=5, pady=5)
 
-# Menu: See below for adding the menu bar at the top of the window
 jog.pack(padx=0, pady=0)
 shuttle.pack(padx=0, pady=0)
 meter_canvas.pack(padx=15, pady=5)
-
-###############################################################################
-# Add stuff to the widgets (if necessary)
-# Draw something in the canvas
-# canvas.create_oval(5, 15, 35, 45, outline='blue')
-# canvas.create_line(10, 10, 40, 30, fill='red')
+wave_canvas.pack(padx=15, pady=5)
 
 rewind_button = tk.Button(labelframe, text="<-", command=player.onRewindButtonHit)
 play_button = tk.Button(labelframe, text="Play", command=player.onPlayButtonHit)
 
 rewind_button.pack(side=tk.LEFT)
 play_button.pack(side=tk.LEFT)
-
-# root.bind("<ButtonPress-1>", player.OnMouseDown)
-# root.bind("<ButtonRelease-1>", player.OnMouseUp)
 
 import os
 import sys
@@ -266,22 +296,21 @@ player.t2_driver = t2
 root.mainloop()
 
 
-
 # TODO
+# display pos secs, spd
+# wave canvas above jog (can just store the frame amps)
 # VU Meter -- led stack on canvas, cool font
-# Birth near mouse
-# update jog from t2 callbacks
-# metering
-# display pos secs
-# improve scale ticks displays, appearance
-# wave canvas above jog
-# sd.CallbackStop
+# V2, actual pics of a VU meter, choose pic based on amp
+# use an Image bg on the slider knob -- will require a custom slider class
 
-# If so, I'd suggest the following:
+# Rob:
 # the middle of the Shuttle (speed) slider denotes zero speed (aka paused)
 # to the left is progressively faster (reverse), to the right is progressively faster (forward)
 # when not clicked on, the Shuttle (speed) slider snaps to the middle. 
 # when you click anywhere in the shuttle slider area, the slider snaps to where you clicked and the speed is set accordingly.
+
+# andy subtle -- when stopped, shuttle jumps to speed0, then you can creep slowly back and forth, snapback stays at 0.  when playing, it jumps to speed1, and that becomes the snapback point when dragging the shuttle
+
 # when you slide to the middle, the speed becomes zero.
 # I previously suggested that the shuttle slider be continuous and not just quantized to powers of two.  It might be interesting to try:
 # no quantization

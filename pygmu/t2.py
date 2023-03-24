@@ -87,6 +87,9 @@ class T2(object):
             if self.skp > 2:
                 self.now_playing_callback(self._src_frame, np.sqrt(np.mean(np.square(outdata))))
                 self.skp = 0
+    
+
+
 
     def play(self, frame=None, speed=None):
         """
