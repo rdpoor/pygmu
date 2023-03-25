@@ -84,8 +84,9 @@ class T2(object):
 
         if self.now_playing_callback:
             self.skp = self.skp + 1 # experimentally skipping n frames to reduce dropouts
-            if self.skp > 4:
-                self.now_playing_callback(self._src_frame, np.sqrt(np.mean(np.square(outdata))))
+            if self.skp > 5:
+                left_channel = outdata[:, 0]
+                self.now_playing_callback(self._src_frame, np.sqrt(np.mean(np.square(left_channel))))
                 self.skp = 0
     
 
