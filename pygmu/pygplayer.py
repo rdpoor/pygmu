@@ -439,12 +439,12 @@ class PygPlayer:
         self.wave_canvas.delete('all')
 
     def save_window_geometry(self):
-        with open("user/window_position.yaml", "w") as f:
+        with open("user_files/window_position.yaml", "w") as f:
             yaml.dump({"window_x": self.root.winfo_x(), "window_y": self.root.winfo_y(), "window_w": self.root.winfo_width(), "window_h": self.root.winfo_height()}, f)
 
     def load_window_geometry(self):
         try:
-            with open("user/window_position.yaml", "r") as f:
+            with open("user_files/window_position.yaml", "r") as f:
                 position = yaml.safe_load(f)
                 return position["window_x"], position["window_y"], position["window_w"], position["window_h"]
         except FileNotFoundError:

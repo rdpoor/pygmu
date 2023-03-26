@@ -1,6 +1,6 @@
 # User files
-user/*.yaml
-user/renders/*.wav
+user_files/*.yaml
+user_files/renders/*.wav
 profile.txt
 
 # Byte-compiled / optimized / DLL files
