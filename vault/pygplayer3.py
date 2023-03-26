@@ -67,7 +67,7 @@ class PygmuPlayer:
         else:
                 self.root.geometry('450x200-5+40')
         self.root.title("Pygmu Player")
-        self.root.protocol("WM_DELETE_WINDOW", self.onWindowClose)
+        self.root.protocol("WM_DELETE_WINDOW", self.cleanUp)
 
         # Configure column 0 and row 0 to expand
         self.root.grid_columnconfigure(0, weight=1)
@@ -376,7 +376,7 @@ class PygmuPlayer:
         except FileNotFoundError:
             return None
 
-    def onWindowClose(self):
+    def cleanUp(self):
         player.stop_flag = True
         self.save_window_geometry()
         self.root.after(50, self.root.destroy)
@@ -401,8 +401,9 @@ ret = player.root.mainloop()
 print(ret)
 
 # TODO
-# speed(0) during scrubbing if current_time passes mouse time in the last direction of mouse mvt -- restart when we move past again?
 # add duration label right side place() on_resize
+# shuttle seems lopsided
+# speed(0) during scrubbing if current_time passes mouse time in the last direction of mouse mvt -- restart when we move past again?
 # extent arg for quick render checking
 # try making a RAMWriter?
 # each pe could cache to ram all its frames, t3 could just grab those...could draw whole waveform at top

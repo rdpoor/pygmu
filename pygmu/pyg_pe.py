@@ -96,9 +96,8 @@ class PygPE(object):
         pg.FtsTransport(dst).play()
         new_src = pg.WavReaderPE("user_files/renders/pygplay_tmp.wav")
         player = pg.PygPlayer(title)
-        t2 = pg.T2(new_src)
-        t2.now_playing_callback = player.now_playing_callback
-        player.t2 = t2
+        player.t2 = pg.T2(new_src)
+        player.t2.now_playing_callback = player.now_playing_callback
         player.root.mainloop()
         if player.exit_script_flag:
             exit()

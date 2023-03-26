@@ -129,7 +129,7 @@ class PygmuPlayer:
 
 player = PygmuPlayer()
 
-def onWindowClose():
+def cleanUp():
         player.stop_flag = True
         save_window_position()
         root.after(50, root.destroy)
@@ -145,7 +145,7 @@ else:
 
 root.title("Pygmu Player")
 
-root.protocol("WM_DELETE_WINDOW", onWindowClose)
+root.protocol("WM_DELETE_WINDOW", cleanUp)
 
 labelframe = tk.LabelFrame(root, text="", padx=5, pady=5)
 jogframe = tk.LabelFrame(root, text="", padx=9, pady=5)

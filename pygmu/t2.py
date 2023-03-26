@@ -91,8 +91,6 @@ class T2(object):
                 self.skp = 0
     
 
-
-
     def play(self, frame=None, speed=None):
         """
         Start, resume or continue playing samples from the current frame.  For

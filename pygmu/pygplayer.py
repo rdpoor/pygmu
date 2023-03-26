@@ -1,10 +1,14 @@
 '''
 
-
+click to jump to a location
+dlb-click to start/stop playback
+drag to scrub
 
 key_commands:
     <space>  = toggle playback
     <return> = rewind
+    ->       = skip later 1 second
+    -<       = skip earlier 1 second
     q        = stop and close window
     Q        = stop and exit script
 
@@ -19,40 +23,37 @@ import time
 import utils as ut
 
 class PygPlayer:
-    playback_state = 'stopped'
-    is_scrubbing = False
-    t2 = None
-    user_spd = 0
-    recent_x = []
-    current_frame = 0
-    frame_amps = None
-    peak = 0
-    peak_age = 0
     def __init__(self, title='d',auto_start=True):
         self.title = title
         self.auto_start = auto_start
+        self.playback_state = 'stopped'
+        self.is_scrubbing = False
+        self.t2 = None
+        self.recent_x = []
+        self.current_frame = 0
+        self.frame_amps = None,
+        self.peak = 0
+        self.peak_age = 0
         self.wave_canv_w = 1440
         self.winh = 300
         self.wavh = 200
         self.pixels_per_second = 40
         self.last_meter_n = 0
         self.stop_flag = False
-        self.mouse_is_down = False
         self.last_x = -1
-        self.scrub_sign = 0
-        self.frame_amps = np.zeros(1444, dtype=np.float32) #init issues
+        self.frame_amps = np.zeros(1444, dtype=np.float32)
         self.shuttle_w = 180
         self.jog_h = 18
         self.wave_seg_pixel_width = 1
         self.bg_color = '#243B40'
-        self.bg_color2 = '#444241' # 444241
-        self.tr_color = '#0F081D' #191929
+        self.bg_color2 = '#444241'
+        self.tr_color = '#0F081D'
         self.bd_color = '#896A67'
         self.wv_color = '#5AFCE1'
         self.sc_color = '#48C7B0'
         self.tx_color = '#191929'
-        
         self.exit_script_flag = False
+
         # Create the main window
         self.root = tk.Tk()
         self.root.configure(bg=self.bg_color2)
@@ -60,11 +61,11 @@ class PygPlayer:
         self.root.bind('<KeyPress>', self.on_keypress)
         position = self.load_window_geometry()
         if position:
-                self.root.geometry(f"{position[2]}x{position[3]}+{position[0]}+{position[1]}")
+            self.root.geometry(f"{position[2]}x{position[3]}+{position[0]}+{position[1]}")
         else:
-                self.root.geometry('450x200-5+40')
+            self.root.geometry('450x200-5+40')
         self.root.title(self.title)
-        self.root.protocol("WM_DELETE_WINDOW", self.onWindowClose)
+        self.root.protocol("WM_DELETE_WINDOW", self.cleanUp)
 
         # Configure column 0 and row 0 to expand
         self.root.grid_columnconfigure(0, weight=1)
@@ -107,12 +108,11 @@ class PygPlayer:
         self.jog_canvas.bind("<Double-Button-1>", self.onDoubleClickWaveCanvas)
 
         self.meter_canvas = tk.Canvas(self.root, bg=self.tr_color, height=150, width=28, highlightthickness=0)
-        #self.corner_canvas = tk.Canvas(self.root, bg=self.bg_color2, height=self.jog_h, width=28, highlightthickness=0)
         self.corner_canvas = tk.Label(self.root, image=corner_image, height=self.jog_h, width=28, background=self.bg_color2, highlightthickness=0)
         self.corner_canvas.bind("<ButtonPress-1>", self.onCornerHit)
 
         self.shuttle = tk.Scale(self.root,
-            from_=1, to=12,
+            from_=1, to=11,
             sliderrelief=tk.FLAT,
             highlightthickness=0,
             showvalue=False,
@@ -161,11 +161,11 @@ class PygPlayer:
             self.onRewindButtonHit(event)
 
         def q():
-            self.onWindowClose()
+            self.cleanUp()
 
         def Q():
             self.exit_script_flag = True
-            self.onWindowClose()
+            self.cleanUp()
 
         def Right():
             self.t2.set_frame(self.t2.get_frame() + 48000)
@@ -200,7 +200,6 @@ class PygPlayer:
     def delayed_on_configure(self,event):
         if event.widget != self.root:
             return
-   
         self.root.update_idletasks() # make sure all the children have finished resizing BUT this seems to screw us up on boot
         self.wave_canv_w = self.wave_canvas.winfo_width()
         self.winh = event.height - 8
@@ -303,21 +302,16 @@ class PygPlayer:
         smoothing = 9
         n = min(smoothing, len(self.recent_x))
         if n < 2:
-            return # dont interpret mousemoves as scrubbing until we've seen a couple, could just be a nervous click
-        
+            return # dont interpret mousemoves as scrubbing until we've seen a couple, could just be a nervous click      
         self.is_scrubbing = True
-
         x0 = self.recent_x[-n]
         xl = self.recent_x[-1]
         vx = (xl[0] - x0[0]) * self.wave_canv_w / ((xl[1] - x0[1])) # pixels per sec
-
         if self.playback_state == 'stopped':
             self.startPlaying()
-            
         # self.chasing = ut.sign(self.wave_canvas_st_frame  - frame) == ut.sign(vx)
         # if not self.chasing:
         #      print('crossed!')
-
         spd = vx * 0.6 / (1 * self.pixels_per_second) # 0.6 keeps it from catching the mouse right away
         spd = min(max(spd, -38), 38)
         if spd == 0:
@@ -334,7 +328,7 @@ class PygPlayer:
         smoothing = 9
         n = min(smoothing, len(self.recent_x))
         if n < 2:
-            return # dont interpret mousemoves as scrubbing until we've seen a couple, could just be a nervous click
+            return # dont interpret mousemoves as scrubbing until we've seen a couple, could just be a smudgy click
         
         if self.playback_state == 'stopped':
             self.startPlaying()
@@ -450,7 +444,7 @@ class PygPlayer:
         except FileNotFoundError:
             return None
 
-    def onWindowClose(self):
+    def cleanUp(self):
         self.pausePlaying()
         self.stop_flag = True
         self.save_window_geometry()
