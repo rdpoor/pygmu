@@ -18,4 +18,4 @@ src.pygplay()
 
 filtered = pg.FilterPE(src, 3, 500)
 
-filtered.pygplay('filtered')
+filtered.pygplay('filtered', False)

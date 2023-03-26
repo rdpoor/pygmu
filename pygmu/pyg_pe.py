@@ -91,11 +91,11 @@ class PygPE(object):
     def play(self):
         return pg.Transport(self).play()
     
-    def pygplay(self, title='PygPlayer'):
+    def pygplay(self, title='PygPlayer', auto_start=True):
         dst = pg.WavWriterPE(self, "user_files/renders/pygplay_tmp.wav")
         pg.FtsTransport(dst).play()
         new_src = pg.WavReaderPE("user_files/renders/pygplay_tmp.wav")
-        player = pg.PygPlayer(title)
+        player = pg.PygPlayer(title=title, auto_start=auto_start)
         player.t2 = pg.T2(new_src)
         player.t2.now_playing_callback = player.now_playing_callback
         player.root.mainloop()

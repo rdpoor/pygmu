@@ -11,6 +11,8 @@ scipy = "*"
 readchar = "*"
 coverage = "*"
 tk = "*"
+pillow = "*"
+pyyaml = "*"
 
 [dev-packages]
 jupyter = "*"
