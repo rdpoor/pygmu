@@ -1,31 +1,24 @@
+'''
+
+
+
+key_commands:
+    <space>  = toggle playback
+    <return> = rewind
+    q        = stop and close window
+    Q        = stop and exit script
+
+'''
+
 import tkinter as tk
 import numpy as np
 import sounddevice as sd
 from PIL import Image, ImageTk
 import yaml
 import time
+import utils as ut
 
-def on_value_change(scale, tick_values, value):
-    nearest_tick_value = min(tick_values, key=lambda x: abs(x - float(value)))
-    scale.set(nearest_tick_value)
-    player.onShuttleChanged(nearest_tick_value)
-
-def create_custom_scale(master, tick_values, from_, to, orient=tk.HORIZONTAL, **kwargs):
-    scale = tk.Scale(master, from_=from_, to=to, orient=orient, command=lambda value: on_value_change(scale, tick_values, value), **kwargs)
-
-    for tick_value in tick_values:
-        position = (tick_value - from_) / (to - from_)
-        if orient == tk.HORIZONTAL:
-            x = position * (scale["length"] - 2*scale["sliderlength"]) + scale["sliderlength"]
-            y = scale["sliderlength"] // 2
-            anchor = "n"
-        else:
-            x = scale["sliderlength"] // 2
-            y = (1 - position) * (scale["length"] - 2*scale["sliderlength"]) + scale["sliderlength"]
-            anchor = "w"
-    return scale
-
-class PygmuPlayer:
+class PygPlayer:
     playback_state = 'stopped'
     is_scrubbing = False
     t2 = None
@@ -35,7 +28,9 @@ class PygmuPlayer:
     frame_amps = None
     peak = 0
     peak_age = 0
-    def __init__(self):
+    def __init__(self, title='d',auto_start=True):
+        self.title = title
+        self.auto_start = auto_start
         self.wave_canv_w = 1440
         self.winh = 300
         self.wavh = 200
@@ -44,6 +39,7 @@ class PygmuPlayer:
         self.stop_flag = False
         self.mouse_is_down = False
         self.last_x = -1
+        self.scrub_sign = 0
         self.frame_amps = np.zeros(1444, dtype=np.float32) #init issues
         self.shuttle_w = 180
         self.jog_h = 18
@@ -56,17 +52,18 @@ class PygmuPlayer:
         self.sc_color = '#48C7B0'
         self.tx_color = '#191929'
         
+        self.exit_script_flag = False
         # Create the main window
         self.root = tk.Tk()
         self.root.configure(bg=self.bg_color2)
-        self.root.bind('<Configure>', self.on_resize)
+        self.root.bind('<Configure>', self.on_configure)
         self.root.bind('<KeyPress>', self.on_keypress)
         position = self.load_window_geometry()
         if position:
                 self.root.geometry(f"{position[2]}x{position[3]}+{position[0]}+{position[1]}")
         else:
                 self.root.geometry('450x200-5+40')
-        self.root.title("Pygmu Player")
+        self.root.title(self.title)
         self.root.protocol("WM_DELETE_WINDOW", self.onWindowClose)
 
         # Configure column 0 and row 0 to expand
@@ -114,9 +111,8 @@ class PygmuPlayer:
         self.corner_canvas = tk.Label(self.root, image=corner_image, height=self.jog_h, width=28, background=self.bg_color2, highlightthickness=0)
         self.corner_canvas.bind("<ButtonPress-1>", self.onCornerHit)
 
-        self.shuttle = create_custom_scale(self.root, 
-            tick_values=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-            from_=1, to=11,
+        self.shuttle = tk.Scale(self.root,
+            from_=1, to=12,
             sliderrelief=tk.FLAT,
             highlightthickness=0,
             showvalue=False,
@@ -126,7 +122,9 @@ class PygmuPlayer:
             troughcolor=self.tr_color,
             activebackground='#888888',           
             length=self.shuttle_w,
+            command=self.onShuttleChanged,
             orient=tk.HORIZONTAL)
+        
         self.shuttle.bind("<ButtonRelease-1>", self.onShuttleFinishedChanging)
         self.shuttle.bind("<B1-Motion>", self.onShuttleMouseMove)
         self.shuttle.set(6)
@@ -151,16 +149,59 @@ class PygmuPlayer:
         self.wave_canvas.pack(side=tk.TOP, expand=True, fill=tk.BOTH, padx=0, pady=0)
 
     def on_keypress(self,event):
-        if event.keysym == 'space':
+        key = event.keysym
+
+        def space():
             if self.playback_state == 'stopped':
                 self.startPlaying()
             else:
                 self.pausePlaying()
+
+        def Return():
+            self.onRewindButtonHit(event)
+
+        def q():
+            self.onWindowClose()
+
+        def Q():
+            self.exit_script_flag = True
+            self.onWindowClose()
+
+        def Right():
+            self.t2.set_frame(self.t2.get_frame() + 48000)
+
+        def Left():
+            self.t2.set_frame(self.t2.get_frame() - 48000)
+
+        def default():
+            print("Unhandled key:", key)
+
+        key_actions = {
+            "space": space,
+            "Return": Return,
+            "Right": Right,
+            "Left": Left,
+            "q": q,
+            "Q": Q,
+        }
+
+        action = key_actions.get(key, default)
+        if action:
+            action()
+        else:
+            default()
+
+    # confusing hack around idle_tasks() when we fire up multiple windows in succession
+    def on_configure(self, event):
+        if event.width == 1:
+            return
+        self.root.after(10, self.delayed_on_configure, event)
     
-    def on_resize(self,event):
+    def delayed_on_configure(self,event):
         if event.widget != self.root:
-                return
-        # self.root.update_idletasks() # make sure all the children have finished resizing BUT this seems to screw us up on boot
+            return
+   
+        self.root.update_idletasks() # make sure all the children have finished resizing BUT this seems to screw us up on boot
         self.wave_canv_w = self.wave_canvas.winfo_width()
         self.winh = event.height - 8
         self.wavh = (self.winh - 57)
@@ -181,6 +222,10 @@ class PygmuPlayer:
             self.frame_amps[x] = amp
             self.drawWaveSegment(x,amp)
             old_x += 1
+
+        if self.auto_start:
+            self.root.after(10, self.startPlaying)
+            #self.startPlaying()
 
     def startPlaying(self):
         self.t2.play()
@@ -246,10 +291,40 @@ class PygmuPlayer:
         self.wave_canvas_st_frame = x_norm * self.t2._src_pe.extent().end()
         self.recent_x = []
 
-        frame = x_norm * self.t2._src_pe.extent().end()
-        self.t2.set_frame(frame)
+        self.t2.set_frame(self.wave_canvas_st_frame)
 
     def onMouseMoveWaveCanvas(self, event):
+        x_norm = (event.x / self.wave_canv_w)
+        self.recent_x.append([x_norm, time.time()])
+        frame = x_norm * self.t2._src_pe.extent().end()
+        # figure out what to do with speed based on playback situation
+        # should keep a smoothed running average of the x velocity of the mouse
+        # we let the magnitude of the changes dictate the amt of smoothing -- so big changes dont get smoothed nearly as much
+        smoothing = 9
+        n = min(smoothing, len(self.recent_x))
+        if n < 2:
+            return # dont interpret mousemoves as scrubbing until we've seen a couple, could just be a nervous click
+        
+        self.is_scrubbing = True
+
+        x0 = self.recent_x[-n]
+        xl = self.recent_x[-1]
+        vx = (xl[0] - x0[0]) * self.wave_canv_w / ((xl[1] - x0[1])) # pixels per sec
+
+        if self.playback_state == 'stopped':
+            self.startPlaying()
+            
+        # self.chasing = ut.sign(self.wave_canvas_st_frame  - frame) == ut.sign(vx)
+        # if not self.chasing:
+        #      print('crossed!')
+
+        spd = vx * 0.6 / (1 * self.pixels_per_second) # 0.6 keeps it from catching the mouse right away
+        spd = min(max(spd, -38), 38)
+        if spd == 0:
+            spd = 0.05
+        self.setSpeed(spd)
+        
+    def onMouseMoveWaveCanvasX(self, event):
         x_norm = (event.x / self.wave_canv_w)
         self.recent_x.append([x_norm, time.time()])
         frame = x_norm * self.t2._src_pe.extent().end()
@@ -269,8 +344,7 @@ class PygmuPlayer:
         x0 = self.recent_x[-n]
         xl = self.recent_x[-1]
         vx = (xl[0] - x0[0]) * self.wave_canv_w / ((xl[1] - x0[1])) # pixels per sec
-        src_px = self.wave_canv_w / (self.t2._src_pe.extent().end() / self.t2._src_pe.frame_rate()) # pixels per sec of the src_pe
-        spd = vx / (1 * src_px)
+        spd = vx / (1 * self.pixels_per_second)
         spd = min(max(spd, -38), 38)
         if spd == 0:
             spd = 0.05
@@ -377,52 +451,7 @@ class PygmuPlayer:
             return None
 
     def onWindowClose(self):
-        player.stop_flag = True
+        self.pausePlaying()
+        self.stop_flag = True
         self.save_window_geometry()
-        self.root.after(50, self.root.destroy)
-
-import os
-import sys
-import numpy as np
-script_dir = os.path.dirname( __file__ )
-pygmu_dir = os.path.join( script_dir, '..', 'pygmu' )
-sys.path.append( pygmu_dir )
-import pygmu as pg
-
-player = PygmuPlayer()
-
-src = pg.WavReaderPE("samples/TamperFrame_TooGoodToBeTrue_Edit.wav")
-
-t2 = pg.T2(src)
-t2.now_playing_callback = player.now_playing_callback
-player.t2 = t2
-
-ret = player.root.mainloop()
-print(ret)
-
-# TODO
-# speed(0) during scrubbing if current_time passes mouse time in the last direction of mouse mvt -- restart when we move past again?
-# add duration label right side place() on_resize
-# extent arg for quick render checking
-# try making a RAMWriter?
-# each pe could cache to ram all its frames, t3 could just grab those...could draw whole waveform at top
-# make tree of all parent pes
-# t2 pre_renders, and in process draws the wave -- we could render to ram instead of disk and allow partial playback
-# fft view / cool 3d spectrogram
-# WIP when you click anywhere in the shuttle slider area, the slider snaps to where you clicked and the speed is set accordingly.
-# WIP try no quanitzation for shuttle, with detents at the powers of 2
-# during scrubbing reduce smoothing when deltas are bigger
-# VU Meter -- pics of a real meter -- needle inertia will be the challenge
-# zoomable wave form, for more precise scrubbing? a scrollable canvas -- y mouse can control zoom factor, but for now fixed factor (settable)
-
-# Rob:
-# the middle of the Shuttle (speed) slider denotes zero speed (aka paused)
-# to the left is progressively faster (reverse), to the right is progressively faster (forward)
-# when not clicked on, the Shuttle (speed) slider snaps to the middle. 
-# I previously suggested that the shuttle slider be continuous and not just quantized to powers of two.  It might be interesting to try:
-# no quantization
-# quantize to powers of two
-# quantize to powers of 2/n (n steps per octave)
-# ... and see which one feels best.
-# andy when stopped, shuttle jumps to speed0, then you can creep slowly back and forth, snapback stays at 0.  when playing, it jumps to speed1, and that becomes the snapback point when dragging the shuttle
-
+        self.root.after(10, self.root.destroy)

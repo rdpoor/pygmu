@@ -41,18 +41,18 @@ def load_window_position():
 
 class PygmuPlayer:
         playback_state = 'stopped'
-        t2_driver = None
+        t2 = None
         def __init__(self):
                 self.last_meter_n = 0
                 self.stop_flag = False
                 self.mouse_is_down = False
 
         def startPlaying(self):
-                self.t2_driver.play()
+                self.t2.play()
                 self.playback_state = 'playing'
                 play_button['text'] = 'Pause'
         def pausePlaying(self):
-                self.t2_driver.pause()
+                self.t2.pause()
                 self.playback_state = 'stopped'
                 play_button['text'] = 'Play'
 
@@ -65,16 +65,16 @@ class PygmuPlayer:
 
 
         def onRewindButtonHit(self):
-                self.t2_driver.set_frame(0)
+                self.t2.set_frame(0)
 
         def onJogChanged(self, q):
-                frame = (jog.get() / 100) * self.t2_driver._src_pe.extent().end()
+                frame = (jog.get() / 100) * self.t2._src_pe.extent().end()
                 if jog.user_is_interacting:
-                        self.t2_driver.set_frame(frame)
+                        self.t2.set_frame(frame)
 
         def onJogFinishedChanging(self, evt):
-                frame = (jog.get() / 100) * self.t2_driver._src_pe.extent().end()
-                self.t2_driver.set_frame(frame)
+                frame = (jog.get() / 100) * self.t2._src_pe.extent().end()
+                self.t2.set_frame(frame)
                 
         def onShuttleChanged(self, evt):
                 mid_ndx = 6
@@ -89,12 +89,12 @@ class PygmuPlayer:
                         spd = -spd
                 elif ndx == 6:
                         spd = 1
-                self.t2_driver.set_speed(spd)
+                self.t2.set_speed(spd)
                 if null_stopped and ndx != mid_ndx:
                       self.startPlaying()
 
         def onShuttleFinishedChanging(self, evt):
-                self.t2_driver.set_speed(1)
+                self.t2.set_speed(1)
                 shuttle.set(6)
 
         def showAmp(self,a):
@@ -115,7 +115,7 @@ class PygmuPlayer:
         def onT2Update(self, fr, amp):
                 if self.stop_flag:
                         raise sd.CallbackStop
-                prog = fr / self.t2_driver._src_pe.extent().end()
+                prog = fr / self.t2._src_pe.extent().end()
                 if jog.user_is_interacting == False:
                         jog.set(prog * 100)
                 self.showAmp(amp)
@@ -291,7 +291,7 @@ import pygmu as pg
 src = pg.WavReaderPE("samples/TamperFrame_AfternoonOfAFaun.wav")
 t2 = pg.T2(src)
 t2.now_playing_callback = player.onT2Update
-player.t2_driver = t2
+player.t2 = t2
 
 root.mainloop()
 

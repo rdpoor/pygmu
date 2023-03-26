@@ -90,6 +90,18 @@ class PygPE(object):
 
     def play(self):
         return pg.Transport(self).play()
+    
+    def pygplay(self, title='PygPlayer'):
+        dst = pg.WavWriterPE(self, "user/renders/pygplay_tmp.wav")
+        pg.FtsTransport(dst).play()
+        new_src = pg.WavReaderPE("user/renders/pygplay_tmp.wav")
+        player = pg.PygPlayer(title)
+        t2 = pg.T2(new_src)
+        t2.now_playing_callback = player.now_playing_callback
+        player.t2 = t2
+        player.root.mainloop()
+        if player.exit_script_flag:
+            exit()
 
     def speed(self, speed):
         return pg.WarpSpeedPE(self, speed)

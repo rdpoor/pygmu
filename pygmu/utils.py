@@ -80,6 +80,13 @@ def magphase_to_complex(mag, phase):
 
 RATIO_MIN = 1.1754944e-38  # np.finfo(np.float32).tiny
 
+def sign(x):
+    if x < 0:
+        return -1
+    if x > 0:
+        return 1
+    return 0
+
 def ratio_to_db(ratio):
     ratio = np.maximum(ratio, RATIO_MIN)
     return 20 * np.log10(ratio)

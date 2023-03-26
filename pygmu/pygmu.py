@@ -53,3 +53,4 @@ import utils
 from warp_speed_pe import WarpSpeedPE
 from wav_reader_pe import WavReaderPE
 from wav_writer_pe import WavWriterPE
+from pygplayer import *

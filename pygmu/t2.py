@@ -4,6 +4,7 @@ import extent
 import array_pe
 import warp_speed_pe
 import sounddevice as sd
+import pygmu as pg
 
 STATE_STOPPED = 0
 STATE_PLAYING = 1
@@ -44,7 +45,7 @@ class T2(object):
         self._stream = None
         self._warper = warp_speed_pe.WarpSpeedPE(self._src_pe, speed=1.0)
         self.reset()
-
+ 
     def callback(self, outdata, n_frames, time, status):
         if status:
             print(status)

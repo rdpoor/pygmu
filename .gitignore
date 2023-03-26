@@ -1,5 +1,7 @@
 # User files
-user/
+user/*.yaml
+user/renders/*.wav
+profile.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
