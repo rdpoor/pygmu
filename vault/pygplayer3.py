@@ -42,10 +42,15 @@ class PygmuPlayer:
         self.last_meter_n = 0
         self.stop_flag = False
         self.mouse_is_down = False
+        self.last_x = -1
         self.frame_amps = np.zeros(1444, dtype=np.float32) #init issues
         self.shuttlew = 180
-        self.wave_seg_pixel_width = 2
+        self.jog_h = 18
+        self.wave_seg_pixel_width = 1
         self.bg_color = '#243B40'
+        self.bg_color2 = '#444241'
+        #self.tr_color = 'red'
+        self.tr_color = '#191929'
         self.bd_color = '#896A67'
         self.wv_color = '#53D8FB'
         self.sc_color = '#22AAA1'
@@ -53,7 +58,9 @@ class PygmuPlayer:
         
         # Create the main window
         self.root = tk.Tk()
+        self.root.configure(bg=self.bg_color2)
         self.root.bind('<Configure>', self.on_resize)
+        self.root.bind('<KeyPress>', self.on_keypress)
         position = self.load_window_geometry()
         if position:
                 self.root.geometry(f"{position[2]}x{position[3]}+{position[0]}+{position[1]}")
@@ -66,53 +73,57 @@ class PygmuPlayer:
         self.root.grid_columnconfigure(0, weight=1)
         self.root.grid_rowconfigure(2, weight=1)
 
-        #make widgets
-        play_image = ImageTk.PhotoImage(Image.open("vault/images/9045012_play_filled_alt_icon.png"))
-        pause_image = ImageTk.PhotoImage(Image.open("vault/images/9045012_play_filled_alt_icon.png"))
-        rewind_image = ImageTk.PhotoImage(Image.open("vault/images/9045012_play_filled_alt_icon.png"))
+        #make widgets 
+        play_image = ImageTk.PhotoImage(Image.open("vault/images/play_icon.png").resize((24, 24), Image.Resampling.LANCZOS))
+        pause_image = ImageTk.PhotoImage(Image.open("vault/images/pause_icon.png").resize((24, 24), Image.Resampling.LANCZOS))
+        rewind_image = ImageTk.PhotoImage(Image.open("vault/images/rew_icon.png").resize((24, 24), Image.Resampling.LANCZOS))
+        corner_image = ImageTk.PhotoImage(Image.open("vault/images/log2.png").resize((28, self.jog_h), Image.Resampling.LANCZOS))
 
-        self.labelframe = tk.LabelFrame(self.root, text="", padx=5, pady=5, height=35)
-        self.rewind_button = tk.Label(self.root, image=rewind_image, height=22, width=22, bg='green')
+        self.labelframe = tk.LabelFrame(self.root, text="", padx=5, pady=5, height=35, background=self.bg_color2) # kind of hacky way to set the row height
+        self.rewind_button = tk.Label(self.root, image=rewind_image, height=22, width=22, background=self.bg_color2)
         self.rewind_button.bind("<Button-1>", self.onRewindButtonHit)
         self.rewind_button.rewind_image = rewind_image # prevent gc
 
-        self.play_button = tk.Label(self.root, image=play_image, height=22, width=22, bg='green')
+        self.play_button = tk.Label(self.root, image=play_image, height=22, width=22, background=self.bg_color2)
         self.play_button.bind("<Button-1>", self.onPlayButtonHit)
         self.play_button.play_image = play_image # prevent gc
         self.play_button.pause_image = pause_image # prevent gc
 
         self.time_text = tk.StringVar()
         self.time_text.set("0.00")
-        self.time_label = tk.Label(self.root, textvariable=self.time_text, font=("Arial", 11),fg=self.tx_color)
+        self.time_label = tk.Label(self.root, textvariable=self.time_text, font=("Arial", 12),fg=self.tx_color, background=self.bg_color2)
         self.speed_text = tk.StringVar()
         self.speed_text.set("1.00")
-        self.speed_label = tk.Label(self.root, textvariable=self.speed_text, font=("Arial", 11),fg=self.tx_color)
+        self.speed_label = tk.Label(self.root, textvariable=self.speed_text, font=("Arial", 12),fg=self.tx_color, background=self.bg_color2)
 
-        self.wave_frame = tk.LabelFrame(self.root, text="", bd=0, background='')
-        self.wave_canvas = tk.Canvas(self.wave_frame, bg=self.bg_color, height=50, width=self.wave_canv_w)
+        self.wave_frame = tk.LabelFrame(self.root, text="", bd=0, background='', highlightthickness=0)
+        self.wave_canvas = tk.Canvas(self.wave_frame, bg=self.bg_color, height=50, width=self.wave_canv_w, highlightthickness=0)
         self.wave_canvas.bind("<ButtonPress-1>", self.onMouseDownWaveCanvas)
         self.wave_canvas.bind("<ButtonRelease-1>", self.onMouseUpWaveCanvas)
         self.wave_canvas.bind("<B1-Motion>", self.onMouseMoveWaveCanvas)
         self.wave_canvas.bind("<Double-Button-1>", self.onDoubleClickWaveCanvas)
 
-        self.jog_canvas = tk.Canvas(self.root, bg="#212121", height=20, width=self.wave_canv_w)
+        self.jog_canvas = tk.Canvas(self.root, bg=self.tr_color, height=self.jog_h, width=self.wave_canv_w, highlightthickness=0)
         self.jog_canvas.bind("<ButtonPress-1>", self.onMouseDownWaveCanvas)
         self.jog_canvas.bind("<ButtonRelease-1>", self.onMouseUpWaveCanvas)
         self.jog_canvas.bind("<B1-Motion>", self.onMouseMoveWaveCanvas)
         self.jog_canvas.bind("<Double-Button-1>", self.onDoubleClickWaveCanvas)
 
-        self.meter_canvas = tk.Canvas(self.root, bg="#212121", height=150, width=30)
+        self.meter_canvas = tk.Canvas(self.root, bg=self.tr_color, height=150, width=28, highlightthickness=0)
+        #self.corner_canvas = tk.Canvas(self.root, bg=self.bg_color2, height=self.jog_h, width=28, highlightthickness=0)
+        self.corner_canvas = tk.Label(self.root, image=corner_image, height=self.jog_h, width=28, background=self.bg_color2, highlightthickness=0)
 
         self.shuttle = create_custom_scale(self.root, 
             tick_values=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
             from_=1, to=11,
             sliderrelief=tk.FLAT,
             highlightthickness=0,
+            #background='',
             showvalue=False,
             bd=0,
-            bg='#777777',
+            bg='#333333',
             sliderlength=22,
-            troughcolor='#222222',
+            troughcolor=self.tr_color,
             activebackground='#888888',           
             length=self.shuttlew,
             orient=tk.HORIZONTAL)
@@ -123,19 +134,29 @@ class PygmuPlayer:
         # Lay out widgets                
         self.labelframe.grid(row=0, column=0)
         self.rewind_button.place(x=5, y=5)
-        self.play_button.place(x=65, y=5)
-        self.shuttle.place(x=143, y=15, height=14)
+        self.play_button.place(x=35, y=5)
+        self.shuttle.place(x=71, y=11, height=16)
 
-        self.speed_label.grid(row=0, column=1)
-        self.time_label.grid(row=1, column=1)
+        # self.speed_label.grid(row=0, column=1)
+        # self.time_label.grid(row=1, column=1, padx=(0,4))
+        self.speed_label.place(x=self.shuttlew + 84, y=8)
+        self.time_label.place(x=self.shuttlew + 122, y=8)
 
-        self.jog_canvas.grid(row=1, column=0,  sticky="nsew", padx=(4, 0))
+        self.jog_canvas.grid(row=1, column=0, sticky="nsew", padx=(6, 0))
 
-        self.meter_canvas.grid(row=2, column=1,  sticky="nsew", padx=(0,4), pady=(0,5))
+        self.corner_canvas.grid(row=1, column=1, sticky="nsew", padx=(0,4), pady=(0,0))
+        self.meter_canvas.grid(row=2, column=1, sticky="nsew", padx=(0,4), pady=(0,5))
 
         self.wave_frame.grid(row=2, column=0,  sticky="nsew", padx=(6, 0), pady=(0,5))
         self.wave_canvas.pack(side=tk.TOP, expand=True, fill=tk.BOTH, padx=0, pady=0)
 
+    def on_keypress(self,event):
+        if event.keysym == 'space':
+            if self.playback_state == 'stopped':
+                self.startPlaying()
+            else:
+                self.pausePlaying()
+    
     def on_resize(self,event):
         if event.widget != self.root:
                 return
@@ -145,7 +166,8 @@ class PygmuPlayer:
         self.wavh = (self.winh - 57)
         self.wave_canvas.delete('all')
         self.jog_canvas.delete('all')
-        self.wave_seg_pixel_width = max(1,round(self.wave_canv_w / 400)) # hack -- need to compute  based on the files duration in secs and frames per sec
+        #self.wave_seg_pixel_width = max(1,round(self.wave_canv_w / 800)) # hack -- need to compute  based on the files duration in secs and frames per sec
+        self.wave_seg_pixel_width = 1 
 
         # before we throw out the old amps, let's copy them into the new resolution and draw them
         old_frame_amps = self.frame_amps.copy()
@@ -161,12 +183,11 @@ class PygmuPlayer:
     def startPlaying(self):
         self.t2_driver.play()
         self.playback_state = 'playing'
-        self.play_button.image = self.play_button.pause_image
-
+        self.play_button.config(image=self.play_button.pause_image) 
     def pausePlaying(self):
         self.t2_driver.pause()
         self.playback_state = 'stopped'
-        self.play_button.image = self.play_button.play_image
+        self.play_button.config(image=self.play_button.play_image) 
         self.showAmp(0) # hack to kill the peak indicator WIP
 
     def onPlayButtonHit(self,evt):
@@ -196,12 +217,10 @@ class PygmuPlayer:
         ndx = (13 * x_norm) - 6 # magic numbers come from the range of shuttle indexes -- should be variable instead
         if np.round(ndx) == 6:
             return
-        #print(x_norm, ndx)
         #self.setSpeedFromShuttleIndex(ndx)
 
     def setSpeedFromShuttleIndex(self, ndx):
         null_stopped = self.playback_state == 'stopped'
-        print(ndx)
         if null_stopped and ndx == 6:
             return
         # ndx will be an int from the widget, but mousemove can send in floats
@@ -269,7 +288,7 @@ class PygmuPlayer:
 
     def showAmp(self,a):
         h = 8
-        n = round(5.5 * a * (self.wavh / h))
+        n = round(4.5 * a * (self.wavh / h))
         if n == self.last_meter_n:
                 return
         if n > self.peak:
@@ -281,9 +300,9 @@ class PygmuPlayer:
                   self.peak -= 1
 
         self.last_meter_n = n
-        x0 = 6
-        x1 = 28
-        y0 = self.wavh -  (n * h)
+        x0 = 2
+        x1 = 29
+        y0 = self.wavh -  (n * h) + 4
         self.meter_canvas.delete('all')
 
         def color_for_y(y):
@@ -310,7 +329,7 @@ class PygmuPlayer:
             w = 1
         # if x % 2 == 0:
         #     col = '#434343'
-        self.wave_canvas.create_line(x,h,x,h - (amp * h * 5), fill=col, width = w)
+        self.wave_canvas.create_line(x,h,x,h - (amp * h * 4.5), fill=col, width = w)
         #self.wave_canvas.create_line(x,h,x,h - (amp * h * 5), fill=col, width = 1)
          
     def now_playing_callback(self, fr, amp): # callback once per frame from T2
@@ -322,27 +341,16 @@ class PygmuPlayer:
         prog = fr / self.t2_driver._src_pe.extent().end()
         if prog > 1 or prog < 0:
             return
+        x = round(prog * self.wave_canv_w)
+        if self.last_x == x:
+             return;
+        self.last_x = x
         self.showAmp(amp)
         self.time_text.set(f"{fr/48000:.2f}")
-        x = round(prog * self.wave_canv_w)
         self.frame_amps[x] = amp
         self.drawWaveSegment(x,amp)
         self.jog_canvas.delete('all')
-        self.jog_canvas.create_line(x,0,x,20, fill='green')
-        #self.draw_wave()
-            
-    def draw_wave(self): # deprecated -- not really any faster
-        # Use NumPy vectorized operations to compute the y-coordinates
-        y_coords = 50 - self.frame_amps * 280
-
-        # Generate a list of (x, y) coordinate pairs
-        x_coords = np.arange(len(self.frame_amps))
-        points = np.column_stack((x_coords, y_coords)).flatten()
-
-        # Draw all the line segments in one call STILL surprisingly slow
-        col = self.wv_color
-        self.wave_canvas.delete('all')
-        self.wave_canvas.create_line(*points, fill=col)
+        self.jog_canvas.create_line(x,2,x,self.jog_h+3, fill='green', width=2)
 
     def save_window_geometry(self):
         with open("user/window_position.yaml", "w") as f:
@@ -361,8 +369,6 @@ class PygmuPlayer:
         self.save_window_geometry()
         self.root.after(50, self.root.destroy)
 
-player = PygmuPlayer()
-
 
 import os
 import sys
@@ -371,6 +377,8 @@ script_dir = os.path.dirname( __file__ )
 pygmu_dir = os.path.join( script_dir, '..', 'pygmu' )
 sys.path.append( pygmu_dir )
 import pygmu as pg
+
+player = PygmuPlayer()
 
 src = pg.WavReaderPE("samples/TamperFrame_TooGoodToBeTrue_Edit.wav")
 #src = pg.WavReaderPE("samples/TamperFrame_SugarPlumFaries_Edit2.wav")
@@ -381,11 +389,14 @@ player.t2_driver = t2
 player.root.mainloop()
 
 # TODO
-# finish button cosmetics
+# draw hasmarks on wave_canvas
+# add duration label right side place() on_resize
+# pygmu logo in corner
 # write up manual
+# fft view / cool 3d spectrogram
+# thin speed changes during drag
 # dbl-click, scrubbing, shuttle, resize,
 # add duration, sr, n channels, and add units to the time_text
-# rename vars related to scrubbing
 
 # speed(0) during scrubbing if current_time passes mouse time in the last direction of mouse mvt -- restart when we move past again?
 # WIP when you click anywhere in the shuttle slider area, the slider snaps to where you clicked and the speed is set accordingly.
@@ -401,7 +412,6 @@ player.root.mainloop()
 
 # andy subtle -- when stopped, shuttle jumps to speed0, then you can creep slowly back and forth, snapback stays at 0.  when playing, it jumps to speed1, and that becomes the snapback point when dragging the shuttle
 
-# when you slide to the middle, the speed becomes zero.
 # I previously suggested that the shuttle slider be continuous and not just quantized to powers of two.  It might be interesting to try:
 # no quantization
 # quantize to powers of two
