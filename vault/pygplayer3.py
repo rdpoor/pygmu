@@ -401,29 +401,14 @@ ret = player.root.mainloop()
 print(ret)
 
 # TODO
-# add duration label right side place() on_resize
-# shuttle seems lopsided
+# during scrubbing reduce smoothing when deltas are bigger
 # speed(0) during scrubbing if current_time passes mouse time in the last direction of mouse mvt -- restart when we move past again?
+# try a .cache() that's like play, but just fills out the pe's _cached_frames, which can be used as the source for T2 (pre warper anyway)
+# add duration label right side place() on_resize
 # extent arg for quick render checking
-# try making a RAMWriter?
-# each pe could cache to ram all its frames, t3 could just grab those...could draw whole waveform at top
 # make tree of all parent pes
 # t2 pre_renders, and in process draws the wave -- we could render to ram instead of disk and allow partial playback
 # fft view / cool 3d spectrogram
-# WIP when you click anywhere in the shuttle slider area, the slider snaps to where you clicked and the speed is set accordingly.
-# WIP try no quanitzation for shuttle, with detents at the powers of 2
-# during scrubbing reduce smoothing when deltas are bigger
 # VU Meter -- pics of a real meter -- needle inertia will be the challenge
 # zoomable wave form, for more precise scrubbing? a scrollable canvas -- y mouse can control zoom factor, but for now fixed factor (settable)
-
-# Rob:
-# the middle of the Shuttle (speed) slider denotes zero speed (aka paused)
-# to the left is progressively faster (reverse), to the right is progressively faster (forward)
-# when not clicked on, the Shuttle (speed) slider snaps to the middle. 
-# I previously suggested that the shuttle slider be continuous and not just quantized to powers of two.  It might be interesting to try:
-# no quantization
-# quantize to powers of two
-# quantize to powers of 2/n (n steps per octave)
-# ... and see which one feels best.
-# andy when stopped, shuttle jumps to speed0, then you can creep slowly back and forth, snapback stays at 0.  when playing, it jumps to speed1, and that becomes the snapback point when dragging the shuttle
 

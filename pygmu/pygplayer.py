@@ -1,5 +1,4 @@
 '''
-
 click to jump to a location
 dlb-click to start/stop playback
 drag to scrub
@@ -11,7 +10,6 @@ key_commands:
     -<       = skip earlier 1 second
     q        = stop and close window
     Q        = stop and exit script
-
 '''
 
 import tkinter as tk
@@ -26,6 +24,7 @@ class PygPlayer:
     def __init__(self, title='d',auto_start=True):
         self.title = title
         self.auto_start = auto_start
+        self.peak_hold_frames = 15
         self.playback_state = 'stopped'
         self.is_scrubbing = False
         self.t2 = None
@@ -41,6 +40,7 @@ class PygPlayer:
         self.last_meter_n = 0
         self.stop_flag = False
         self.last_x = -1
+        self.resize_timer = None
         self.frame_amps = np.zeros(1444, dtype=np.float32)
         self.shuttle_w = 180
         self.jog_h = 18
@@ -51,7 +51,7 @@ class PygPlayer:
         self.bd_color = '#896A67'
         self.wv_color = '#5AFCE1'
         self.sc_color = '#48C7B0'
-        self.tx_color = '#191929'
+        self.tx_color = '#909CC2'
         self.exit_script_flag = False
 
         # Create the main window
@@ -117,10 +117,9 @@ class PygPlayer:
             highlightthickness=0,
             showvalue=False,
             bd=0,
-            bg='#333333',
             sliderlength=22,
             troughcolor=self.tr_color,
-            activebackground='#888888',           
+            activebackground='#777777',           
             length=self.shuttle_w,
             command=self.onShuttleChanged,
             orient=tk.HORIZONTAL)
@@ -134,48 +133,34 @@ class PygPlayer:
         self.rewind_button.place(x=5, y=5)
         self.play_button.place(x=35, y=5)
         self.shuttle.place(x=71, y=11, height=16)
-
-        # self.speed_label.grid(row=0, column=1)
-        # self.time_label.grid(row=1, column=1, padx=(0,4))
         self.speed_label.place(x=self.shuttle_w + 84, y=8)
         self.time_label.place(x=self.shuttle_w + 122, y=8)
-
         self.jog_canvas.grid(row=1, column=0, sticky="nsew", padx=(6, 0))
-
         self.corner_canvas.grid(row=1, column=1, sticky="nsew", padx=(0,4), pady=(0,0))
         self.meter_canvas.grid(row=2, column=1, sticky="nsew", padx=(0,4), pady=(0,5))
-
         self.wave_frame.grid(row=2, column=0,  sticky="nsew", padx=(6, 0), pady=(0,5))
         self.wave_canvas.pack(side=tk.TOP, expand=True, fill=tk.BOTH, padx=0, pady=0)
 
     def on_keypress(self,event):
         key = event.keysym
-
         def space():
             if self.playback_state == 'stopped':
                 self.startPlaying()
             else:
                 self.pausePlaying()
-
         def Return():
             self.onRewindButtonHit(event)
-
         def q():
             self.cleanUp()
-
         def Q():
             self.exit_script_flag = True
             self.cleanUp()
-
         def Right():
             self.t2.set_frame(self.t2.get_frame() + 48000)
-
         def Left():
             self.t2.set_frame(self.t2.get_frame() - 48000)
-
         def default():
             print("Unhandled key:", key)
-
         key_actions = {
             "space": space,
             "Return": Return,
@@ -184,7 +169,6 @@ class PygPlayer:
             "q": q,
             "Q": Q,
         }
-
         action = key_actions.get(key, default)
         if action:
             action()
@@ -195,12 +179,16 @@ class PygPlayer:
     def on_configure(self, event):
         if event.width == 1:
             return
-        self.root.after(10, self.delayed_on_configure, event)
+        if event.widget != self.root:
+            return       
+        if self.resize_timer:
+            self.root.after_cancel(self.resize_timer)  # Cancel the previous timer, if any
+        self.resize_timer = self.root.after(500, self.delayed_on_configure,event)  # Set a new timer for 500 ms
     
     def delayed_on_configure(self,event):
         if event.widget != self.root:
             return
-        self.root.update_idletasks() # make sure all the children have finished resizing BUT this seems to screw us up on boot
+        #self.root.update_idletasks() # make sure all the children have finished resizing BUT this seems to screw us up on boot
         self.wave_canv_w = self.wave_canvas.winfo_width()
         self.winh = event.height - 8
         self.wavh = (self.winh - 57)
@@ -221,20 +209,19 @@ class PygPlayer:
             self.frame_amps[x] = amp
             self.drawWaveSegment(x,amp)
             old_x += 1
-
         if self.auto_start:
             self.root.after(10, self.startPlaying)
-            #self.startPlaying()
+            self.auto_start = False #only the first time
 
     def startPlaying(self):
         self.t2.play()
         self.playback_state = 'playing'
-        self.play_button.config(image=self.play_button.pause_image) 
+        self.play_button.config(image=self.play_button.pause_image)
+
     def pausePlaying(self):
         self.t2.pause()
         self.playback_state = 'stopped'
         self.play_button.config(image=self.play_button.play_image) 
-        self.showAmp(0) # hack to kill the peak indicator WIP
 
     def onPlayButtonHit(self,evt):
             if self.playback_state == 'stopped':
@@ -289,17 +276,16 @@ class PygPlayer:
         x_norm = (event.x / self.wave_canv_w)
         self.wave_canvas_st_frame = x_norm * self.t2._src_pe.extent().end()
         self.recent_x = []
-
         self.t2.set_frame(self.wave_canvas_st_frame)
 
     def onMouseMoveWaveCanvas(self, event):
         x_norm = (event.x / self.wave_canv_w)
         self.recent_x.append([x_norm, time.time()])
-        frame = x_norm * self.t2._src_pe.extent().end()
+        mouse_frame = x_norm * self.t2._src_pe.extent().end()
         # figure out what to do with speed based on playback situation
         # should keep a smoothed running average of the x velocity of the mouse
         # we let the magnitude of the changes dictate the amt of smoothing -- so big changes dont get smoothed nearly as much
-        smoothing = 9
+        smoothing = 3
         n = min(smoothing, len(self.recent_x))
         if n < 2:
             return # dont interpret mousemoves as scrubbing until we've seen a couple, could just be a nervous click      
@@ -358,23 +344,19 @@ class PygPlayer:
 
     def showAmp(self,a):
         h = 8
-        n = round(4.5 * a * (self.wavh / h))
-        if n == self.last_meter_n:
-                return
+        n = round(min(1,4 * a) * (self.wavh / h))
         if n > self.peak:
              self.peak = n
              self.peak_age = 0
         else:
              self.peak_age += 1
-             if self.peak_age > 3:
+             if self.peak_age > self.peak_hold_frames:
                   self.peak -= 1
-
         self.last_meter_n = n
         x0 = 2
         x1 = 29
         y0 = self.wavh -  (n * h) + 4
         self.meter_canvas.delete('all')
-
         def color_for_y(y):
             y = self.wavh - y
             if y < self.wavh * 0.58:
@@ -382,11 +364,12 @@ class PygPlayer:
             if y < self.wavh * 0.85:
                 return 'yellow'
             return 'red'
-
         while (n > 0):
                 self.meter_canvas.create_line(x0, y0, x1, y0, fill=color_for_y(y0), width=h - 1)
                 y0 = y0 + h
                 n = n - 1
+        if self.peak ==0:
+           return
         y0 = self.wavh -  (self.peak * h)
         self.meter_canvas.create_line(x0, y0, x1, y0, fill=color_for_y(y0), width=h - 1)
 
@@ -398,7 +381,6 @@ class PygPlayer:
             col = self.sc_color
             w = 1
         self.wave_canvas.create_line(x,h,x,h - (amp * h * 4.5), fill=col, width = w)
-        #self.wave_canvas.create_line(x,h,x,h - (amp * h * 5), fill=col, width = 1)
     def draw_wave_hash(self):
         h = self.wavh + 2
         col = '#222F40'
@@ -409,11 +391,14 @@ class PygPlayer:
         self.wave_canvas.create_line(0, h, self.wave_canv_w, h, fill=col, width=1)
          
     def now_playing_callback(self, fr, amp): # callback once per frame from T2
+        if self.stop_flag:
+            raise sd.CallbackStop
+            return
+        self.showAmp(amp)
         if self.current_frame == fr:
              return
         self.current_frame = fr
-        if self.stop_flag:
-                raise sd.CallbackStop
+
         prog = fr / self.t2._src_pe.extent().end()
         if prog > 1 or prog < 0:
             return
@@ -421,7 +406,6 @@ class PygPlayer:
         if self.last_x == x:
              return;
         self.last_x = x
-        self.showAmp(amp)
         self.time_text.set(f"{fr/self.t2._src_pe.frame_rate():.2f}")
         self.frame_amps[x] = amp
         self.drawWaveSegment(x,amp)

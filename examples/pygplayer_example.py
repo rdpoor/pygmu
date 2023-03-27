@@ -14,8 +14,8 @@ Test PygPlayer
 
 src = pg.WavReaderPE("samples/TamperFrame_TooGoodToBeTrue_Edit.wav")
 
-src.pygplay()
+src.pygplay('TooGoodToBeTrue')
 
 filtered = pg.FilterPE(src, 3, 500)
 
-filtered.pygplay('filtered', False)
+filtered.pygplay('filtered', True)
