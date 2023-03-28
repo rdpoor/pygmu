@@ -5,6 +5,7 @@ import array_pe
 import warp_speed_pe
 import sounddevice as sd
 import pygmu as pg
+import threading
 
 STATE_STOPPED = 0
 STATE_PLAYING = 1
@@ -35,7 +36,7 @@ class T2(object):
             self._frame_rate = src_pe.frame_rate()
         else:
             self._frame_rate = frame_rate
-        self._blocksize = blocksize
+        self._blocksize = blocksize or 1024
         self._dtype = dtype
         self._latency = latency
         if channel_count is None:
@@ -45,11 +46,15 @@ class T2(object):
         self._stream = None
         self._warper = warp_speed_pe.WarpSpeedPE(self._src_pe, speed=1.0)
         self.reset()
+
+    def now_playing_callback_thread(self, src_frame, left_channel):
+        self.now_playing_callback(src_frame, np.sqrt(np.mean(np.square(left_channel))))
+
  
     def callback(self, outdata, n_frames, time, status):
         if status:
             print(status)
-
+        
         if self._state == STATE_STOPPED:
             raise sd.CallbackStop()
 
@@ -83,20 +88,23 @@ class T2(object):
             # Note next starting frame
             self._src_frame = self._src_frame + (n_frames * self._speed)
 
-        if self.now_playing_callback:
-            self.skp = self.skp + 1 # experimentally skipping n frames to reduce dropouts
-            if self.skp > 2:
-                left_channel = outdata[:, 0]
-                self.now_playing_callback(self._src_frame, np.sqrt(np.mean(np.square(left_channel))))
-                self.skp = 0
-    
 
+
+        if self.now_playing_callback:
+            self.skp = (self.skp + 1) % 2  # skipping n frames to reduce dropouts
+            if self.skp == 0:
+                left_channel = outdata[:, 0]
+                t = threading.Thread(target=self.now_playing_callback_thread, args=(self._src_frame, left_channel))
+                t.start()
+    
     def play(self, frame=None, speed=None):
         """
         Start, resume or continue playing samples from the current frame.  For
         jog, set the frame.  For shuttle, set speed: 1.0 is normal, -1.0 is
         reverse, 0.1 is very slow forward, etc.
         """
+        #self._blocksize = 2048
+
         if self._stream is None:
             self._stream = sd.OutputStream(
                 device=self._output_device,

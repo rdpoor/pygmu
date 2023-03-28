@@ -43,7 +43,7 @@ class PygPlayer:
         self.resize_timer = None
         self.frame_amps = np.zeros(1444, dtype=np.float32)
         self.shuttle_w = 180
-        self.jog_h = 18
+        self.jog_h = 7
         self.wave_seg_pixel_width = 1
         self.bg_color = '#243B40'
         self.bg_color2 = '#444241'
@@ -117,7 +117,7 @@ class PygPlayer:
             highlightthickness=0,
             showvalue=False,
             bd=0,
-            sliderlength=22,
+            sliderlength=14,
             troughcolor=self.tr_color,
             activebackground='#777777',           
             length=self.shuttle_w,
@@ -132,12 +132,12 @@ class PygPlayer:
         self.labelframe.grid(row=0, column=0)
         self.rewind_button.place(x=5, y=5)
         self.play_button.place(x=35, y=5)
-        self.shuttle.place(x=71, y=11, height=16)
-        self.speed_label.place(x=self.shuttle_w + 84, y=8)
-        self.time_label.place(x=self.shuttle_w + 122, y=8)
+        self.shuttle.place(x=71, y=13, height=10)
+        self.speed_label.place(x=self.shuttle_w + 84, y=7)
+        self.time_label.place(x=self.shuttle_w + 122, y=7)
         self.jog_canvas.grid(row=1, column=0, sticky="nsew", padx=(6, 0))
         self.corner_canvas.grid(row=1, column=1, sticky="nsew", padx=(0,4), pady=(0,0))
-        self.meter_canvas.grid(row=2, column=1, sticky="nsew", padx=(0,4), pady=(0,5))
+        self.meter_canvas.grid(row=2, column=1, sticky="nsew", padx=(0,6), pady=(0,5))
         self.wave_frame.grid(row=2, column=0,  sticky="nsew", padx=(6, 0), pady=(0,5))
         self.wave_canvas.pack(side=tk.TOP, expand=True, fill=tk.BOTH, padx=0, pady=0)
 
@@ -191,7 +191,7 @@ class PygPlayer:
         #self.root.update_idletasks() # make sure all the children have finished resizing BUT this seems to screw us up on boot
         self.wave_canv_w = self.wave_canvas.winfo_width()
         self.winh = event.height - 8
-        self.wavh = (self.winh - 57)
+        self.wavh = (self.winh - 39 - self.jog_h)
         self.pixels_per_second = self.wave_canv_w / (self.t2._src_pe.extent().end() / self.t2._src_pe.frame_rate())
         self.wave_canvas.delete('all')
         self.draw_wave_hash()
@@ -214,6 +214,7 @@ class PygPlayer:
             self.auto_start = False #only the first time
 
     def startPlaying(self):
+        self.setSpeed(1)
         self.t2.play()
         self.playback_state = 'playing'
         self.play_button.config(image=self.play_button.pause_image)
@@ -343,8 +344,8 @@ class PygPlayer:
             self.pausePlaying()
 
     def showAmp(self,a):
-        h = 8
-        n = round(min(1,4 * a) * (self.wavh / h))
+        h = 6
+        n = int(min(1,4 * a) * (self.wavh / h))
         if n > self.peak:
              self.peak = n
              self.peak_age = 0
@@ -354,7 +355,7 @@ class PygPlayer:
                   self.peak -= 1
         self.last_meter_n = n
         x0 = 2
-        x1 = 29
+        x1 = 27
         y0 = self.wavh -  (n * h) + 4
         self.meter_canvas.delete('all')
         def color_for_y(y):
@@ -392,7 +393,7 @@ class PygPlayer:
          
     def now_playing_callback(self, fr, amp): # callback once per frame from T2
         if self.stop_flag:
-            raise sd.CallbackStop
+            self.t2._state = 0 # STATE_STOPPED, raises sd stop 
             return
         self.showAmp(amp)
         if self.current_frame == fr:
@@ -410,7 +411,7 @@ class PygPlayer:
         self.frame_amps[x] = amp
         self.drawWaveSegment(x,amp)
         self.jog_canvas.delete('all')
-        self.jog_canvas.create_line(x,2,x,self.jog_h+3, fill='yellow', width=1)
+        self.jog_canvas.create_line(x,1,x,self.jog_h+3, fill='yellow', width=1)
 
     def onCornerHit(self, evt):
         self.t2.choose_src(self.t2._ur_src_pe._src_pe)

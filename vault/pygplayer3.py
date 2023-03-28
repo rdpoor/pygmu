@@ -401,6 +401,7 @@ ret = player.root.mainloop()
 print(ret)
 
 # TODO
+# can we just have a singleton player, instead of closing and rebuilding from scratch?    withdraw?
 # during scrubbing reduce smoothing when deltas are bigger
 # speed(0) during scrubbing if current_time passes mouse time in the last direction of mouse mvt -- restart when we move past again?
 # try a .cache() that's like play, but just fills out the pe's _cached_frames, which can be used as the source for T2 (pre warper anyway)

@@ -13,9 +13,10 @@ Test PygPlayer
 """
 
 src = pg.WavReaderPE("samples/TamperFrame_TooGoodToBeTrue_Edit.wav")
+src2 = pg.WavReaderPE("samples/TamperFrame_TooGoodToBeTrue_Edit.wav")
 
 src.pygplay('TooGoodToBeTrue')
+flt = pg.BQ2BandPassPE(src, f0=330, q=20).gain(4)
+flt.pygplay('flt')
+src.pygplay('TooGoodToBeTrue')
 
-filtered = pg.FilterPE(src, 3, 500)
-
-filtered.pygplay('filtered', True)
