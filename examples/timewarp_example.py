@@ -32,13 +32,13 @@ print("hit return after each example to hear the next")
 
 # plain warping
 timeline = pg.MixPE(pg.IdentityPE(), pg.SinPE(frequency=4, amplitude=100.0, frame_rate=FRAME_RATE))
-source = pg.WavReaderPE("samples/Tamper_MagnifyingFrame1.wav")
+source = pg.WavReaderPE("samples/music/Tamper_MagnifyingFrame1.wav")
 warped = pg.TimewarpPE(source, timeline)
 pg.Transport(warped).play()
 
 # mixing with original == flanging
 timeline = pg.MixPE(pg.IdentityPE(), pg.SinPE(frequency=0.5, amplitude=200.0, frame_rate=FRAME_RATE))
-source = pg.WavReaderPE("samples/Tamper_MagnifyingFrame1.wav")
+source = pg.WavReaderPE("samples/music/Tamper_MagnifyingFrame1.wav")
 warped = pg.TimewarpPE(source, timeline)
 pg.Transport(pg.MixPE(source, warped)).play()
 
@@ -50,6 +50,6 @@ pg.Transport(warped).play()
 
 # just being silly...
 timeline = make_timeline([0, 2, 4, 5, 7, 9, 11, 12, 12, 12, 12])
-source = pg.WavReaderPE("samples/Fox48.wav")
+source = pg.WavReaderPE("samples/music/Fox48.wav")
 pe = pg.TimewarpPE(source, timeline)
 pg.Transport(pe).play()

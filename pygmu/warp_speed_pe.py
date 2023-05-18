@@ -40,6 +40,8 @@ class WarpSpeedPE(PygPE):
         return self._speed
 
     def render(self, requested):
+        if requested.start() == requested.end():
+            print('Warning: WarpSpeedPE.render() called with empty extent.')
         if isinstance(self._speed, numbers.Number):
             # constant speed.
             t0 = requested.start() * self._speed
@@ -90,10 +92,12 @@ class WarpSpeedPE(PygPE):
         if self._speed == 0:
             # infinitely long...
             return Extent()
+        if self._src_pe.extent().is_indefinite():
+            return self._src_pe.extent()
         try:
-            t0 = self._src_pe.extent().start() / self._speed
-            t1 = self._src_pe.extent().end() / self._speed
-            # print("t0, t1 =", t0, t1)
+            t0 = int(self._src_pe.extent().start() / self._speed)
+            t1 = int(self._src_pe.extent().end() / self._speed)
+            #print("t0, t1 =", t0, t1)
             if t1 > t0:
                 return Extent(t0, t1)
             else:

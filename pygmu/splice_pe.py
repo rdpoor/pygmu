@@ -13,9 +13,7 @@ class SplicePE(PygPE):
         self._src_pe = src_pe
         self._up_dur = up_dur
         self._dn_dur = dn_dur
-        # print(self.extent())
-
-
+        
     def render(self, requested:Extent):
         """
     To understand the variables:

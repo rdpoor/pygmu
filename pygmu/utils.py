@@ -270,3 +270,9 @@ def ftom(frequency):
     Convert a frequency to a midi pitch
     """
     return 69 + 12 * math.log(frequency / 440.0)/math.log(2.0)
+
+def velocity_to_db(velocity, reference=127):
+    if velocity == 0:
+        return -math.inf  # return negative infinity for silence
+    else:
+        return 20 * math.log10(velocity / reference)

@@ -23,7 +23,6 @@ from ganesh_pe import GaneshPE
 from gravy_pe import GravyPE
 from identity_pe import IdentityPE
 from impulse_pe import ImpulsePE
-from interpolate_pe import InterpolatePE
 from limiter_pe import LimiterPE
 from limiter_a_pe import LimiterAPE
 from ramp_pe import RampPE
@@ -33,6 +32,7 @@ from mix_pe import MixPE
 from mono_pe import MonoPE
 from mul_pe import MulPE
 from noise_pe import NoisePE
+from notes_pe import *
 from print_pe import PrintPE
 from pwm_pe import PwmPE
 from pyg_exceptions import *
