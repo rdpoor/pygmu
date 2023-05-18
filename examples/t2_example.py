@@ -19,7 +19,7 @@ The best way to run this:
 >>> t2.stop()
 """
 
-src = pg.WavReaderPE("samples/TamperFrame_AfternoonOfAFaun.wav")
+src = pg.WavReaderPE("samples/music/TamperFrame_AfternoonOfAFaun.wav")
 t2 = pg.T2(src)
 
 

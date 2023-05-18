@@ -35,7 +35,9 @@ class ConvolvePE(PygPE):
         elif filter_pe.frame_rate() is None:
             self._frame_rate = src_pe.frame_rate()
         else:
-            raise pyx.FrameRateMismatch("src_pe and filter_pe frame rate mismatch")
+            self._frame_rate = src_pe.frame_rate()
+            print("HACK: ConvolvePE: frame rates don't match, using src_pe frame rate")
+            #raise pyx.FrameRateMismatch("src_pe and filter_pe frame rate mismatch")
 
         self._src_pe = src_pe
         self._filter_pe = filter_pe

@@ -9,7 +9,7 @@ sys.path.append(pygmu_dir)
 import pygmu as pg
 import utils as ut
 
-src = pg.WavReaderPE("samples/SwanLakeOp-ActIIConcl.wav").mono() # .crop(pg.Extent(3635000, 3700000))
+src = pg.WavReaderPE("samples/music/SwanLakeOp-ActIIConcl.wav").mono() # .crop(pg.Extent(3635000, 3700000))
 src = pg.WavWriterPE(src, "swan.wav")
 env = pg.EnvDetectPE(src, attack=0.9, release=0.0001)
 # Uncomment if you want to examine the detected envelope in Audacity, etc.

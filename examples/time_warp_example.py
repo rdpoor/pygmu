@@ -50,6 +50,6 @@ pg.Transport(warped).play()
 
 # just being silly...
 timeline = make_timeline([0, 2, 4, 5, 7, 9, 11, 12, 12, 12, 12])
-source = pg.WavReaderPE("samples/music/Fox48.wav")
+source = pg.WavReaderPE("samples/loops/Fox48.wav")
 pe = pg.TimewarpPE(source, timeline)
 pg.Transport(pe).play()

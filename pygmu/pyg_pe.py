@@ -104,6 +104,13 @@ class PygPE(object):
 
     def speed(self, speed):
         return pg.WarpSpeedPE(self, speed)
+    
+    def reverb(self, wetness=0.5, ir_name='Conic Long Echo Hall.wav'):
+        #ir_name = 'IR_HotHall.wav'
+        impulse = pg.WavReaderPE('samples/IR/' + ir_name)
+        how_wet = wetness * wetness / 2
+        wet = pg.ConvolvePE(self.gain(0.28), impulse).gain(how_wet)
+        return pg.MixPE(self.gain(1.0 - how_wet), wet)
 
     def reverse(self, infinite_end):
         return pg.ReversePE(self, infinite_end)

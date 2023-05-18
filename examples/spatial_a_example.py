@@ -8,7 +8,7 @@ sys.path.append( pygmu_dir )
 import pygmu as pg
 import utils as ut
 
-src = pg.WavReaderPE("samples/s07.wav")
+src = pg.WavReaderPE("samples/sfx/s07.wav")
 
 t = 0
 def dt(dt):

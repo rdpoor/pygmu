@@ -23,7 +23,7 @@ def limiter_fn(db_in):
 # source = pg.WavReaderPE("samples/BellyOfAnArchitect_Clip01.wav")
 # source = pg.WavReaderPE("samples/BigBeat4_BigBeat5drumloops120bpm.04.wav")
 # source = pg.WavReaderPE("samples/F9THbass90bpmDmin.wav")
-source = pg.WavReaderPE("samples/PrettyGirl_Gleason.wav")
+source = pg.WavReaderPE("samples/music/PrettyGirl_Gleason.wav")
 env_db = pg.EnvDetectPE(source.mono(), attack=0.9999, release=0.5, units='db')
 gain_db = pg.MapPE(env_db, limiter_fn)
 limited = pg.GainPE(source, gain_db, units='db')

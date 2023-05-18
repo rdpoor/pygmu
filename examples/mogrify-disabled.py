@@ -40,11 +40,11 @@ def mogrify(filename):
     return pg.ArrayPE(mog_frames)
 
 print("hit return each sample stops playing to hear the next...")
-pg.Transport(pg.WavReaderPE("samples/044-n-2723_stero.wav")).play()
-pg.Transport(mogrify("samples/044-n-2723_stero.wav")).play()
+# pg.Transport(pg.WavReaderPE("samples/music/044-n-2723_stero.wav")).play()
+# pg.Transport(mogrify("samples/music/044-n-2723_stero.wav")).play()
 
-pg.Transport(pg.WavReaderPE("samples/04_Cat.wav")).play()
-pg.Transport(mogrify("samples/04_Cat.wav")).play()
+pg.Transport(pg.WavReaderPE("samples/loops/04_Cat.wav")).play()
+pg.Transport(mogrify("samples/loops/04_Cat.wav")).play()
 
-pg.Transport(pg.WavReaderPE("samples/11_uh_uh_f.wav")).play()
-pg.Transport(mogrify("samples/11_uh_uh_f.wav")).play()
+pg.Transport(pg.WavReaderPE("samples/spoken/11_uh_uh_f.wav")).play()
+pg.Transport(mogrify("samples/spoken/11_uh_uh_f.wav")).play()

@@ -12,7 +12,7 @@ Test TimewarpPE
 FRAME_RATE = 48000
 
 # mixing original with time-varying delay == flanging
-source = pg.WavReaderPE("samples/Tamper_MagnifyingFrame1.wav")
+source = pg.WavReaderPE("samples/music/Tamper_MagnifyingFrame1.wav")
 warped = pg.TimeShiftPE(source, pg.SinPE(frequency=1, amplitude=100.0, frame_rate=FRAME_RATE))
 # TimeShiftPE with a time-varying delay has infinite extent.  Crop it to the length of the original
 warped = warped.crop(source.extent())

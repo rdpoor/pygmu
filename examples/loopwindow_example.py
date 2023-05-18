@@ -11,7 +11,7 @@ def loopWindow(src,insk,dur):
 def secs(s):
     return int(s * 48000)
 
-sourceA= pg.WavReaderPE("samples/ItsGonnaRain_Original.wav")
+sourceA= pg.WavReaderPE("samples/spoken/ItsGonnaRain_Original.wav")
 
 loopB = loopWindow(sourceA,secs(2.95),secs(.8))
 

@@ -9,8 +9,14 @@ sys.path.append(pygmu_dir)
 import pygmu as pg
 import utils as ut
 
-src = pg.WavReaderPE("samples/multisamples/Violin_Undul/Violin_Undul_C3_RM.wav") # .mono()
-limited = src.limit_a(threshold_db=-30, headroom_db=3)
-pg.Transport(limited).play()
+src = pg.WavReaderPE("samples/music/TamperFrame19.wav") # .mono()
+
+limited = src.reverb(0.78, 'IR_HotHall.wav')
+limited.pygplay()
+
+limited2 = src.reverb(0.78, 'St Nicolaes Church.wav')
+limited2.pygplay()
+
+
 
 

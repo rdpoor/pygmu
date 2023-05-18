@@ -20,9 +20,9 @@ ut.use_ansi_when_avaible = False
 ut.print_info('ansi status:',ut.terminal_has_ansi_support(),ut.use_ansi_when_avaible,'\n')
 
 
-sourceA= pg.WavReaderPE("samples/ItsGonnaRain_Original.wav").gain(7)
-sourceB= pg.WavReaderPE("samples/BigBeat120bpm10.wav").gain(2)
-monoSource= pg.WavReaderPE("samples/Sine_C4.wav") 
+sourceA= pg.WavReaderPE("samples/spoken/ItsGonnaRain_Original.wav").gain(7)
+sourceB= pg.WavReaderPE("samples/loops/BigBeat120bpm10.wav").gain(2)
+monoSource= pg.WavReaderPE("samples/multisamples/Sine_C4.wav") 
 
 filename = tempfile.gettempdir()+'/sport.wav'
 dst = pg.WavWriterPE(sourceA, filename)

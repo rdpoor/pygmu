@@ -8,6 +8,6 @@ import pygmu as pg
 import soundfile as sf
 import utils as ut
 
-clip = pg.WavReaderPE("samples/TamperClip93.wav")
+clip = pg.WavReaderPE("samples/music/TamperClip93.wav")
 filtered = pg.FilterPE(clip, 3, 400)
 filtered.play()
