@@ -276,3 +276,9 @@ def velocity_to_db(velocity, reference=127):
         return -math.inf  # return negative infinity for silence
     else:
         return 20 * math.log10(velocity / reference)
+    
+def midi_to_note(midi_pitch):
+    note_names = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
+    octave = midi_pitch // 12 - 1
+    note = note_names[midi_pitch % 12]
+    return note + str(octave)

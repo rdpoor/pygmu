@@ -31,7 +31,7 @@ src_info = sf.info(src_name, True)
 
 IR_dir = "samples/IR"
 available_IRs =  list(filter(lambda s: s[0] != '.', os.listdir(IR_dir)))
-output_filename = "examples/convolve_example.wav"
+output_filename = "user_files/renders/convolve_example.wav"
 
 def show_IRS():
     print('')

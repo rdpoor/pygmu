@@ -22,6 +22,8 @@ class Note:
         self._pitch = pitch
         self._velocity = velocity
         self._extent = self.compute_extent()
+    def __repr__(self):
+        return f"""<Note {self.__hash__()}: offset={str(self._offset)}, duration={str(self._duration)}, pitch={ut.midi_to_note(self._pitch)}, velocity={str(self._velocity)}>"""
     def offset(self, tempo = 120, frame_rate = 48000):
         return int(self._offset * 60 / tempo * frame_rate)
     def duration(self, tempo = 120, frame_rate = 48000, rel_secs = 0):
@@ -49,6 +51,7 @@ def get_notes_from_midi(midi_path):
                 pyg_note = pg.Note(element.offset, element.duration.quarterLength, element.pitch.midi, element.volume.velocity)
                 pyg_note.music21_note = element
                 notes.append(pyg_note)
+                print(pyg_note)
             # Check if the element is a chord.Chord object
             elif isinstance(element, chord.Chord):
                 for pitch in element.pitches:

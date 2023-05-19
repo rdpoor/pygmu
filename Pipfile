@@ -13,6 +13,7 @@ coverage = "*"
 tk = "*"
 pillow = "*"
 pyyaml = "*"
+music21 = "*"
 
 [dev-packages]
 jupyter = "*"

@@ -1,5 +1,6 @@
 import numpy as np
 from extent import Extent
+import random
 
 class PygPE(object):
     """
@@ -51,7 +52,16 @@ class PygPE(object):
 
     def cache(self):
         return pg.CachePE(self)
-
+    
+    def delays(self, secs=0.5, howmany = 1, decay = 0.8, width = 0.8):
+        delay_units = []
+        amp = 1
+        pan_degrees = 90 * width
+        for i in range(1, howmany):
+            delay_units.append(self.time_shift(int(i * secs * self.frame_rate())).gain(amp).pan(random.uniform(-pan_degrees,pan_degrees)))
+            amp *= decay
+        return pg.MixPE(self,*delay_units)
+    
     def lowpass(self, freq):
         return pg.BiquadPE(self, 0.0, freq, 6, "lowpass")
 
@@ -106,7 +116,6 @@ class PygPE(object):
         return pg.WarpSpeedPE(self, speed)
     
     def reverb(self, wetness=0.5, ir_name='Conic Long Echo Hall.wav'):
-        #ir_name = 'IR_HotHall.wav'
         impulse = pg.WavReaderPE('samples/IR/' + ir_name)
         how_wet = wetness * wetness / 2
         wet = pg.ConvolvePE(self.gain(0.28), impulse).gain(how_wet)

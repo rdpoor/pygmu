@@ -24,7 +24,7 @@ def mix_at(src, t, amp = 1):
     return pg.TimeShiftPE(src,t).gain(amp)
 
 #theory0 = pg.WavReaderPE("samples/TamperFrame_SwingTheory.wav")
-theory0 = pg.WavReaderPE("samples/TamperFrame_SwingTheory.wav").crop(pg.Extent(secs(0),secs(2.2))).gain(0.5)
+theory0 = pg.WavReaderPE("samples/music/TamperFrame_SwingTheory.wav").crop(pg.Extent(secs(0),secs(2.2))).gain(0.5)
 
 theory0.play()
 

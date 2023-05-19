@@ -46,6 +46,8 @@ To create a stream with five stereo frames, you could do this:
 
 ### `NoisePE(gain=1.0, frame_rate=None)`
 
+### `NotesPE(note_list, tempo = 120, gain_factor = 0.24, native_pitch = 60, atk_secs = 0, rel_secs = 0)`
+
 ### `PwmPE(period, duty_cycle, frame_rate=None)`
 
 ### `RanpPE(self, start_v, end_v, extent:Extent, frame_rate=None)`
@@ -123,15 +125,21 @@ mogrify()
 
     .splice(fade_in_duration, fade_out_duration)
 
-    .interpolate(speed_multiplier)
+    .warp_speed(speed_multiplier)
 
     .limit_a(threshold_db=-10, headroom_db=3)
         simple limiter with reasonable defaults
+
+    .reverb(wetness=0.6)
+
+    .delays(delay_time=0.5,howmany=1,decay=0.8)
 
     .loop(length)
         infinite extent looping
 
     .mono()
+
+    .spread(channel_count=2)
 
     .pan(degree=0, curve='cosine')
         degree: -90 = hard left, 0 = center, 90 = hard right
@@ -142,8 +150,6 @@ mogrify()
 
     .reverse(infinite_end=55)
         reverse the frames, for pes of infinite extent, requires a non-infinite ending time (infinite_end) in seconds
-
-    .spread(channel_count=2)
 
 
 ## Status / Checklist
