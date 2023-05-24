@@ -52,10 +52,10 @@ def make_timeline(pitches):
         timeline = np.concatenate((timeline, ramp))
     return pg.ArrayPE(timeline, channel_count=1)
 
-words = pg.WavReaderPE("samples/Tamper_TVFrame4_mono.wav")
-bass = pg.WavReaderPE("samples/F9THbass90bpmDmin.wav")
-drum_bap = pg.WavReaderPE("samples/PED_95_BapBeat_Full_Drums.wav")
-swing = pg.WavReaderPE("samples/Swing_Hallet.wav")
+words = pg.WavReaderPE("samples/spoken/Tamper_TVFrame4_mono.wav")
+bass = pg.WavReaderPE("samples/loops/F9THbass90bpmDmin.wav")
+drum_bap = pg.WavReaderPE("samples/loops/PED_95_BapBeat_Full_Drums.wav")
+swing = pg.WavReaderPE("samples/music/Swing_Hallet.wav")
 
 bpm = 116
 
@@ -140,7 +140,7 @@ def boop(t, snip, g, degree):
 
 def doop(t, snip, g, degree, speed_mult):
 	#return snip.env(2000,2000).gain(g).pan(degree).time_shift(t)
-	return snip.env(2000,2000).gain(g).interpolate(speed_mult).time_shift(t)
+	return snip.splice(2000,2000).gain(g).warp_speed(speed_mult).time_shift(t)
 
 
 def ostinato(s, dur):
@@ -316,7 +316,7 @@ def m1(s, snip):
 	return pg.MixPE(*pes)
 
 troubled.play()
-troubled.interpolate(0.5).play()
+troubled.warp_speed(0.5).play()
 doop(0, troubled, 1, 22, 0.5).play()
 
 

@@ -43,10 +43,10 @@ def mix_at(src, t, amp = 1):
 fade_in = secs(0.3)
 fade_out = secs(2.1)
 
-sourceA = pg.WavReaderPE("samples/KeyboardSonatainECKPiano.wav").crop(pg.Extent(start=0,end=secs(10))).splice(secs(0.5),secs(0.5))
-sourceA2 = pg.WavReaderPE("samples/KeyboardSonatainECKPiano.wav").crop(pg.Extent(start=20,end=secs(30))).splice(secs(0.5),secs(0.5))
-sourceB = pg.WavReaderPE("samples/PrettyGirl_Gleason.wav").crop(pg.Extent(start=20,end=secs(30))).splice(secs(0.5),secs(0.5))
-sourceC = pg.WavReaderPE("samples/TamperClip93.wav")
+sourceA = pg.WavReaderPE("samples/music/KeyboardSonatainECKPiano.wav").crop(pg.Extent(start=0,end=secs(10))).splice(secs(0.5),secs(0.5))
+sourceA2 = pg.WavReaderPE("samples/music/KeyboardSonatainECKPiano.wav").crop(pg.Extent(start=20,end=secs(30))).splice(secs(0.5),secs(0.5))
+sourceB = pg.WavReaderPE("samples/music/PrettyGirl_Gleason.wav").crop(pg.Extent(start=20,end=secs(30))).splice(secs(0.5),secs(0.5))
+sourceC = pg.WavReaderPE("samples/music/TamperClip93.wav")
 
 frag1 = pg.SplicePE(sourceA, fade_in, fade_out).reverse(10)
 frag1a = delays(frag1, 0.6,5,0.8).gain(0.3)
@@ -83,7 +83,7 @@ t = t + 3
 
 mosh = pg.MixPE(*elements)
 
-mosh.play()
+mosh.pygplay()
 
 
 

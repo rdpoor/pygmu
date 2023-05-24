@@ -20,9 +20,22 @@ import yaml
 import time
 import utils as ut
 
+import inspect
+import linecache
+
+def get_calling_code(pop_frames=2):
+    current_frame = inspect.currentframe()
+    frame = inspect.getouterframes(current_frame, 3)
+    frame_info = frame[pop_frames]
+    line_number = frame_info[2] # get the line number in the script
+    while line_number > 1:
+        line_number -= 1
+        line = linecache.getline(frame_info[1], line_number).strip()
+        if line and not line.isspace():
+            return str(line_number) + ': ' + line
+    return None
 class PygPlayer:
-    def __init__(self, title='d',auto_start=True):
-        self.title = title
+    def __init__(self, title,auto_start=True):
         self.auto_start = auto_start
         self.peak_hold_frames = 15
         self.playback_state = 'stopped'
@@ -53,6 +66,10 @@ class PygPlayer:
         self.sc_color = '#48C7B0'
         self.tx_color = '#909CC2'
         self.exit_script_flag = False
+
+        # if the user didnt set a title, use the calling code
+        code_str = get_calling_code(3)
+        self.title = title or code_str
 
         # Create the main window
         self.root = tk.Tk()

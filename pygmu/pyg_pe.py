@@ -101,7 +101,7 @@ class PygPE(object):
     def play(self):
         return pg.Transport(self).play()
     
-    def pygplay(self, title='PygPlayer', auto_start=True):
+    def pygplay(self, title=False, auto_start=True):
         dst = pg.WavWriterPE(self, "user_files/renders/pygplay_tmp.wav")
         pg.FtsTransport(dst).play()
         new_src = pg.WavReaderPE("user_files/renders/pygplay_tmp.wav")

@@ -27,10 +27,10 @@ reverb_path = 'samples/IR/Conic Long Echo Hall.wav'
 
 impulse = pg.WavReaderPE(reverb_path)
 
-Faun0 = pg.WavReaderPE("samples/TamperFrame_AfternoonOfAFaun.wav").crop(pg.Extent(0,secs(36)))
+Faun0 = pg.WavReaderPE("samples/music/TamperFrame_AfternoonOfAFaun.wav").crop(pg.Extent(0,secs(36)))
 FaunRev = Faun0.reverse(25)
 
-Claire = pg.WavReaderPE("samples/TamperFrame_ClaireDeLune_Edit.wav").crop(pg.Extent(secs(25),secs(41))).splice(secs(1.4),secs(1))
+Claire = pg.WavReaderPE("samples/music/TamperFrame_ClaireDeLune_Edit.wav").crop(pg.Extent(secs(25),secs(41))).splice(secs(1.4),secs(1))
 
 # plain interpolation
 
@@ -89,8 +89,6 @@ jimmy = pg.MixPE(*elements2)
 
 convolved = pg.ConvolvePE(jimmy.gain(0.08), impulse)
 
-dst = pg.WavWriterPE(convolved, "test.wav")
-pg.FtsTransport(dst).play()
-pg.Transport(pg.WavReaderPE("test.wav")).play()
+convolved.pygplay()
 
 

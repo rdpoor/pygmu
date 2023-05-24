@@ -58,9 +58,9 @@ def make_timeline(pitches, n_frames = 90000):
 fade_in = secs(0.3)
 fade_out = secs(2.1)
 
-sourceA = pg.WavReaderPE("samples/OldLaces_Schifrin.wav").crop(pg.Extent(start=0,end=secs(30))).splice(secs(0.5),secs(0.5))
-sourceB = pg.WavReaderPE("samples/OldLaces_Schifrin.wav").crop(pg.Extent(start=30,end=secs(50))).splice(secs(0.5),secs(0.5))
-sourceC = pg.WavReaderPE("samples/TamperClip93.wav")
+sourceA = pg.WavReaderPE("samples/music/OldLaces_Schifrin.wav").crop(pg.Extent(start=0,end=secs(30))).splice(secs(0.5),secs(0.5))
+sourceB = pg.WavReaderPE("samples/music/OldLaces_Schifrin.wav").crop(pg.Extent(start=30,end=secs(50))).splice(secs(0.5),secs(0.5))
+sourceC = pg.WavReaderPE("samples/music/TamperClip93.wav")
 
 frag1 = pg.SplicePE(sourceA, fade_in, fade_out).reverse(30)
 frag1a = delays(frag1, 0.6,15,0.87)
@@ -70,7 +70,7 @@ frag1c = delays(frag1a, 0.5,15,0.92)
 frag2 = pg.SplicePE(sourceB, fade_in, fade_out).reverse(30)
 frag2a = delays(frag1, 0.6,25,0.91).gain(0.13).crop(pg.Extent(start=0,end=secs(50))).reverse(50)
 
-frag3 = pg.SplicePE(sourceC, fade_in, fade_out).reverse(5).gain(6.82)
+frag3 = pg.SplicePE(sourceC, fade_in, fade_out).reverse(5).gain(0.82)
 frag3b = delays(frag3, 0.36,17,0.94)
 
 elements = []
@@ -85,7 +85,7 @@ elements.append(mix_at(frag3b,secs(t),gain * 2.43))
 
 mosh = pg.LimiterPE(pg.MixPE(*elements)).gain(1.5)
 
-mosh.play()
+mosh.pygplay()
 
 
 

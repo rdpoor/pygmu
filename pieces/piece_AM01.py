@@ -63,9 +63,9 @@ fade_in = secs(0.3)
 fade_out = secs(2.1)
 
 
-sourceA = pg.WavReaderPE("samples/Tamper_MagnifyingFrame1.wav")
-sourceB = pg.WavReaderPE("samples/TamperClip38.wav")
-sourceC = mogrify("samples/TamperClip38.wav").crop(pg.Extent(start=140000)).time_shift(-140000)
+sourceA = pg.WavReaderPE("samples/music/Tamper_MagnifyingFrame1.wav")
+sourceB = pg.WavReaderPE("samples/music/TamperClip38.wav")
+sourceC = mogrify("samples/music/TamperClip38.wav").crop(pg.Extent(start=140000)).time_shift(-140000)
 
 frag1 = pg.SplicePE(sourceA, fade_in, fade_out).reverse(5)
 frag2 = pg.SplicePE(sourceB, fade_in, fade_out).reverse(5)
@@ -83,6 +83,5 @@ mosh3 = pg.MixPE(mosh,mosh2.time_shift(secs(5.5)))
 
 wet_mix = delays(mosh3, 0.5, 4, 0.7).gain(2)
 
-pg.Transport(sourceA).play()
-pg.Transport(sourceB).play()
-pg.Transport(sourceC).play()
+wet_mix.pygplay()
+

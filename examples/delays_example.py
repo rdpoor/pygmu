@@ -15,7 +15,7 @@ delayed = src.delays(0.5, 3, 0.5)
 delayed.pygplay()
 
 delayed2 = src.delays(0.5, 3, 0.5).reverb(0.65)
-delayed2.pygplay()
+delayed2.pygplay('src.delays(0.5, 3, 0.5).reverb(0.65)')
 
 
 

@@ -77,7 +77,7 @@ def tone_cycle(base_pitch,a,type):
         ans.append(base_pitch + a_step)
     return ans
 
-sourceA= pg.WavReaderPE("/Users/andy/Dev/python/pygmu/samples/DP2_108_Maxmex_Breakdown2.wav")
+sourceA= pg.WavReaderPE("samples/loops/DP2_108_Maxmex_Breakdown2.wav")
 
 pulseA = 60 / 216
 
@@ -155,5 +155,5 @@ impulse = pg.WavReaderPE('samples/IR/Small Prehistoric Cave.wav')
 convolved = pg.ConvolvePE(mixB.gain(0.25), impulse)
 
 #convolved.term_play('live',0)
-convolved.play()
+convolved.pygplay()
 

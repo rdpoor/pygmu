@@ -25,6 +25,7 @@ def mix_at(src, t, amp = 1):
 
 impulse = pg.WavReaderPE('samples/IR/Conic Long Echo Hall.wav')
 impulse2 = pg.WavReaderPE('samples/IR/VoxPlateNo2.wav')
+impulse3 = pg.WavReaderPE('samples/IR/Large Wide Echo Hall.wav')
 
 Watts1 = pg.WavReaderPE("samples/spoken/Alan Watts Humanity Within the Universe.mp3").crop(pg.Extent(secs(124),secs(337))).time_shift(int(-secs(124)))
 
@@ -45,7 +46,7 @@ Gleason1 = pg.WavReaderPE("samples/music/PrettyGirl_Gleason.wav").crop(pg.Extent
 #Gleason1Slow = pg.WarpSpeedPE(Gleason1Compressed, 0.4)
 
 Gleason1Slow = pg.WarpSpeedPE(Gleason1, 0.4).gain(1.6)
-Gleason1Slow_HP = pg.BQ2HighPassPE(Gleason1Slow, f0=212, q=4).gain(0.8)
+Gleason1Slow_HP = pg.BQ2HighPassPE(Gleason1Slow, f0=412, q=4).gain(0.7)
 Gleason1Rev = Gleason1Slow_HP.reverse(33)
 
 convolved = pg.ConvolvePE(Gleason1Slow_HP.gain(0.08), impulse)
@@ -67,7 +68,7 @@ Train1Slow = pg.WarpSpeedPE(Train1HP, 0.24).gain(1.6)
 
 
 
-Train1Rev_conv = pg.ConvolvePE(Train1Slow.gain(0.08), impulse)
+Train1Rev_conv = pg.ConvolvePE(Train1Slow.gain(0.08), impulse3)
 Train1Rev_conv2 = pg.ConvolvePE(Train1Rev_conv.gain(0.08), impulse)
 
 convolved_watts = pg.ConvolvePE(Watts1_HP.gain(0.08), impulse2)
@@ -78,16 +79,16 @@ elements = []
 
 t = 0
 gain = 0.685
-elements.append(mix_at(convolved,secs(t),gain))
+elements.append(mix_at(convolved,secs(t),0.71))
 elements.append(mix_at(Train1Rev_conv2,secs(0.8),0.14))
-elements.append(mix_at(Swan1Slow_convolved,secs(60.8),0.58))
-elements.append(mix_at(Swan1Slow_convolved,secs(140.8),0.78))
+elements.append(mix_at(Swan1Slow_convolved.splice(secs(43),secs(8)),secs(61.3),0.43)) # bass at branches express the tree
+elements.append(mix_at(Swan1Slow_convolved,secs(140.8),0.61)) # witts out of you
 
 t += 11.5
 gain = 0.78
 elements.append(mix_at(Watts1_HP,secs(t),0.93))
 elements.append(mix_at(convolved_watts,secs(t),0.82))
-elements.append(mix_at(convolved_watts_rev_lp,secs(t),0.36))
+elements.append(mix_at(convolved_watts_rev_lp,secs(t),0.32))
 
 
 mosh = pg.MixPE(*elements).warp_speed(0.92)

@@ -13,6 +13,7 @@ import utils as ut
 from extent import Extent
 from pyg_pe import PygPE
 
+# TODO -- switch from music21 to mido or pretty_midi which are much lighter-weight
 from music21 import converter, note, chord
 
 class Note:
@@ -51,8 +52,8 @@ def get_notes_from_midi(midi_path):
                 pyg_note = pg.Note(element.offset, element.duration.quarterLength, element.pitch.midi, element.volume.velocity)
                 pyg_note.music21_note = element
                 notes.append(pyg_note)
-                print(pyg_note)
-            # Check if the element is a chord.Chord object
+                #print(pyg_note)
+            # Check if the element is a chord.Chord object and unpack if so
             elif isinstance(element, chord.Chord):
                 for pitch in element.pitches:
                     pyg_note = pg.Note(element.offset, element.duration.quarterLength, pitch.midi, element.volume.velocity)

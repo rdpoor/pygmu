@@ -23,7 +23,7 @@ def delays(src, secs, howmany = 1, decay = 1):
         delay_units.append(src.time_shift(int(i * secs * frame_rate)).gain(amp))
         amp *= decay
     return pg.MixPE(src,*delay_units)
-sourceA= pg.WavReaderPE("samples/ItsGonnaRain_Original.wav")
+sourceA= pg.WavReaderPE("samples/spoken/ItsGonnaRain_Original.wav")
 noloopA= sourceA.crop(pg.Extent(start=0,end=secs(6))).splice(secs(.13),secs(3))
 loopA = loopWindow(sourceA,secs(2.95),secs(.8)).crop(pg.Extent(start=0,end=secs(60))).splice(secs(.13),secs(5))
 loopA2 = loopWindow(sourceA,secs(2.95),secs(.78)).crop(pg.Extent(start=0,end=secs(60))).splice(secs(.13),secs(15))
@@ -57,7 +57,7 @@ elements.append(mix_at(noloopA,secs(t),gain * 0.5))
 
 #mosh = pg.LimiterPE(pg.MixPE(*elements))
 mosh = pg.MixPE(*elements)
-mosh.play()
+mosh.pygplay()
 #hi_mosh = pg.Biquad2PE(mosh, 0, 90, 7, "highpass").limit_a(threshold_db=-30, headroom_db=3)
 #hi_mosh.term_play()
 # %%
