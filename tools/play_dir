@@ -1,0 +1,10 @@
+#!/bin/zsh
+# Play a directory's worth of sound files
+# So far, for macOS only.
+# TODO: write an OS-aware python script instead
+
+for f in $1/*
+do
+  echo $f
+  afplay $f
+done

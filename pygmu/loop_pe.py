@@ -20,7 +20,7 @@ class LoopPE(PygPE):
         dst_idx = 0                      # how many frames written to dst_frames
         # At this point:
         #   dst_dur is the number of frames to be written
-        #   dst_frames is a butffer to received the frames
+        #   dst_frames is a buffer to received the frames
         #   src_idx is the starting index into the source data
         #   dst_idx is the number of frames written.
         #
