@@ -3,6 +3,9 @@ user_files/*.yaml
 user_files/renders/*.wav
 profile.txt
 
+media
+samples/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

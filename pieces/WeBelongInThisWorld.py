@@ -27,6 +27,22 @@ impulse = pg.WavReaderPE('samples/IR/Conic Long Echo Hall.wav')
 impulse2 = pg.WavReaderPE('samples/IR/VoxPlateNo2.wav')
 impulse3 = pg.WavReaderPE('samples/IR/Large Wide Echo Hall.wav')
 
+TamperClip50  = pg.WavReaderPE("samples/music/TamperClip50.wav")
+TamperClip50_slow = pg.WarpSpeedPE(TamperClip50, 0.3).gain(0.35)
+TamperClip50_slow2 =  pg.BQ2HighPassPE(TamperClip50_slow, f0=312, q=6)
+TamperClip50_convolved = pg.ConvolvePE(TamperClip50_slow2.gain(0.11), impulse)
+TamperClip50_convolved2 = pg.ConvolvePE(TamperClip50_convolved.gain(0.11), impulse2)
+TamperClip50_convolved3 = pg.ConvolvePE(TamperClip50_convolved2.gain(0.11), impulse3)
+TamperClip50_convolved4 = pg.ConvolvePE(TamperClip50_convolved3.gain(0.11), impulse)
+
+
+
+
+TamperClip50_convolved4.pygplay()
+
+
+
+
 Watts1 = pg.WavReaderPE("samples/spoken/Alan Watts Humanity Within the Universe.mp3").crop(pg.Extent(secs(124),secs(337))).time_shift(int(-secs(124)))
 
 #wenv = pg.EnvDetectPE(Watts1, attack=0.09, release=0.21)
@@ -68,6 +84,7 @@ Train1Slow = pg.WarpSpeedPE(Train1HP, 0.24).gain(1.6)
 
 
 
+
 Train1Rev_conv = pg.ConvolvePE(Train1Slow.gain(0.08), impulse3)
 Train1Rev_conv2 = pg.ConvolvePE(Train1Rev_conv.gain(0.08), impulse)
 
@@ -79,6 +96,7 @@ elements = []
 
 t = 0
 gain = 0.685
+
 elements.append(mix_at(convolved,secs(t),0.71))
 elements.append(mix_at(Train1Rev_conv2,secs(0.8),0.14))
 elements.append(mix_at(Swan1Slow_convolved.splice(secs(43),secs(8)),secs(61.3),0.43)) # bass at branches express the tree
@@ -89,6 +107,8 @@ gain = 0.78
 elements.append(mix_at(Watts1_HP,secs(t),0.93))
 elements.append(mix_at(convolved_watts,secs(t),0.82))
 elements.append(mix_at(convolved_watts_rev_lp,secs(t),0.32))
+
+elements.append(mix_at(TamperClip50_convolved4,secs(54),0.21))
 
 
 mosh = pg.MixPE(*elements).warp_speed(0.92)
