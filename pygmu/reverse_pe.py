@@ -8,11 +8,14 @@ class ReversePE(PygPE):
     reverse the order of a source PE
     """
 
-    def __init__(self, src_pe:PygPE, infinite_end=55):
+    def __init__(self, src_pe:PygPE, infinite_end=None):
         super(ReversePE, self).__init__()
         self._src_pe = src_pe
-        #self._extent = self._src_pe.extent()
-        self._infinite_end = infinite_end
+        # Set infinite_end to the duration of src_pe if it's not provided
+        if infinite_end is None:
+            self._infinite_end = self._src_pe.extent().duration() / self._src_pe.frame_rate()
+        else:
+            self._infinite_end = infinite_end
         self._gave_warning = False
     def render(self, requested:Extent):
         intersection = requested.intersect(self.extent())
