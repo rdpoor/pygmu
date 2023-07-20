@@ -36,13 +36,6 @@ TamperClip50_convolved3 = pg.ConvolvePE(TamperClip50_convolved2.gain(0.11), impu
 TamperClip50_convolved4 = pg.ConvolvePE(TamperClip50_convolved3.gain(0.11), impulse)
 
 
-
-
-TamperClip50_convolved4.pygplay()
-
-
-
-
 Watts1 = pg.WavReaderPE("samples/spoken/Alan Watts Humanity Within the Universe.mp3").crop(pg.Extent(secs(124),secs(337))).time_shift(int(-secs(124)))
 
 #wenv = pg.EnvDetectPE(Watts1, attack=0.09, release=0.21)
@@ -51,9 +44,9 @@ Watts1 = pg.WavReaderPE("samples/spoken/Alan Watts Humanity Within the Universe.
 # pg.FtsTransport(dst).play()
 # Watts1Compressed2 = pg.WavReaderPE("user_files/renders/Watts1Compressed.wav")
 
-Watts1Rev = Watts1.reverse(25)
+#Watts1Rev = Watts1.reverse(25)
 
-Watts1_HP = pg.BQ2HighPassPE(Watts1, f0=110, q=8).gain(0.8)
+Watts1_HP = pg.BQ2HighPassPE(Watts1, f0=110, q=8).gain(0.68)
 
 Gleason1 = pg.WavReaderPE("samples/music/PrettyGirl_Gleason.wav").crop(pg.Extent(secs(0.75),secs(92)))
 
