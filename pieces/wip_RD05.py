@@ -425,6 +425,63 @@ def make_snip(retuned_pitch, duration):
 	# fades out over duration/4 and ends at duration.
 	return pe
 
+def notary_pe(pe, duration, legato, splice_dur):
+    """
+    Apply a duration and 'legato' to an existing pe, where a legato of 1.0 means
+    to fill out the entire duration.  Assumes that the source note starts at t=0
+    (or before), creates a splice that is 50% ramped up at t=0 and 50% ramped
+    down at t=(duration * legato)
+    """
+    s = 0 - (splice_dur / 2.0)
+    e = (duration * legato) + (splice_dur / 2.0)
+    return pe.crop(pg.Extent((int)s, (int)e)).splice(splice_dur, splice_dur)
+
+def thrumm_pe(duration, midi_pitch):
+    """
+    Create a nice deep bass note that varies with each rendering.
+    """
+    #    ("samples/multisamples/Ambibell/Ambibell-048-c2.wav", name_to_midi('c2')),
+    #    ("samples/multisamples/Autoharp_Binaural/Autoharp_Binaural_C1.wav", name_to_midi('C1')),
+    #    ("samples/multisamples/Autoharp_Mute/Autoharp_Mute_C2.wav", name_to_midi('C1')),
+    #    ("samples/multisamples/Bandura_Soft/Bandura_Soft_A1.wav", name_to_midi('A1')),
+    #    ("samples/multisamples/Cheng_Hard/Cheng_Hard_1-C2.wav", name_to_midi('C2')),
+    # ("samples/multisamples/Choir_Female_Ah/Choir_Female_Ah_pp_1_B2.wav", name_to_midi('B2')),
+    # ("samples/multisamples/Choir_Female_Ah/Choir_Female_Ah_pp_1_B3.wav", name_to_midi('B3')),
+    # ("samples/multisamples/Choir_Female_Ah/Choir_Female_Ah_pp_1_F4.wav", name_to_midi('F4')),
+    # ("samples/multisamples/Daphne/Daphne_C2.wav", name_to_midi('C1')),
+    # ("samples/multisamples/Fiddle_Multi/Fiddle_Multi_01-G2.wav", name_to_midi('G2')),
+    # ("samples/multisamples/Fiddle_Multi/Fiddle_Multi_03-A2.wav", name_to_midi('A2')),
+    # ("samples/multisamples/Fiddle_Multi/Fiddle_Multi_05-B2.wav", name_to_midi('B2')),
+    # ("samples/multisamples/Fiddle_Multi/Fiddle_Multi_07-C#3.wav", name_to_midi('C#3')),
+    # ("samples/multisamples/Fiddle_Multi/Fiddle_Multi_10-E3.wav", name_to_midi('E3')),
+
+    # kick candidates:
+    # DP2_118_House_Pistol_Warm_Kicks
+    # DP2_177_Fit_Drums
+    # DTP1_Madness_HunterKick_01_127
+    # Node_Drums_176_1_141bpm
+
+
+
+
+
+
+
+
+    pass
+
+class Obstinato(object):
+
+    def __init__(self):
+        pass
+
+    def generate(self):
+        t = 0
+        pes = []
+        return pes
+
+
+
 piece = []
 duration = int(48000*4)
 retuned_pitch = name_to_midi('c1')
