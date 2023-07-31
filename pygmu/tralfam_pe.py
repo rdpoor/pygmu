@@ -29,13 +29,13 @@ class TralfamPE(PygPE):
         mogrified_frames = self.mogrify()
 
         if intersection.is_empty():
-            dst_frames = ut.const_frames(0.0, r1-r0, self.channel_count())
+            dst_frames = ut.const_frames(0.0, self.channel_count(), r1-r0)
 
         elif self.extent().spans(requested):
-            dst_frames = mogrified_frames[r0:r1,:]
+            dst_frames = mogrified_frames[:, r0:r1]
 
         else:
-            dst_frames = ut.uninitialized_frames(r1-r0, self.channel_count())
+            dst_frames = ut.uninitialized_frames(self.channel_count(), r1-r0)
             dst_index = 0
 
             s = r0
@@ -43,7 +43,7 @@ class TralfamPE(PygPE):
             n = max(0, e - s)
             # generate silence before t0 starts
             if n > 0:
-                dst_frames[dst_index:dst_index+n,:] = pg.const_frames(0.0, n, self.channel_count())
+                dst_frames[:, dst_index:dst_index+n] = pg.const_frames(0.0, self.channel_count(), n)
                 dst_index += n
 
             s = max(r0, t0)
@@ -51,14 +51,14 @@ class TralfamPE(PygPE):
             n = max(0, e - s)
             # copy samples from mogrified
             if n > 0:
-                dst_frames[dst_index:dst_index+n,:] = mogrified_frames[s:e,:]
+                dst_frames[:, dst_index:dst_index+n] = mogrified_frames[:, s:e]
                 dst_index += n
 
             s = max(r0, t1)
             e = r1
             n = max(0, e - s)
             if n > 0:
-                dst_frames[dst_index:dst_index+n,:] = ut.const_frames(0.0, n, self.channel_count())
+                dst_frames[:, dst_index:dst_index+n] = ut.const_frames(0.0, self.channel_count(), n)
                 dst_index += n
 
         return dst_frames
@@ -77,9 +77,9 @@ class TralfamPE(PygPE):
             # slurp the entirety of src_pe's data (better not be infinite!)
             frames = self._src_pe.render(self._src_pe.extent())
             n_frames = self.extent().duration()
-            analysis = np.fft.fft(frames.transpose())
+            analysis = np.fft.fft(frames)
             magnitudes = np.abs(analysis)
             mangled_phases = np.random.default_rng().random(n_frames) * 2 * np.pi
             mangled_analysis = ut.magphase_to_complex(magnitudes, mangled_phases)
-            self.mangled_frames = np.real(np.fft.ifft(mangled_analysis)).transpose()
+            self.mangled_frames = np.real(np.fft.ifft(mangled_analysis))
         return self.mangled_frames

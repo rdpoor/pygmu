@@ -10,7 +10,7 @@ import pygmu as pg
 import utils as ut
 
 
-beat = pg.WavReaderPE("samples/BigBeat120bpm10.wav")
+beat = pg.WavReaderPE("samples/loops/BigBeat120bpm10.wav")
 beat_bpm = 120
 eight_beat_duration = 176552  # eight beats
 beat_duration = eight_beat_duration / 8
@@ -441,8 +441,10 @@ mix = pg.MixPE(
 # mix = gen_verse_4()
 # mix = gen_outro()
 print("mix.extent() =", mix.extent())
-filename = "examples/piece_RD03v2.wav"
-dst = pg.WavWriterPE(mix, filename)
-pg.FtsTransport(dst).play()
+mix.pygplay('piece_RD03v2')
 
-pg.Transport(pg.WavReaderPE(filename)).play()
+# filename = "examples/piece_RD03v2.wav"
+# dst = pg.WavWriterPE(mix, filename)
+# pg.FtsTransport(dst).play()
+
+# pg.Transport(pg.WavReaderPE(filename)).play()

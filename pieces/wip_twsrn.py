@@ -89,9 +89,6 @@ def peace():
     delay += duration
     return pg.MixPE(*segments)
 
-# pg.Transport(peace()).play()
-# pg.Transport(ingest("R_01")).play()
-
-# dst = pg.WavWriterPE(peace(), "test.wav")
-# pg.FtsTransport(dst).play()
-pg.Transport(pg.WavReaderPE("test.wav")).play()
+# mix = ingest("R_01");
+mix = peace()
+mix.pygplay("TWSRM")
