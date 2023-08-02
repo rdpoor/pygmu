@@ -44,7 +44,7 @@ Watts1 = pg.WavReaderPE("samples/spoken/Alan Watts Humanity Within the Universe.
 # pg.FtsTransport(dst).play()
 # Watts1Compressed2 = pg.WavReaderPE("user_files/renders/Watts1Compressed.wav")
 
-#Watts1Rev = Watts1.reverse(25)
+#Watts1Rev = Watts1.reverse(25 * 48000)
 
 Watts1_HP = pg.BQ2HighPassPE(Watts1, f0=110, q=8).gain(0.68)
 
@@ -56,13 +56,13 @@ Gleason1 = pg.WavReaderPE("samples/music/PrettyGirl_Gleason.wav").crop(pg.Extent
 
 Gleason1Slow = pg.WarpSpeedPE(Gleason1, 0.4).gain(1.6)
 Gleason1Slow_HP = pg.BQ2HighPassPE(Gleason1Slow, f0=412, q=4).gain(0.7)
-Gleason1Rev = Gleason1Slow_HP.reverse(33)
+Gleason1Rev = Gleason1Slow_HP.reverse(33 * 48000)
 
 convolved = pg.ConvolvePE(Gleason1Slow_HP.gain(0.08), impulse)
 
 insk = secs(12)
 dur = secs(42)
-Swan1 = pg.WavReaderPE("samples/music/SwanLakeOp-ActIIConcl.wav").reverse(41).crop(pg.Extent(secs(0),secs(31)))
+Swan1 = pg.WavReaderPE("samples/music/SwanLakeOp-ActIIConcl.wav").reverse(41 * 48000).crop(pg.Extent(secs(0),secs(31)))
 Swan1Slow = pg.WarpSpeedPE(Swan1, 0.4)
 Swan1Slow_HP = pg.BQ2HighPassPE(Swan1Slow, f0=1712, q=6).splice(secs(3),secs(8))
 Swan1Slow_F = pg.BQ2LowPassPE(Swan1Slow, f0=7712, q=4)
@@ -82,7 +82,7 @@ Train1Rev_conv = pg.ConvolvePE(Train1Slow.gain(0.08), impulse3)
 Train1Rev_conv2 = pg.ConvolvePE(Train1Rev_conv.gain(0.08), impulse)
 
 convolved_watts = pg.ConvolvePE(Watts1_HP.gain(0.08), impulse2)
-convolved_watts_rev = pg.ConvolvePE(Watts1_HP.reverse(244).gain(0.08), impulse2).reverse(244)
+convolved_watts_rev = pg.ConvolvePE(Watts1_HP.reverse(244 * 48000).gain(0.08), impulse2).reverse(244 * 48000)
 convolved_watts_rev_lp = pg.BQ2LowPassPE(convolved_watts_rev, f0=1110, q=8)
 
 elements = []

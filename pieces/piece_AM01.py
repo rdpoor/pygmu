@@ -67,8 +67,8 @@ sourceA = pg.WavReaderPE("samples/music/Tamper_MagnifyingFrame1.wav")
 sourceB = pg.WavReaderPE("samples/music/TamperClip38.wav")
 sourceC = mogrify("samples/music/TamperClip38.wav").crop(pg.Extent(start=140000)).time_shift(-140000)
 
-frag1 = pg.SplicePE(sourceA, fade_in, fade_out).reverse(5)
-frag2 = pg.SplicePE(sourceB, fade_in, fade_out).reverse(5)
+frag1 = pg.SplicePE(sourceA, fade_in, fade_out).reverse(5 * sample_rate)
+frag2 = pg.SplicePE(sourceB, fade_in, fade_out).reverse(5 * sample_rate)
 frag3 = pg.SplicePE(sourceC, fade_in * 4, fade_out).gain(2)
 
 frag4 = pg.MixPE(frag3,frag3.time_shift(20000).gain(0.8),frag3.time_shift(40000).gain(0.6))
@@ -77,7 +77,7 @@ frag5 = delays(frag3, 0.7, 18, 0.76)
 elements = [frag5, frag1.time_shift(secs(3)), frag2.time_shift(secs(3)), frag1.time_shift(secs(8)), frag2.time_shift(secs(10)), frag5.time_shift(secs(18))]
 
 mosh = pg.MixPE(*elements)
-mosh2 = mosh.crop(pg.Extent(start=0,end=720000)).splice(fade_in, fade_out).reverse(16).splice(secs(0.01),secs(7))
+mosh2 = mosh.crop(pg.Extent(start=0,end=720000)).splice(fade_in, fade_out).reverse(16 * sample_rate).splice(secs(0.01),secs(7))
 
 mosh3 = pg.MixPE(mosh,mosh2.time_shift(secs(5.5)))
 

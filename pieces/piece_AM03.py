@@ -62,15 +62,15 @@ sourceA = pg.WavReaderPE("samples/music/OldLaces_Schifrin.wav").crop(pg.Extent(s
 sourceB = pg.WavReaderPE("samples/music/OldLaces_Schifrin.wav").crop(pg.Extent(start=30,end=secs(50))).splice(secs(0.5),secs(0.5))
 sourceC = pg.WavReaderPE("samples/music/TamperClip93.wav")
 
-frag1 = pg.SplicePE(sourceA, fade_in, fade_out).reverse(30)
+frag1 = pg.SplicePE(sourceA, fade_in, fade_out).reverse(30 * 48000)
 frag1a = delays(frag1, 0.6,15,0.87)
 #frag1b =  pg.TimewarpPE(delays(frag1a, 0.16,17,0.9).gain(6.82), make_timeline([-20, -16]))
 frag1c = delays(frag1a, 0.5,15,0.92)
 
-frag2 = pg.SplicePE(sourceB, fade_in, fade_out).reverse(30)
-frag2a = delays(frag1, 0.6,25,0.91).gain(0.13).crop(pg.Extent(start=0,end=secs(50))).reverse(50)
+frag2 = pg.SplicePE(sourceB, fade_in, fade_out).reverse(30 * 48000)
+frag2a = delays(frag1, 0.6,25,0.91).gain(0.13).crop(pg.Extent(start=0,end=secs(50))).reverse(50 * 48000)
 
-frag3 = pg.SplicePE(sourceC, fade_in, fade_out).reverse(5).gain(0.82)
+frag3 = pg.SplicePE(sourceC, fade_in, fade_out).reverse(5 * 48000).gain(0.82)
 frag3b = delays(frag3, 0.36,17,0.94)
 
 elements = []

@@ -39,7 +39,7 @@ lum1_convolved4 = pg.ConvolvePE(lum1_convolved3.gain(0.11), impulse).crop(pg.Ext
 
 
 
-lum2  = pg.WavReaderPE("samples/music/TamperFrame_SugarPlumFaries_Edit2.wav").crop(pg.Extent(secs(0),secs(12))).reverse(9)
+lum2  = pg.WavReaderPE("samples/music/TamperFrame_SugarPlumFaries_Edit2.wav").crop(pg.Extent(secs(0),secs(12))).reverse(9 * 48000)
 
 
 lum2_slow = pg.WarpSpeedPE(lum2, 0.13).gain(1.05)

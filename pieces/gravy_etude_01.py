@@ -38,7 +38,7 @@ def good_gravy(src,window_start, window_duration, walk_rate, final_duration, fli
     while(cur_frame < final_frame):
         g = src.crop(pg.Extent(st_frame, st_frame + window_frames)).time_shift(cur_frame).splice(overlap_frames,overlap_frames)
         if not even_odd:
-            g = g.reverse(window_frames)
+            g = g.reverse(window_frames * 48000)
         els.append(g)
         st_frame += walk_frames
         cur_frame += window_frames - overlap_frames
@@ -90,7 +90,7 @@ mosh =  pg.LimiterPE(pg.MixPE(*elements))
 mosh_del = delays(mosh, 0.52, 5, 0.57)
 
 mosh_del = mosh
-moshr =  mosh.reverse(dur).splice(secs(2),100)
+moshr =  mosh.reverse(dur * 48000).splice(secs(2),100)
 all = pg.MixPE(mosh_del,moshr)
 all_del = delays(all, 0.4, 3, 0.57)
 

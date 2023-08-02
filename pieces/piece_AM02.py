@@ -48,15 +48,15 @@ sourceA2 = pg.WavReaderPE("samples/music/KeyboardSonatainECKPiano.wav").crop(pg.
 sourceB = pg.WavReaderPE("samples/music/PrettyGirl_Gleason.wav").crop(pg.Extent(start=20,end=secs(30))).splice(secs(0.5),secs(0.5))
 sourceC = pg.WavReaderPE("samples/music/TamperClip93.wav")
 
-frag1 = pg.SplicePE(sourceA, fade_in, fade_out).reverse(10)
+frag1 = pg.SplicePE(sourceA, fade_in, fade_out).reverse(10 * 48000)
 frag1a = delays(frag1, 0.6,5,0.8).gain(0.3)
 frag1b = delays(frag1a, 0.16,7,0.88).gain(0.2)
 
-frag11 = pg.SplicePE(sourceA2, fade_in, fade_out).reverse(10)
+frag11 = pg.SplicePE(sourceA2, fade_in, fade_out).reverse(10 *  48000)
 frag11a = delays(frag1, 0.6,5,0.8)
 frag11b = delays(frag1a, 0.16,5,0.88).gain(0.2)
 
-frag2 = pg.SplicePE(sourceB, fade_in, fade_out).reverse(10).gain(1.1)
+frag2 = pg.SplicePE(sourceB, fade_in, fade_out).reverse(10 * 48000).gain(1.1)
 frag2a = delays(frag2, 0.36,7,0.78)
 
 frag3 = pg.SplicePE(sourceC, fade_in * 4, fade_out).gain(0.15)

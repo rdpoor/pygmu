@@ -13,7 +13,7 @@ class ReversePE(PygPE):
         self._src_pe = src_pe
         # Set infinite_end to the duration of src_pe if it's not provided
         if infinite_end is None:
-            self._infinite_end = self._src_pe.extent().duration() / self._src_pe.frame_rate()
+            self._infinite_end = self._src_pe.extent().duration()
         else:
             self._infinite_end = infinite_end
         self._gave_warning = False
@@ -26,7 +26,7 @@ class ReversePE(PygPE):
             # full overlap: just grab the corresponding samples and reverse them
 
             if self._src_pe.extent().is_indefinite() and not self._gave_warning:
-                ut.print_warn('reverse is unhappy with an indefinite source,',self._src_pe,' we declare infinity to actually mean '+str(self._infinite_end)+' seconds.  ')
+                raise pyx.IndefiniteExtent('reverse is unhappy with an indefinite source,',self._src_pe,' we declare infinity to actually mean '+str(self._infinite_end)+' seconds.  ')
                 self._gave_warning = True
             #src_extent = Extent(start=self._src_pe.extent().end() - intersection.end(), end=self._src_pe.extent().end() - intersection.start())
             fake_end = self._infinite_end * self._src_pe.frame_rate()

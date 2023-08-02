@@ -28,7 +28,7 @@ reverb_path = 'samples/IR/Conic Long Echo Hall.wav'
 impulse = pg.WavReaderPE(reverb_path)
 
 Faun0 = pg.WavReaderPE("samples/music/TamperFrame_AfternoonOfAFaun.wav").crop(pg.Extent(0,secs(36)))
-FaunRev = Faun0.reverse(25)
+FaunRev = Faun0.reverse(25 * 48000)
 
 Claire = pg.WavReaderPE("samples/music/TamperFrame_ClaireDeLune_Edit.wav").crop(pg.Extent(secs(25),secs(41))).splice(secs(1.4),secs(1))
 
