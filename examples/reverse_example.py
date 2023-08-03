@@ -9,10 +9,6 @@ import pygmu as pg
 Test ReversePE
 """
 
-FRAME_RATE = 48000
-
-# mixing original with time-varying delay == flanging
 source = pg.WavReaderPE("samples/music/Tamper_MagnifyingFrame1.wav")
 reversed = pg.ReversePE(source)
-
-pg.Transport(reversed).play()
+reversed.pygplay()

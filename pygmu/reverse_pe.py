@@ -26,10 +26,10 @@ class ReversePE(PygPE):
             # full overlap: just grab the corresponding samples and reverse them
 
             if self._src_pe.extent().is_indefinite() and not self._gave_warning:
-                raise pyx.IndefiniteExtent('reverse is unhappy with an indefinite source,',self._src_pe,' we declare infinity to actually mean '+str(self._infinite_end)+' seconds.  ')
+                raise pyx.IndefiniteExtent('reverse is unhappy with an indefinite source,',self._src_pe,' we declare infinity to actually mean '+str(self._infinite_end)+' frames.  ')
                 self._gave_warning = True
             #src_extent = Extent(start=self._src_pe.extent().end() - intersection.end(), end=self._src_pe.extent().end() - intersection.start())
-            fake_end = self._infinite_end * self._src_pe.frame_rate()
+            fake_end = self._infinite_end
             src_extent = Extent(start=fake_end - intersection.end(), end=fake_end - intersection.start())
             src_buf = self._src_pe.render(src_extent)
             return np.flip(src_buf, 1)

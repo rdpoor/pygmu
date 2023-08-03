@@ -85,6 +85,8 @@ convolved_watts = pg.ConvolvePE(Watts1_HP.gain(0.08), impulse2)
 convolved_watts_rev = pg.ConvolvePE(Watts1_HP.reverse(244 * 48000).gain(0.08), impulse2).reverse(244 * 48000)
 convolved_watts_rev_lp = pg.BQ2LowPassPE(convolved_watts_rev, f0=1110, q=8)
 
+convolved_watts_rev_lp.pygplay('reversereverse');
+
 elements = []
 
 t = 0
