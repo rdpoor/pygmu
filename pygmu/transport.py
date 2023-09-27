@@ -40,8 +40,11 @@ class Transport(object):
             # outdata.fill(0))."
 
             requested = Extent.Extent(curr_frame, curr_frame + n_frames)
+
+
             # Use the .T operator (transpose) to convert pygmu row form to
             # sounddevice column form.
+
             outdata[:] = self._src_pe.render(requested).T 
             curr_frame += n_frames
 
