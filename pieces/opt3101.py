@@ -66,7 +66,7 @@ class OPT3101(object):
         print(f'control port = {control_port.device}, data port = {data_port.device}', flush=True)
         with serial.Serial(control_port.device, 460800, timeout=1) as ctrl:
             ctrl.write(b'CAPS\r\n')
-        self._serial = serial.Serial(data_port.device, 460800, timeout=1)
+        self._serial = serial.Serial(data_port.device, 460800)
 
     def read(self):
         pkt = self._serial.read(10)

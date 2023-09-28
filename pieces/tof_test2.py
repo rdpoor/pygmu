@@ -29,9 +29,11 @@ class TOFSensor:
     def poll(self):
         while True:
             self.value = self.opt_sensor.read()
+            # print(self.value, flush=True)
 
     def read(self):
         return self.value
+        # return self.opt_sensor.read()
 
     def update_value(self, new_value):
         self.value = float(new_value)
@@ -44,8 +46,16 @@ class ToFPE(PygPE):
         super(ToFPE, self).__init__()
         self._sensor = sensor
 
+    def channel_count(self):
+        return 1
+
     def render(self, requested:Extent):
-        return self._sensor.read()
+        raw = self._sensor.read()
+        norm = (raw-0.0) / (8000.0 - 0.0)
+        # print(f'norm={norm}', flush=True)
+        freq = ut.mtof((1-norm) * 70 + 5)
+
+        return ut.const_frames(freq, self.channel_count(), requested.duration())
 
 class WxPygPlayer(wx.Frame):
     def __init__(self, parent, title):
@@ -54,15 +64,16 @@ class WxPygPlayer(wx.Frame):
         self.sensor = ToFPE(TOFSensor(OPT3101()))
 
         self.SRATE = 48000
-        src = pg.NoisePE(gain=0.5, frame_rate=self.SRATE).gain(100)
-        flt = pg.BQBandPassPE(src, f0=440, q=400)
-        gain = pg.GainPE(flt, self.sensor) 
-        self.transport = pg.Transport(gain, frame_rate=self.SRATE)
+        # src = pg.NoisePE(gain=0.5, frame_rate=self.SRATE).gain(100)
+        # flt = pg.BQBandPassPE(src, f0=440, q=400)
+        # gain = pg.GainPE(flt, self.sensor)
+        src = pg.BlitSawPE(self.sensor, n_harmonics=3, frame_rate=self.SRATE).gain(0.3)
+        self.transport = pg.Transport(src, frame_rate=self.SRATE, blocksize=64)
 
         panel = wx.Panel(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        self.slider = wx.Slider(panel, value=int(self.sensor._sensor.poll() * 100), minValue=0, maxValue=100, style=wx.SL_HORIZONTAL)
+        self.slider = wx.Slider(panel, value=int(self.sensor._sensor.read() * 100), minValue=0, maxValue=100, style=wx.SL_HORIZONTAL)
         self.slider.Bind(wx.EVT_SLIDER, self.update_sensor_value_from_slider)
         vbox.Add(self.slider, 1, flag=wx.ALIGN_CENTRE)
 
