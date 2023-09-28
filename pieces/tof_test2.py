@@ -23,14 +23,15 @@ class TOFSensor:
         self.value = 0.5
         self.opt_sensor = opt_sensor
         self.opt_sensor.start(*OPT3101.find_ports())
+        self.poll_thread = Thread(target=self.poll)
+        self.poll_thread.start()
 
     def poll(self):
-        raw = self.opt_sensor.read()
-        print(raw, flush=True)
-        opt_max = 8000.0
-        opt_min = 0.0
-        norm = (raw - opt_min) / (opt_max - opt_min)
-        return norm
+        while True:
+            self.value = self.opt_sensor.read()
+
+    def read(self):
+        return self.value
 
     def update_value(self, new_value):
         self.value = float(new_value)
@@ -44,7 +45,7 @@ class ToFPE(PygPE):
         self._sensor = sensor
 
     def render(self, requested:Extent):
-        return self._sensor.poll()
+        return self._sensor.read()
 
 class WxPygPlayer(wx.Frame):
     def __init__(self, parent, title):
@@ -62,7 +63,7 @@ class WxPygPlayer(wx.Frame):
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         self.slider = wx.Slider(panel, value=int(self.sensor._sensor.poll() * 100), minValue=0, maxValue=100, style=wx.SL_HORIZONTAL)
-        self.slider.Bind(wx.EVT_SLIDER, self.update_sensor_value)
+        self.slider.Bind(wx.EVT_SLIDER, self.update_sensor_value_from_slider)
         vbox.Add(self.slider, 1, flag=wx.ALIGN_CENTRE)
 
         panel.SetSizer(vbox)
@@ -73,7 +74,7 @@ class WxPygPlayer(wx.Frame):
         self.audio_thread = Thread(target=self.transport.play)
         self.audio_thread.start()
 
-    def update_sensor_value(self, event):
+    def update_sensor_value_from_slider(self, event):
         val = self.slider.GetValue() / 100.0
         self.sensor._sensor.update_value(val)
 
