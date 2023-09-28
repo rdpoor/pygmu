@@ -23,6 +23,7 @@ class GaneshPE(PygPE):
 		super(GaneshPE, self).__init__()
 		self._head_pe = head_pe
 		self._body_pe = body_pe
+		self._frame_rate = self.set_frame_rate()
 		head_frames = head_pe.render(head_pe.extent())
 		body_frames = body_pe.render(body_pe.extent())
 		ganesh_frames = self.ganeshify(head_frames, body_frames, extend)
@@ -34,6 +35,9 @@ class GaneshPE(PygPE):
 
 	def extent(self):
 		return self._array_pe.extent()
+
+	def frame_rate(self):
+		return self._frame_rate
 
 	def channel_count(self):
 		# TODO: check head_pe.channel_count() == body_pe.channel_count()
@@ -77,3 +81,19 @@ class GaneshPE(PygPE):
 		"""
 		analysis = ut.magphase_to_complex(magnitudes, phases)
 		return np.real(np.fft.ifft(analysis))
+
+	def set_frame_rate(self):
+		fr = None
+		if self._head_pe.frame_rate() is None:
+			fr = self._body_pe.frame_rate()
+		elif self._body_pe.frame_rate() is None:
+			fr = self._head_pe.frame_rate()
+		elif self._head_pe.frame_rate() != self._body_pe.frame_rate():
+			print("Warning: head frame_rate != body frame_rate, using head")
+			fr = self._head_pe.frame_rate()
+
+		if fr is None:
+			print("Warning: no frame rate specified.  Using 48000")
+			fr = 48000
+
+		return fr

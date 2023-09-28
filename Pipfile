@@ -12,6 +12,8 @@ readchar = "*"
 tk = "*"
 pyyaml = "*"
 music21 = "*"
+wxpython = "*"
+pyserial = "*"
 
 [dev-packages]
 jupyter = "*"
