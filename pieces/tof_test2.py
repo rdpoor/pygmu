@@ -4,6 +4,7 @@ import sys
 import random
 from threading import Thread
 import wx
+from opt3101 import OPT3101
 
 script_dir = os.path.dirname(__file__)
 pygmu_dir = os.path.join(script_dir, "..", "pygmu")
@@ -18,11 +19,18 @@ import sounddevice as sd
 
 
 class TOFSensor:
-    def __init__(self):
+    def __init__(self, opt_sensor):
         self.value = 0.5
+        self.opt_sensor = opt_sensor
+        self.opt_sensor.start(*OPT3101.find_ports())
 
     def poll(self):
-        return self.value
+        raw = self.opt_sensor.read()
+        print(raw, flush=True)
+        opt_max = 8000.0
+        opt_min = 0.0
+        norm = (raw - opt_min) / (opt_max - opt_min)
+        return norm
 
     def update_value(self, new_value):
         self.value = float(new_value)
@@ -42,7 +50,7 @@ class WxPygPlayer(wx.Frame):
     def __init__(self, parent, title):
         super(WxPygPlayer, self).__init__(parent, title=title, size=(300, 200))
 
-        self.sensor = ToFPE(TOFSensor())
+        self.sensor = ToFPE(TOFSensor(OPT3101()))
 
         self.SRATE = 48000
         src = pg.NoisePE(gain=0.5, frame_rate=self.SRATE).gain(100)

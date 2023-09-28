@@ -56,18 +56,23 @@ class OPT3101(object):
         else:
             raise RuntimeError('expected one of the ports to be data port')
 
-    @classmethod
-    def start(cls, control_port, data_port):
+    def __init__(self):
+        self._serial = None
+        self._control_port = None
+        self._data_port = None
+
+    def start(self, control_port, data_port):
+        self._control_port, self._data_port = OPT3101.find_ports()
         print(f'control port = {control_port.device}, data port = {data_port.device}', flush=True)
         with serial.Serial(control_port.device, 460800, timeout=1) as ctrl:
             ctrl.write(b'CAPS\r\n')
-        with serial.Serial(data_port.device, 460800, timeout=1) as data:
-            while True:
-                pkt = data.read(10)
-                # print(' '.join(f'{b:02X}' for b in pkt), flush=True)
-                dist = (pkt[1]<<8) + pkt[0]
-                print(f'{dist}', flush=True)
+        self._serial = serial.Serial(data_port.device, 460800, timeout=1)
 
+    def read(self):
+        pkt = self._serial.read(10)
+        # print(' '.join(f'{b:02X}' for b in pkt), flush=True)
+        dist = (pkt[1]<<8) + pkt[0]
+        return dist
 
 if __name__ == '__main__':
     OPT3101.start(*OPT3101.find_ports())
