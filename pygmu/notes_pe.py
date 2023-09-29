@@ -16,6 +16,69 @@ from pyg_pe import PygPE
 # TODO -- switch from music21 to mido or pretty_midi which are much lighter-weight
 from music21 import converter, note, chord
 
+
+class NotesPE(PygPE):
+    """
+    Use a list of notes to produce one or more cropped and pitch-adjusted PEs mixed together
+    """
+
+    def __init__(self, src_pe, note_list, tempo = 120, gain_factor = 0.24, native_pitch = 60, atk_secs = 0.005, rel_secs = 0):
+        super(NotesPE, self).__init__()
+        self._src_pe = src_pe
+        self._note_list = note_list
+        self._tempo = tempo
+        self._gain_factor = gain_factor
+        self._native_pitch = native_pitch
+        self._atk_secs = atk_secs
+        self._rel_secs = rel_secs
+        self._extent = self.compute_extent()
+        self.build_internal_pes()
+
+    def build_internal_pes(self):
+        """
+        build PEs for each of the notes
+        """
+        for a_note in self._note_list:
+            vol = self._gain_factor * (120 + ut.velocity_to_db(a_note._velocity)) / 120
+            note_dur_frames = a_note.duration(self._tempo, self.frame_rate(), self._rel_secs)
+            note_offset_frames = a_note.offset(self._tempo, self.frame_rate())
+            # TODO -- splice() isnt working as expected to put little ramps on the in and out to avoid clicks
+            #fab_pe = pg.WarpSpeedPE(self._src_pe,a_note.interpolation(self._native_pitch)).crop(pg.Extent(0,note_dur_frames)).gain(vol).splice(int(self._atk_secs * self.frame_rate()),int(self._rel_secs * self.frame_rate())).time_shift(note_offset_frames)
+            fab_pe = pg.WarpSpeedPE(self._src_pe,a_note.interpolation(self._native_pitch)).crop(pg.Extent(0,note_dur_frames)).gain(vol).time_shift(note_offset_frames)
+            a_note.fab_pe = fab_pe
+
+    def render(self, requested:Extent):
+        dst_buf = np.zeros([self.channel_count(), requested.duration()], np.float32)
+        fr = self.frame_rate()
+        for a_note in self._note_list:
+            relevant = requested.intersect(a_note.extent(self._tempo, fr, self._rel_secs))
+            if relevant.is_empty():
+                continue
+            fab_pe = a_note.fab_pe
+            dst_buf += fab_pe.render(requested)
+        return dst_buf
+    
+    def extent(self):
+        return self._extent
+
+    def frame_rate(self):
+        return self._src_pe.frame_rate()
+
+    def channel_count(self):
+        return self._src_pe.channel_count()
+
+    def compute_extent(self):
+        if len(self._note_list) == 0:
+            return Extent()
+        else:
+            # start with the extent of the first note, extend it by taking the
+            # union with each following note's extent.
+            extent = self._note_list[0].extent(self._tempo, self.frame_rate())
+            for note in self._note_list[1:]:
+                extent = extent.union(note.extent(self._tempo, self.frame_rate()))  # TODO extend by rel_secs
+            return extent
+
+
 class Note:
     def __init__(self, offset, duration, pitch, velocity=100):
         self._offset = offset
@@ -60,62 +123,3 @@ def get_notes_from_midi(midi_path):
                     pyg_note.music21_note = element
                     notes.append(pyg_note)
     return notes
-
-class NotesPE(PygPE):
-    """
-    Use a list of notes to produce one or more cropped and pitch-adjusted PEs mixed together
-    """
-
-    def __init__(self, src_pe, note_list, tempo = 120, gain_factor = 0.24, native_pitch = 60, atk_secs = 0, rel_secs = 0):
-        super(NotesPE, self).__init__()
-        self._src_pe = src_pe
-        self._note_list = note_list
-        self._tempo = tempo
-        self._gain_factor = gain_factor
-        self._native_pitch = native_pitch
-        self._atk_secs = atk_secs
-        self._rel_secs = rel_secs
-        self._extent = self.compute_extent()
-        self.build_internal_pes()
-
-    def build_internal_pes(self):
-        """
-        build PEs for each of the notes
-        """
-        for a_note in self._note_list:
-            vol = self._gain_factor * (120 + ut.velocity_to_db(a_note._velocity)) / 120
-            note_dur_frames = a_note.duration(self._tempo, self.frame_rate(), self._rel_secs)
-            note_offset_frames = a_note.offset(self._tempo, self.frame_rate())
-            fab_pe = pg.WarpSpeedPE(self._src_pe,a_note.interpolation(self._native_pitch)).crop(pg.Extent(0,note_dur_frames)).gain(vol).splice(int(self._atk_secs * self.frame_rate()),int(self._rel_secs * self.frame_rate())).time_shift(note_offset_frames)
-            a_note.fab_pe = fab_pe
-
-    def render(self, requested:Extent):
-        dst_buf = np.zeros([self.channel_count(), requested.duration()], np.float32)
-        fr = self.frame_rate()
-        for a_note in self._note_list:
-            relevant = requested.intersect(a_note.extent(self._tempo, fr, self._rel_secs))
-            if relevant.is_empty():
-                continue
-            fab_pe = a_note.fab_pe
-            dst_buf += fab_pe.render(requested)
-        return dst_buf
-    
-    def extent(self):
-        return self._extent
-
-    def frame_rate(self):
-        return self._src_pe.frame_rate()
-
-    def channel_count(self):
-        return self._src_pe.channel_count()
-
-    def compute_extent(self):
-        if len(self._note_list) == 0:
-            return Extent()
-        else:
-            # start with the extent of the first note, extend it by taking the
-            # union with each following note's extent.
-            extent = self._note_list[0].extent(self._tempo, self.frame_rate())
-            for note in self._note_list[1:]:
-                extent = extent.union(note.extent(self._tempo, self.frame_rate()))  # TODO extend by rel_secs
-            return extent

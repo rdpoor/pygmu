@@ -28,11 +28,16 @@ sin_pe = pg.SinPE(frequency = 512, amplitude = 1, frame_rate = 48000).gain(0.25)
 src_pe = pg.WavReaderPE("samples/multisamples/Seaward_Piano/Seaward_Piano_ppp_C4.wav")
 #src_pe = pg.WavReaderPE("samples/multisamples/LOA_Piano/LOA_Piano_C4.wav")
 
-note_pe = pg.NotesPE(src_pe, note_list, 95, 0.25, 72,0,0.2)
-note_pe.play()
+impulse = pg.WavReaderPE('samples/IR/Large Wide Echo Hall.wav')
 
-note_pe2 = pg.NotesPE(sin_pe, note_list, 95, 0.25, 72, 0.1 ,0.1)
-note_pe2.play()
+
+note_pe = pg.NotesPE(src_pe, note_list, 90, 0.25, 72,0.03,0.02)
+note_pe_convolved = pg.ConvolvePE(note_pe.gain(0.5), impulse)
+note_pe_convolved.pygplay('Earle of Salisbury - 90bpm - Seaward Piano - Large Wide Echo Hall.wav')
+
+note_pe2 = pg.NotesPE(sin_pe, note_list, 45, 0.25, 77)
+note_pe2_convolved = pg.ConvolvePE(note_pe2.gain(0.08), impulse)
+note_pe2_convolved.pygplay('Earle of Salisbury - 45bpm - Sine - Large Wide Echo Hall.wav')
 
 
 
