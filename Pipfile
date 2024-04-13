@@ -14,10 +14,11 @@ pyyaml = "*"
 music21 = "*"
 wxpython = "*"
 pyserial = "*"
+pydrive = "*"
 
 [dev-packages]
 jupyter = "*"
 notebook = "*"
 
 [requires]
-python_version = "3.10"
+python_version = "3.12"
