@@ -144,3 +144,5 @@ dmypy.json
 
 # PygmuLib (locally cached sound files)
 PygmuLib/
+pygmulib_creds.txt
+
