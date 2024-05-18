@@ -30,6 +30,7 @@ from loop_pe import LoopPE
 from map_pe import MapPE
 from mix_pe import MixPE
 from mono_pe import MonoPE
+from stereo_pe import StereoPE
 from mul_pe import MulPE
 from noise_pe import NoisePE
 from notes_pe import *
