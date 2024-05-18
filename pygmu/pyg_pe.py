@@ -95,6 +95,9 @@ class PygPE(object):
     def mono(self, attenuation=1.0):
         return pg.MonoPE(self, attenuation=attenuation)
 
+    def stereo(self, attenuation=1.0):
+        return pg.StereoPE(self, attenuation=attenuation)
+
     def pan(self, degree=0):
         return pg.SpatialPE(self, degree=degree)
 
