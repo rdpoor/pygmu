@@ -2,8 +2,9 @@ import numpy as np
 from extent import Extent
 from pyg_pe import PygPE
 import utils as ut
+from pyg_gen import PygGen, FrequencyMixin
 
-class GainPE(PygPE):
+class GainPE(PygGen, PygPE):
     """
     Apply gain to a pe.  Gain can be constant or a processing element.
     """
@@ -33,6 +34,8 @@ class GainPE(PygPE):
                 dst_idx = overlap.start() - requested.start()
                 # dst_idx is the index into dst_frames where src_buf[0] gets written
                 dst_frames[:, dst_idx:dst_idx+n] = src_frames
+                print('gain:', gain_frames)
+
         else:
             # gain is constant.
             gain = self._gain

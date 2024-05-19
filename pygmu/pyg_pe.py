@@ -47,14 +47,21 @@ class PygPE(object):
     def abs(self):
         return pg.AbsPE(self, delay)
 
+    def add(self, other_pe):
+        return pg.AddPE(self, other_pe)
+
     def biquad(self,gain,freq,q,type):
         return pg.BiquadPE(self, gain, freq, q, type)
 
     def cache(self):
         return pg.CachePE(self)
+
+    def chorus(self, rate=1.5, depth=0.5, mix=0.5):
+        return pg.ChorusPE(self, rate=rate, depth=depth, mix=mix)
     
     def delays(self, secs=0.5, howmany = 1, decay = 0.8, width = 0.8):
         delay_units = []
+        #amp = 1 / howmany #scale to avoid clipping
         amp = 1
         pan_degrees = 90 * width
         for i in range(1, howmany):
@@ -62,10 +69,20 @@ class PygPE(object):
             amp *= decay
         return pg.MixPE(self,*delay_units)
     
-    def lowpass(self, freq):
-        return pg.BiquadPE(self, 0.0, freq, 6, "lowpass")
+    def lowpass(self, f0=330, q=10):
+        return pg.BQLowPassPE(self, f0=f0, q=q)
 
-    def crop(self, extent):
+    def highpass(self, f0=330, q=10):
+        return pg.BQHighPassPE(self, f0=f0, q=q)
+
+    def bandpass(self, f0=830, q=4):
+        return pg.BQBandPassPE(self, f0=f0, q=q)
+
+    def crop(self, extent, fade_in=None, fade_out=None):
+        if fade_in is not None:
+            if fade_out is None:
+                fade_out = fade_in
+            return pg.CropPE(self, extent).splice(fade_in, fade_out)
         return pg.CropPE(self, extent)
 
     def time_shift(self, delay):
@@ -83,8 +100,14 @@ class PygPE(object):
     def gain(self, ratio):
         return pg.GainPE(self, ratio)
 
+    def granular(self, grain_size=0.1, grain_overlap=0.5):
+        return pg.GranularPE(self, grain_size=grain_size, grain_overlap=grain_overlap)
+
     def interpolate(self, speed_mult):
         return pg.InterpolatePE(self, speed_mult)
+
+    def exp_lim(self, target_amp=1.0, release_time=0.1):
+        return pg.ExpanderLimiterPE(self, target_amp=target_amp, release_time=release_time)
 
     def limit_a(self, threshold_db=-10, headroom_db=3):
         return pg.LimiterAPE(self, threshold_db=threshold_db, headroom_db=headroom_db)
@@ -95,8 +118,11 @@ class PygPE(object):
     def mono(self, attenuation=1.0):
         return pg.MonoPE(self, attenuation=attenuation)
 
-    def stereo(self, attenuation=1.0):
-        return pg.StereoPE(self, attenuation=attenuation)
+    def normalize(self, release_time=0.6):
+        return pg.NormalizePE(self, release_time=release_time)
+
+    def stereo(self):
+        return pg.StereoPE(self)
 
     def pan(self, degree=0):
         return pg.SpatialPE(self, degree=degree)
@@ -144,5 +170,8 @@ class PygPE(object):
     
     def wav_writer(self, filename):
         return pg.WavWriterPE(self, filename)
+
+    def waveshape(self, filename):
+        return pg.WaveShapePE(self, filename)
 
 import pygmu as pg # down here to avoid a circular dependency

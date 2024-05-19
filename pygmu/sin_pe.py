@@ -30,9 +30,12 @@ class SinPE(FrequencyMixin, PygGen):
 
     def render_dynamic(self, t, freqs):
         dst_frames = np.full(len(t), 0.0, dtype=np.float32)
+
         for idx, freq in enumerate(freqs):
             omega = freq * 2.0 * np.pi / self._frame_rate
-            dst_frames[idx] = self._amplitude * np.sin(omega * t[idx] + self._phase)
+            dst_frames[idx] = self._amplitude * np.sin(phase)
+            self._phase += omega
+        
         return dst_frames.reshape(1, -1)
 
     def channel_count(self):
