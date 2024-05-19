@@ -33,7 +33,7 @@ class SinPE(FrequencyMixin, PygGen):
 
         for idx, freq in enumerate(freqs):
             omega = freq * 2.0 * np.pi / self._frame_rate
-            dst_frames[idx] = self._amplitude * np.sin(phase)
+            dst_frames[idx] = self._amplitude * np.sin(self._phase)
             self._phase += omega
         
         return dst_frames.reshape(1, -1)
