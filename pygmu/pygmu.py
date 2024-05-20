@@ -37,7 +37,6 @@ from mix_pe import MixPE
 from mono_pe import MonoPE
 from mul_pe import MulPE
 from noise_pe import NoisePE
-from normalize_pe import NormalizePE
 from notes_pe import *
 from print_pe import PrintPE
 from pwm_pe import PwmPE

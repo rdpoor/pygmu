@@ -282,3 +282,242 @@ def midi_to_note(midi_pitch):
     octave = midi_pitch // 12 - 1
     note = note_names[midi_pitch % 12]
     return note + str(octave)
+
+from bokeh.plotting import figure, output_file, show, gridplot
+from bokeh.layouts import column
+import inspect
+
+
+
+
+def plot_pes0(pes, plot_type="raw", filepath="output.html", width=1200, height=220, title="PE Plots", y_ranges=None):
+    # Convert pes to a list if it's a single PE
+    if not isinstance(pes, list):
+        pes = [pes]
+    
+    # Get the variable names of the PEs passed to the function
+    caller_frame = inspect.currentframe().f_back
+    caller_locals = caller_frame.f_locals
+    var_names = {id(value): var_name for var_name, value in caller_locals.items() if id(value) in [id(pe) for pe in pes]}
+    
+    # Generate labels for each PE
+    labels = []
+    for pe in pes:
+        pe_id = id(pe)
+        if pe_id in var_names:
+            labels.append(var_names[pe_id])
+        else:
+            labels.append(f"PE {len(labels) + 1}")
+    
+    # Find the largest non-empty, non-infinite extent among the PEs
+    max_extent = None
+    for pe in pes:
+        extent = pe.extent()
+        if not extent.is_empty() and not extent.is_indefinite():
+            if max_extent is None or extent.duration() > max_extent.duration():
+                max_extent = extent
+    
+    if max_extent is None:
+        print("All PEs have empty or infinite extent. Skipping plotting.")
+        return
+    
+    # Create a Bokeh figure for each PE
+    figures = []
+    for i, pe in enumerate(pes):
+        if y_ranges is not None and i < len(y_ranges):
+            y_range = y_ranges[i]
+            p = figure(width=width, height=height, title=labels[i], y_range=y_range)
+        else:
+            p = figure(width=width, height=height, title=labels[i])
+        figures.append(p)
+    
+    # Iterate over each PE and plot its values
+    for i, pe in enumerate(pes):
+        try:
+            # Render the audio frames using the largest non-empty, non-infinite extent
+            audio_frames = pe.render(max_extent)
+            
+            if plot_type == "raw":
+                # Calculate the absolute values of the audio frames
+                abs_values = np.abs(audio_frames)
+                
+                # Calculate the time values
+                duration = max_extent.duration()
+                time_values = np.linspace(0, duration / pe.frame_rate(), num=width, endpoint=False)
+                
+                # Resample the raw values to match the number of time values
+                resampled_values = np.interp(time_values, np.linspace(0, duration / pe.frame_rate(), num=len(abs_values[0])), abs_values[0])
+                
+                # Plot the resampled raw values
+                figures[i].line(time_values, resampled_values, line_width=2)
+            
+            elif plot_type == "rms":
+                # Calculate the RMS values for each frame
+                rms_values = np.sqrt(np.mean(audio_frames ** 2, axis=0))
+                
+                # Calculate the time values for each frame
+                duration = max_extent.duration()
+                time_values = np.linspace(0, duration / pe.frame_rate(), num=duration, endpoint=False)
+                
+                # Plot the RMS waveform
+                figures[i].line(time_values, rms_values, line_width=2)
+        
+        except Exception as e:
+            print(f"Error occurred while processing {labels[i]}: {str(e)}")
+            continue
+    
+    # Customize the plots
+    for p in figures:
+        p.xaxis.axis_label = "Time (seconds)"
+        p.yaxis.axis_label = "Amplitude"
+    
+    # Create a grid layout for the plots
+    grid = gridplot([[p] for p in figures], toolbar_location=None)
+    
+    # Save the grid to an HTML file
+    output_file(filepath)
+    
+    # Display the grid
+    show(grid)
+
+
+
+from scipy.signal import spectrogram
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+def plot_pes(pes, plot_types=["raw"], filepath="output.html", width=1200, height=250, title="PE Plots", y_ranges=None):
+    # Convert pes to a list if it's a single PE
+    if not isinstance(pes, list):
+        pes = [pes]
+    
+    # Get the variable names of the PEs passed to the function
+    caller_frame = inspect.currentframe().f_back
+    caller_locals = caller_frame.f_locals
+    var_names = {id(value): var_name for var_name, value in caller_locals.items() if id(value) in [id(pe) for pe in pes]}
+    
+    # Generate labels for each PE
+    labels = []
+    for pe in pes:
+        pe_id = id(pe)
+        if pe_id in var_names:
+            labels.append(var_names[pe_id])
+        else:
+            labels.append(f"PE {len(labels) + 1}")
+    
+    # Find the largest non-empty, non-infinite extent among the PEs
+    max_extent = None
+    for pe in pes:
+        extent = pe.extent()
+        if not extent.is_empty() and not extent.is_indefinite():
+            if max_extent is None or extent.duration() > max_extent.duration():
+                max_extent = extent
+    
+    if max_extent is None:
+        print("All PEs have empty or infinite extent. Skipping plotting.")
+        return
+    
+    # Create a Bokeh figure for each plot type and each PE
+    figures = {plot_type: [] for plot_type in plot_types}
+    for plot_type in plot_types:
+        for i, pe in enumerate(pes):
+            if y_ranges is not None and i < len(y_ranges):
+                y_range = y_ranges[i]
+                p = figure(width=width, height=height, title=f"{labels[i]} ({plot_type})", y_range=y_range)
+            else:
+                p = figure(width=width, height=height, title=f"{labels[i]} ({plot_type})")
+            figures[plot_type].append(p)
+    
+    # Iterate over each PE and plot its values for each plot type
+    for i, pe in enumerate(pes):
+        try:
+            # Render the audio frames using the largest non-empty, non-infinite extent
+            audio_frames = pe.render(max_extent)
+            
+            for plot_type in plot_types:
+                if plot_type == "raw":
+                    abs_values = np.abs(audio_frames)
+                    duration = max_extent.duration()
+                    time_values = np.linspace(0, duration / pe.frame_rate(), num=width, endpoint=False)
+                    resampled_values = np.interp(time_values, np.linspace(0, duration / pe.frame_rate(), num=len(abs_values[0])), abs_values[0])
+                    figures[plot_type][i].line(time_values, resampled_values, line_width=2)
+                
+                elif plot_type == "rms":
+                    rms_values = np.sqrt(np.mean(audio_frames ** 2, axis=0))
+                    duration = max_extent.duration()
+                    time_values = np.linspace(0, duration / pe.frame_rate(), num=duration, endpoint=False)
+                    figures[plot_type][i].line(time_values, rms_values, line_width=2)
+                
+                elif plot_type == "fft":
+                    n = len(audio_frames[0])
+                    f = np.fft.fftfreq(n, d=1/pe.frame_rate())
+                    fft_values = np.abs(np.fft.fft(audio_frames[0]))
+                    figures[plot_type][i].line(f[:n//2], fft_values[:n//2], line_width=2)
+                
+                elif plot_type == "spectrogram":
+                    f, t, Sxx = spectrogram(audio_frames[0], pe.frame_rate())
+                    Sxx = np.where(Sxx == 0, 1e-10, Sxx)  # Add small epsilon to avoid log10(0)
+                    plt.pcolormesh(t, f, 10 * np.log10(Sxx))
+                    plt.ylabel('Frequency [Hz]')
+                    plt.xlabel('Time [sec]')
+                    plt.title('Spectrogram')
+                    plt.colorbar(label='Intensity [dB]')
+                    plt.savefig('spectrogram.png')
+                    plt.close()
+                    figures[plot_type][i].image_url(url=['spectrogram.png'], x=0, y=0, w=1, h=1, anchor="bottom_left")
+                
+                elif plot_type == "waterfall":
+                    f, t, Sxx = spectrogram(audio_frames[0], pe.frame_rate())
+                    Sxx = np.where(Sxx == 0, 1e-10, Sxx)  # Add small epsilon to avoid log10(0)
+                    fig = plt.figure()
+                    ax = fig.add_subplot(111, projection='3d')
+                    T, F = np.meshgrid(t, f)
+                    ax.plot_surface(T, F, 10 * np.log10(Sxx), cmap='viridis')
+                    ax.set_xlabel('Time [sec]')
+                    ax.set_ylabel('Frequency [Hz]')
+                    ax.set_zlabel('Intensity [dB]')
+                    plt.title('Waterfall Spectrogram')
+                    plt.savefig('waterfall.png')
+                    plt.close()
+                    figures[plot_type][i].image_url(url=['waterfall.png'], x=0, y=0, w=1, h=1, anchor="bottom_left")
+              
+                elif plot_type == "envelope":
+                    env_values = np.abs(audio_frames[0])
+                    duration = max_extent.duration()
+                    time_values = np.linspace(0, duration / pe.frame_rate(), num=len(env_values), endpoint=False)
+                    figures[plot_type][i].line(time_values, env_values, line_width=2)
+                
+                elif plot_type == "zero_crossing":
+                    zero_crossings = np.where(np.diff(np.sign(audio_frames[0])))[0]
+                    zero_crossing_rate = len(zero_crossings) / duration
+                    time_values = np.linspace(0, duration / pe.frame_rate(), num=width, endpoint=False)
+                    zcr_values = np.full(len(time_values), zero_crossing_rate)
+                    figures[plot_type][i].line(time_values, zcr_values, line_width=2)
+                
+                elif plot_type == "peak":
+                    peak_values = np.max(np.abs(audio_frames), axis=0)
+                    duration = max_extent.duration()
+                    time_values = np.linspace(0, duration / pe.frame_rate(), num=len(peak_values), endpoint=False)
+                    figures[plot_type][i].line(time_values, peak_values, line_width=2)
+        
+        except Exception as e:
+            print(f"Error occurred while processing {labels[i]}: {str(e)}")
+            continue
+    
+    # Customize the plots
+    for plot_type in plot_types:
+        for p in figures[plot_type]:
+            p.xaxis.axis_label = "Time (seconds)"
+            p.yaxis.axis_label = "Amplitude"
+    
+    # Create a grid layout for the plots
+    all_figures = []
+    for plot_type in plot_types:
+        all_figures.extend(figures[plot_type])
+    grid = gridplot([[p] for p in all_figures], toolbar_location="above")
+    
+    # Save the grid to an HTML file
+    output_file(filepath)
+    
+    # Display the grid
+    show(grid)

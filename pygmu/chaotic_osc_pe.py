@@ -15,26 +15,19 @@ class ChaoticOscPE(PygGen, PygPE):
         self.y = y0
         self.z = z0
 
-    def render(self, requested:Extent):
+    def render(self, requested: Extent):
         num_frames = requested.duration()
         samples = np.zeros(num_frames, dtype=np.float32)
+        dt = 1.0 / self._frame_rate
 
         for i in range(num_frames):
-            dx = self.sigma * (self.y - self.x)
-            dy = self.x * (self.rho - self.z) - self.y
-            dz = self.x * self.y - self.beta * self.z
+            dx = self.sigma * (self.y - self.x) * dt
+            dy = (self.x * (self.rho - self.z) - self.y) * dt
+            dz = (self.x * self.y - self.beta * self.z) * dt
 
-            self.x += dx / self._frame_rate
-            self.y += dy / self._frame_rate
-            self.z += dz / self._frame_rate
-
-            # Scale the state variables back to a reasonable range
-            if abs(self.x) > 100:
-                self.x = np.sign(self.x) * 100
-            if abs(self.y) > 100:
-                self.y = np.sign(self.y) * 100
-            if abs(self.z) > 100:
-                self.z = np.sign(self.z) * 100
+            self.x += dx
+            self.y += dy
+            self.z += dz
 
             samples[i] = self.x * self.scale
 

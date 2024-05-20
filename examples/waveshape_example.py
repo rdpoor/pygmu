@@ -31,3 +31,6 @@ processed2 = pg.WaveShapePE(src, cubic_distortion_function)
 mosh = pg.MixPE(processed,processed2).exp_lim(0.8)
 pg.Transport(mosh).play()
 
+ut.plot_rms_waveform(mosh)
+
+
