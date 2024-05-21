@@ -33,4 +33,5 @@ sine_osc = pg.SinPE(freq, frame_rate=FRAME_RATE).mul(amp).crop(extent, 500)
 pg.Transport(sine_osc).play()
 
 ut.plot_pes([sine_osc, freq, amp.mul(pg.ConstPE(200))], plot_types=["raw", "spectrogram", "waterfall", "peak"])
+#ut.plot_pes(sine_osc, plot_types=["waterfall"], height=1000)
 

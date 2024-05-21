@@ -12,3 +12,4 @@ Test ReversePE
 source = pg.WavReaderPE("samples/music/Tamper_MagnifyingFrame1.wav")
 reversed = pg.ReversePE(source)
 reversed.pygplay()
+
