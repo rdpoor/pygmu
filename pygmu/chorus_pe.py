@@ -28,17 +28,33 @@ class ChorusPE(PygPE):
         input_frames = self._src_pe.render(overlap)
         
         # Create an LFO (Low-Frequency Oscillator) for modulation
-        lfo = np.sin(2 * np.pi * self._rate * np.arange(n_samples) / frame_rate)
+        t = (np.arange(n_samples) + self._lfo_phase) / frame_rate
+        lfo = np.sin(2 * np.pi * self._rate * t)
         delay_samples = self._depth * (1 + lfo) * frame_rate / 1000
+
         self._lfo_phase = (self._lfo_phase + n_samples) % frame_rate
 
         for i in range(n_samples):
-            delay = int(delay_samples[i])
-            if i - delay < 0:
-                output_frames[:, i] = input_frames[:, i]
+            delay = delay_samples[i]
+            int_delay = int(delay)
+            frac_delay = delay - int_delay
+
+            if i - int_delay - 1 < 0:
+                delayed_sample = input_frames[:, i]
             else:
-                output_frames[:, i] = (1 - self._mix) * input_frames[:, i] + \
-                                      self._mix * input_frames[:, i - delay]
+                delayed_sample = (1 - frac_delay) * input_frames[:, i - int_delay] + \
+                                  frac_delay * input_frames[:, i - int_delay - 1]
+
+            output_frames[:, i] = (1 - self._mix) * input_frames[:, i] + \
+                                  self._mix * delayed_sample
+
+        if output_frames.shape[1] < requested.duration():
+            # Pad the output to match the requested duration
+            padding = ut.const_frames(0.0, self.channel_count(), requested.duration() - output_frames.shape[1])
+            output_frames = np.hstack((output_frames, padding))
+        elif output_frames.shape[1] > requested.duration():
+            # Trim the output to match the requested duration
+            output_frames = output_frames[:, :requested.duration()]
 
         return output_frames
 

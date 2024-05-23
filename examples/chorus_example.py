@@ -7,19 +7,12 @@ sys.path.append( pygmu_dir )
 import pygmu as pg
 import utils as ut
 
-src = pg.WavReaderPE("/Users/andy/Dev/gitlab/nudoh/disrupterbox/apps/golden/live_coding/pygmu/samples/music/TamperFrame_TooGoodToBeTrue_Edit.wav").crop(pg.Extent(0, 150000))
-
-FRAME_RATE = 48000
 DURATION_SECS = 15
 
-def stof(seconds):
-    '''Convert seconds to frames (samples)'''
-    return int(seconds * FRAME_RATE)
-
-frame_rate = 48000
+src = pg.WavReaderPE("/Users/andy/Dev/gitlab/nudoh/disrupterbox/apps/golden/live_coding/pygmu/samples/music/TamperFrame_TooGoodToBeTrue_Edit.wav").crop(pg.Extent(0, 480000))
 
 # rate=1.5, depth=0.5, mix=0.5
-chorused = pg.ChorusPE(src, rate=0.8, depth=0.77, mix=0.5)
+chorused = pg.ChorusPE(src.gain(0.2), rate=0.2, depth=0.27, mix=0.3).gain(3)
 
 # Render 1 second of audio
 pg.Transport(chorused).play()

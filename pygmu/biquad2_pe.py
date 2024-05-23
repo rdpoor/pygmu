@@ -14,8 +14,10 @@ class Biquad2PE(PygPE):
     """
     Implement a biquad filter with response:
         H(z) = (b0 + b1*z^-1 + b2*z^-2) / (a1*z^-1 + a2*z^2)
-    Subclasses of Biquad2PE generate the coefficients for a variety of useful
-    forms (low pass with variable Q, shelving, peaking, allpass, etc)
+    using "direct form 1":
+        y[n] = (b0*x[n] + b1*x[n-1] + b2*x[n-2]) - (a1*y[n-1] + a2*y[n-2])
+    Using appropriate choices of [a1, a2, b0, b1, b2], you can implement a
+    wide variety of second-order filters.
     """
 
     def __init__(self, src, frame_rate=None):
@@ -28,9 +30,8 @@ class Biquad2PE(PygPE):
         if self.frame_rate() is None:
             raise pyx.FrameRateMismatch("frame_rate must be specified")
 
-        self._coeffs = np.zeros(6, dtype=np.float32)
-        # https://dsp.stackexchange.com/questions/86883/using-scipy-signal-sosfilt-to-filter-a-stereo-signal-with-zi-zf
-        self._zi = np.zeros((1, self.channel_count(), 2))
+        self._coeffs = np.zeros(5, dtype=np.float32)
+        self._state = np.zeros((self.channel_count(), 5), dtype=np.float32)
 
     def extent(self):
         return self._src.extent()
@@ -41,27 +42,35 @@ class Biquad2PE(PygPE):
     def channel_count(self):
         return self._src.channel_count()
 
-    def render(self, requested):
-        n_frames = requested.duration()
-        X = self._src.render(requested)
-        Y, self._zi = sosfilt(self._coeffs, X, axis=1, zi=self._zi)
-        return Y
-
     def set_coefficients(self, a1, a2, b0, b1, b2):
-        """
-        Store the coefficients in a form reqired by sosfilt().
-        """
+        # Arranging the coefficients like this lets us use np.dot() for
+        # efficiency in the inner loop -- see render()
         self._coeffs[0] = b0
         self._coeffs[1] = b1
         self._coeffs[2] = b2
-        self._coeffs[3] = 1.0
-        self._coeffs[4] = a1
-        self._coeffs[5] = a2
+        self._coeffs[3] = -a1
+        self._coeffs[4] = -a2
 
     def get_coefficients(self):
-        # primarily for unit testing, unpack the coefficients to return the
-        # canonical form: a1, a2, b0, b1, b2
-        return [self._coeffs[4], self._coeffs[5], self._coeffs[0], self._coeffs[1], self._coeffs[2]]
+        # primarily for unit tests, unpack the coefficients to return the
+        # canonical form: a0, a1, b0, b1, b2
+        return [-self._coeffs[3], -self._coeffs[4], self._coeffs[0], self._coeffs[1], self._coeffs[2]]
+
+    def render(self, requested):
+        n_frames = requested.duration()
+        X = self._src.render(requested)
+        Y = np.zeros_like(X)
+
+        for c in range(self.channel_count()):
+            for i in range(n_frames):
+                x0 = X[c, i]
+                self._state[c, 4] = x0
+                self._state[c] = np.roll(self._state[c], 1)
+                y0 = np.dot(self._state[c], self._coeffs)
+                Y[c, i] = y0
+                self._state[c, 2] = y0
+
+        return Y
 
     def default_coeffs(self, f0, q):
         """
