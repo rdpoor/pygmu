@@ -70,13 +70,13 @@ class PygPE(object):
         return pg.MixPE(self,*delay_units)
     
     def lowpass(self, f0=330, q=10):
-        return pg.BQLowPassPE(self, f0=f0, q=q)
+        return pg.BQ2LowPassPE(self, f0=f0, q=q)
 
     def highpass(self, f0=330, q=10):
-        return pg.BQHighPassPE(self, f0=f0, q=q)
+        return pg.BQ2HighPassPE(self, f0=f0, q=q)
 
     def bandpass(self, f0=830, q=4):
-        return pg.BQBandPassPE(self, f0=f0, q=q)
+        return pg.BQ2BandPassPE(self, f0=f0, q=q)
 
     def crop(self, extent, fade_in=None, fade_out=None):
         if fade_in is not None:
