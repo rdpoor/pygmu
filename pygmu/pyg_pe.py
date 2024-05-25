@@ -78,9 +78,9 @@ class PygPE(object):
     def bandpass(self, f0=830, q=4):
         return pg.BQ2BandPassPE(self, f0=f0, q=q)
 
-    def crop(self, extent, fade_in=None, fade_out=None):
-        if fade_in is not None:
-            if fade_out is None:
+    def crop(self, extent, fade_in=0, fade_out=0):
+        if fade_in > 0:
+            if fade_out == 0:
                 fade_out = fade_in
             return pg.CropPE(self, extent).splice(fade_in, fade_out)
         return pg.CropPE(self, extent)
@@ -123,6 +123,17 @@ class PygPE(object):
 
     def stereo(self):
         return pg.StereoPE(self)
+
+    def pad(self, front_pad_frames=0,rear_pad_frames=0):
+        if front_pad_frames > 0:
+            shifted_src = pg.TimeShiftPE(self, front_pad_frames)
+        else:
+            shifted_src = self
+        silence = pg.ArrayPE([[0]])
+        shifted_silence = pg.TimeShiftPE(silence, front_pad_frames + self.extent().end() + rear_pad_frames)
+        padded_audio = pg.MixPE(shifted_src, shifted_silence)
+        return padded_audio
+
 
     def pan(self, degree=0):
         return pg.SpatialPE(self, degree=degree)
