@@ -9,10 +9,12 @@ sys.path.append(pygmu_dir)
 import pygmu as pg
 import utils as ut
 
-src = pg.WavReaderPE("samples/music/SwanLakeOp-ActIIConcl.wav").stereo() # .crop(pg.Extent(3635000, 3700000))
+src = pg.WavReaderPE("samples/music/SwanLakeOp-ActIIConcl.wav").stereo()
+sr = src.frame_rate()
 
-
-cropped = src.crop(pg.Extent(0,48000 * 2), 5020, 5020).pad(3 * 48000, 2 * 58000)
+# cut the source down to the segment starting at 1.0 secs,for a duration of 3.0 seconds
+# add a small 5000-sample ramp up and down, then pad the beginning with 3 seconds of silence and the ending with 2
+cropped = src.crop(pg.Extent(1 * sr,4 * sr), 5000, 5000).pad(3 * sr, 2 * sr)
 
 pg.Transport(cropped).play()
 

@@ -19,7 +19,7 @@ frame_rate = 48000
 extent = pg.Extent(0, stof(DURATION_SECS))
 
 #     def __init__(self, rho=28.0, sigma=10.0, beta=8.0/3.0, scale=0.1, x0=0.1, y0=0.0, z0=0.0, frame_rate=48000):
-chaotic_osc = pg.ChaoticOscPE(rho=28.0, sigma=10.0, beta=8.0/3.0, scale=0.41, x0=0.1, y0=0.0, z0=0.0).gain(120).add(pg.ConstPE(220))
+chaotic_osc = pg.ChaoticOscPE(rho=128.0, sigma=10.0, beta=8.0/3.0, scale=0.41, x0=0.1, y0=0.0, z0=0.0).gain(120).add(pg.ConstPE(220))
 sine_osc = pg.SinPE(chaotic_osc, frame_rate=frame_rate).crop(extent)
 
 # Render 1 second of audio
