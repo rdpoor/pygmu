@@ -21,10 +21,10 @@ vibrato_rate = 2
 vibrato_width = 60
 center_freq = 440
 
-freq = pg.SinPE(vibrato_rate, frame_rate=FRAME_RATE).gain(vibrato_width).add(pg.ConstPE(center_freq))
+freq1 = pg.SinPE(vibrato_rate, frame_rate=FRAME_RATE).gain(vibrato_width)
 freq2 = pg.SinPE(vibrato_rate * 1.617, frame_rate=FRAME_RATE).gain(vibrato_width)
 freq3 = pg.SinPE(vibrato_rate * 0.89, frame_rate=FRAME_RATE).gain(vibrato_width / 2)
-freq4 = freq.add(freq2).add(freq3)
+freq4 = pg.ConstPE(center_freq).add(freq1).add(freq2).add(freq3)
 
 sine_osc = pg.SinPE(freq4, frame_rate=FRAME_RATE).crop(extent, 500)
 
