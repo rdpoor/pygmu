@@ -5,7 +5,7 @@ from extent import Extent
 from pyg_pe import PygPE
 import utils as ut
 import pyg_exceptions as pyx
-from pyg_gen import PygGen, FrequencyMixin
+from pyg_gen import PygGen
 
 
 class WarpSpeedPE(PygPE):

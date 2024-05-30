@@ -79,7 +79,7 @@ class BlitSawPE(FrequencyMixin, PygGen):
         if frame_rate is None:
             raise pyx.FrameRateMismatch("frame_rate must be specified")
         self._frame_rate = frame_rate
-        self.set_frequency(frequency)  # This will now call the method from FrequencyMixin
+        self.set_dynamic_parameter('frequency', frequency)
         self.reset()
         self.set_harmonics(n_harmonics)
 
@@ -87,7 +87,7 @@ class BlitSawPE(FrequencyMixin, PygGen):
         """
         Band limited pulse train: y(n) = (_m / _period) * sinc(_m * n / _p)
         """
-        frequency = self.get_frequency(requested)  # This will now call the method from FrequencyMixin
+        frequency = self.get_dynamic_parameter('frequency',requested)
         if isinstance(frequency, np.ndarray):
             return self.render_dynamic(requested, frequency)
         else:

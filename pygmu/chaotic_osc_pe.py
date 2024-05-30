@@ -1,7 +1,7 @@
 import numpy as np
 from extent import Extent
 from pyg_pe import PygPE
-from pyg_gen import PygGen, FrequencyMixin
+from pyg_gen import PygGen
 
 class ChaoticOscPE(PygGen, PygPE):
     def __init__(self, rho=28.0, sigma=10.0, beta=8.0/3.0, scale=0.1, x0=0.1, y0=0.0, z0=0.0, frame_rate=48000):

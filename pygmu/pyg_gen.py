@@ -17,18 +17,20 @@ class PygGen(PygPE):
         """        
         return self._frame_rate
 
-class FrequencyMixin:
-    def set_frequency(self, frequency):
-        if isinstance(frequency, PygGen):
-            if frequency.channel_count() != 1:
-                raise pyx.ChannelCountMismatch("dynamic frequency source must be single channel")
-            self._dynamic_frequency = frequency
-            self._static_frequency = None
-        else:
-            self._dynamic_frequency = None
-            self._static_frequency = frequency
 
-    def get_frequency(self, requested=None):
-        if self._dynamic_frequency is not None:
-            return self._dynamic_frequency.render(requested).reshape(-1)  # convert to 1D array
-        return self._static_frequency
+class DynamicParameterMixin:
+    def set_dynamic_parameter(self, name, value):
+        if isinstance(value, PygGen):
+            if value.channel_count() != 1:
+                raise pyx.ChannelCountMismatch(f"Dynamic {name} source must be single channel")
+            setattr(self, f"_dynamic_{name}", value)
+            setattr(self, f"_static_{name}", None)
+        else:
+            setattr(self, f"_dynamic_{name}", None)
+            setattr(self, f"_static_{name}", value)
+
+    def get_dynamic_parameter(self, name, requested=None):
+        dynamic_value = getattr(self, f"_dynamic_{name}", None)
+        if dynamic_value is not None:
+            return dynamic_value.render(requested).reshape(-1)  # convert to 1D array
+        return getattr(self, f"_static_{name}", None)

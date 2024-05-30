@@ -1,9 +1,9 @@
 import numpy as np
 from extent import Extent
-from pyg_gen import PygGen, FrequencyMixin
+from pyg_gen import PygGen, DynamicParameterMixin
 import pyg_exceptions as pyx
 
-class SinPE(FrequencyMixin, PygGen):
+class SinPE(DynamicParameterMixin, PygGen):
     """
     Generate a sine wave with flexible frequency, phase, and amplitude.
     """
@@ -13,7 +13,7 @@ class SinPE(FrequencyMixin, PygGen):
         if frame_rate is None:
             raise pyx.FrameRateMismatch("frame_rate must be specified")
         self._frame_rate = frame_rate
-        self.set_frequency(frequency)  # This will now call the method from FrequencyMixin
+        self.set_dynamic_parameter('frequency', frequency)
         self._amplitude = amplitude
         self._phase = phase    # in radians
 
@@ -21,7 +21,7 @@ class SinPE(FrequencyMixin, PygGen):
         t0 = requested.start()
         t1 = requested.end()
         t = np.arange(t0, t1)
-        frequency = self.get_frequency(requested)  # This will now call the method from FrequencyMixin
+        frequency = self.get_dynamic_parameter('frequency',requested)
         if isinstance(frequency, np.ndarray):
             return self.render_dynamic(t, frequency)
         else:

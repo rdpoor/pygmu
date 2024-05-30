@@ -2,7 +2,7 @@ import numpy as np
 from extent import Extent
 from pyg_pe import PygPE
 import utils as ut
-from pyg_gen import PygGen, FrequencyMixin
+from pyg_gen import PygGen
 
 class GainPE(PygGen, PygPE):
     """
