@@ -2,7 +2,7 @@ import warnings
 import numpy as np
 from scipy import signal
 from extent import Extent
-from pyg_gen import PygGen, FrequencyMixin
+from pyg_gen import PygGen, DynamicParameterMixin
 from pyg_pe import PygPE
 import pyg_exceptions as pyx
 import utils as ut
@@ -58,7 +58,7 @@ tick():
 
 EPSILON = 0.00001   # could be better...
 
-class BlitSawPE(FrequencyMixin, PygGen):
+class BlitSawPE(DynamicParameterMixin, PygGen):
     """
     Band Limited Impulse Train, generating bandlimited pulse or sawtooth waves
     Version B with dynamic frequency input.
@@ -146,14 +146,14 @@ class BlitSawPE(FrequencyMixin, PygGen):
         self._state = 0
 
     def set_frequency(self, frequency):
-        super().set_frequency(frequency)  # calling set_frequency from FrequencyMixin
 
         if isinstance(frequency, (int, float)) and frequency <= 0:
             raise pyx.ArgumentError(f"Frequency must be > 0, got {frequency}")
 
-        if isinstance(frequency, (int, float)):
+        if isinstance(frequency, (int, float, np.float32)):
             self.initialize_frequency_params(frequency)
-            # print(f'{frequency:.2f}, {self._p:.2f}, {self._C2:.4f}, {self._rate:.8f}')
+        #     print(f'{frequency:.2f}, {self._p:.2f}, {self._C2:.4f}, {self._rate:.8f}')
+
 
     def initialize_frequency_params(self, frequency):
         self._p = self._frame_rate / frequency
