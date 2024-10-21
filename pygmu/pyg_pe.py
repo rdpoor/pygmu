@@ -94,6 +94,17 @@ class PygPE(object):
 
     def mono(self, attenuation=1.0):
         return pg.MonoPE(self, attenuation=attenuation)
+    
+    def pad(self, front_pad_frames=0,rear_pad_frames=0):
+        if front_pad_frames > 0:
+            shifted_src = pg.TimeShiftPE(self, front_pad_frames)
+        else:
+            shifted_src = self
+        silence = pg.ArrayPE([[0]])
+        shifted_silence = pg.TimeShiftPE(silence, front_pad_frames + self.extent().end() + rear_pad_frames)
+        padded_audio = pg.MixPE(shifted_src, shifted_silence)
+        return padded_audio
+
 
     def pan(self, degree=0):
         return pg.SpatialPE(self, degree=degree)
@@ -115,8 +126,8 @@ class PygPE(object):
     def speed(self, speed):
         return pg.WarpSpeedPE(self, speed)
     
-    def reverb(self, wetness=0.5, ir_name='Conic Long Echo Hall.wav'):
-        impulse = pg.WavReaderPE('samples/IR/' + ir_name)
+    def reverb(self, wetness=0.5, ir_name='Conic Long Echo Hall.wav', ir_path='samples/IR/'):
+        impulse = pg.WavReaderPE(ir_path + ir_name)
         how_wet = wetness * wetness / 2
         wet = pg.ConvolvePE(self.gain(0.28), impulse).gain(how_wet)
         return pg.MixPE(self.gain(1.0 - how_wet), wet)
