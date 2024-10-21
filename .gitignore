@@ -147,3 +147,4 @@ PygmuLib/
 pygmulib_creds.txt
 
 Pipfile.lock
+pygmu/pygmu.code-workspace
