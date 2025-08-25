@@ -1,0 +1,17 @@
+# requirements.txt
+
+numpy
+soundfile
+sounddevice
+scipy
+readchar
+tk
+pyyaml
+music21
+wxpython
+pyserial
+
+# Dev extras
+jupyter
+notebook
+

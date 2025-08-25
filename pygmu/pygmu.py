@@ -60,4 +60,4 @@ from warp_speed_pe import WarpSpeedPE
 from wav_reader_pe import WavReaderPE
 from wav_writer_pe import WavWriterPE
 from waveshape_pe import WaveShapePE
-#from pygplayer import *
+from pygplayer import PygPlayer

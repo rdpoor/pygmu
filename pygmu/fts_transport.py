@@ -9,10 +9,11 @@ class FtsTransport(object):
     Render frames as fast as possible without audio playback.
     """
 
-    def __init__(self, src_pe, frame_rate=None):
+    def __init__(self, src_pe, frame_rate=None, run_silent=False):
         self._src_pe = src_pe
         self.set_frame_rate(frame_rate, src_pe)
         self._use_ansi = ut.terminal_has_ansi_support()
+        self._run_silent = run_silent
 
     def play(self):
         extent = self._src_pe.extent()
@@ -25,16 +26,18 @@ class FtsTransport(object):
         ut.show_cursor(False)
         while s < extent.end():
             e = int(min(extent.end(), s + frame_rate)) # render up to 1 second
-            prog_str = '{0:.0%} '.format(float(s) / extent.end())
-            if self._use_ansi:
-                print(dur_str,prog_str, end="\r")
-            else:
-                print('{0:.0%} '.format(float(s) / extent.end()),end="")
-            sys.stdout.flush()
-            self._src_pe.render(Extent.Extent(s, e))
+            if not self._run_silent:
+                prog_str = '{0:.0%} '.format(float(s) / extent.end())
+                if self._use_ansi:
+                    print(dur_str,prog_str, end="\r")
+                else:
+                    print('{0:.0%} '.format(float(s) / extent.end()),end="")
+                sys.stdout.flush()
+                self._src_pe.render(Extent.Extent(s, e))
             s = e
         ut.show_cursor(True)
-        print("100%", end="\r" if self._use_ansi else "\n")
+        if not self._run_silent:
+            print("100%", end="\r" if self._use_ansi else "\n")
 
     def set_frame_rate(self, frame_rate, src_pe):
         """
