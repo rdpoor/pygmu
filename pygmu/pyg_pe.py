@@ -1,6 +1,7 @@
 import numpy as np
 from extent import Extent
 import random
+import utils as ut
 
 class PygPE(object):
     """
@@ -42,10 +43,8 @@ class PygPE(object):
         """        
         return None
 
-    # is there a way to migrate these to a different file?
-
     def abs(self):
-        return pg.AbsPE(self, delay)
+        return pg.AbsPE(self)
 
     def add(self, other_pe):
         return pg.AddPE(self, other_pe)
@@ -109,6 +108,9 @@ class PygPE(object):
     def exp_lim(self, target_amp=1.0, release_time=0.1):
         return pg.ExpanderLimiterPE(self, target_amp=target_amp, release_time=release_time)
 
+    def gate(self, threshold_db=-20, attack=0.01, release=0.1):
+        return pg.GatePE(self, threshold_db=threshold_db, attack=attack, release=release)
+
     def limit_a(self, threshold_db=-10, headroom_db=3):
         return pg.LimiterAPE(self, threshold_db=threshold_db, headroom_db=headroom_db)
 
@@ -118,8 +120,8 @@ class PygPE(object):
     def mono(self, attenuation=1.0):
         return pg.MonoPE(self, attenuation=attenuation)
 
-    def normalize(self, release_time=0.6):
-        return pg.NormalizePE(self, release_time=release_time)
+    def normalize(self, target_db=-3.0, headroom_db=0.1):
+        return pg.NormalizePE(self, target_db=target_db, headroom_db=headroom_db)
 
     def stereo(self):
         return pg.StereoPE(self)
@@ -157,6 +159,9 @@ class PygPE(object):
     
     def reverb(self, wetness=0.5, ir_name='Conic Long Echo Hall.wav', ir_path='samples/IR/'):
         impulse = pg.WavReaderPE(ir_path + ir_name)
+        if wetness == 1: # faster because no gain or mixing needed
+            return pg.ConvolvePE(self, impulse)
+        
         how_wet = wetness * wetness / 2
         wet = pg.ConvolvePE(self.gain(0.28), impulse).gain(how_wet)
         return pg.MixPE(self.gain(1.0 - how_wet), wet)

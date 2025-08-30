@@ -1,13 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(uv venv:*)",
-      "Bash(source:*)",
-      "Bash(python:*)",
-      "Bash(uv pip install:*)",
-      "Bash(timeout:*)",
-      "Bash(brew list:*)",
-      "Bash(TCL_LIBRARY=/opt/homebrew/Cellar/tcl-tk@8/8.6.17/lib/tcl8.6 TK_LIBRARY=/opt/homebrew/Cellar/tcl-tk@8/8.6.17/lib/tk8.6 python -c \"\nimport tkinter as tk\nprint(''Testing basic tkinter...'')\nroot = tk.Tk()\nroot.title(''Test'')\nlabel = tk.Label(root, text=''Hello Tkinter!'')\nlabel.pack()\nprint(''Tkinter window created successfully!'')\nroot.destroy()\nprint(''Test completed successfully!'')\n\")"
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []
