@@ -33,7 +33,7 @@ class FtsTransport(object):
                 else:
                     print('{0:.0%} '.format(float(s) / extent.end()),end="")
                 sys.stdout.flush()
-                self._src_pe.render(Extent.Extent(s, e))
+            self._src_pe.render(Extent.Extent(s, e))
             s = e
         ut.show_cursor(True)
         if not self._run_silent:
