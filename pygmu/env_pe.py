@@ -176,9 +176,15 @@ class EnvPE(PygGen):
     
     def extent(self):
         """Return the extent of this generator."""
-        # Both ADSR and PULSE modes are infinite duration
-        # ADSR holds its final value after the envelope completes
-        return Extent(0, Extent.PINF)
+        if self._mode == self.ADSR:
+            # ADSR has finite extent - envelope duration plus some extra time
+            # This prevents infinite file generation while allowing the envelope to complete
+            extra_time = max(self._duration, 1.0)  # At least 1 second or duration, whichever is larger
+            total_frames = int((self._duration + extra_time) * self._frame_rate)
+            return Extent(0, total_frames)
+        else:
+            # PULSE mode is infinite (but will be cropped by user)
+            return Extent(0, Extent.PINF)
     
     def channel_count(self):
         return 1

@@ -10,6 +10,7 @@ sys.path.append(pygmu_dir)
 import pygmu as pg
 import utils as ut
 
+
 def stof(seconds):
     """Convert seconds to frames at 48kHz"""
     return int(seconds * 48000)
@@ -51,7 +52,7 @@ def main(mode="adsr", duration=2.0, attack=0.1, decay=0.2, sustain=0.7, release=
         print(f"ENV: Decay: {decay}s")
         print(f"ENV: Sustain: {sustain}")
     print(f"ENV: Release: {release}s")
-    
+
     # Load source audio
     src = pg.WavReaderPE(input_file).stereo()
     
@@ -64,10 +65,12 @@ def main(mode="adsr", duration=2.0, attack=0.1, decay=0.2, sustain=0.7, release=
             release=release,
             frame_rate=48000
         )
-        # For pulse mode, crop source to a reasonable length for testing
+        # For pulse mode, crop to reasonable length
         test_duration = 8.0  # 8 seconds to hear multiple pulses
         src_extent = pg.Extent(0, stof(test_duration))
         src = src.crop(src_extent)
+        # Also crop the envelope to the same duration
+        envelope = envelope.crop(src_extent)
     else:  # ADSR mode
         envelope = pg.EnvPE(
             mode=pg.EnvPE.ADSR,
@@ -78,11 +81,8 @@ def main(mode="adsr", duration=2.0, attack=0.1, decay=0.2, sustain=0.7, release=
             release=release,
             frame_rate=48000
         )
-        # For ADSR mode, crop source to a reasonable test duration
-        # (envelope now has infinite extent but holds final value)
-        test_duration = max(duration * 1.5, 3.0)  # At least 1.5x envelope duration or 3s
-        src_extent = pg.Extent(0, stof(test_duration))
-        src = src.crop(src_extent)
+        # For ADSR, use the envelope's natural extent
+        src = src.crop(envelope.extent())
     
     # Apply envelope to source
     enveloped = pg.MulPE(src, envelope)
