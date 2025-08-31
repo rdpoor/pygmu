@@ -3,10 +3,7 @@ ENV - Envelope generator test with ADSR and PULSE modes
 
 """
 import sys
-import os
-script_dir = os.path.dirname(__file__)
-pygmu_dir = os.path.join(script_dir, "..", "pygmu")
-sys.path.append(pygmu_dir)
+import golden_utils as gu
 import pygmu as pg
 import utils as ut
 
