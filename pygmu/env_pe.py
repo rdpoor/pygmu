@@ -43,23 +43,33 @@ class EnvPE(PygGen):
         
         # Validate parameters
         if mode not in [self.ADSR, self.PULSE]:
-            raise ValueError(f"Mode must be '{self.ADSR}' or '{self.PULSE}'")
+            raise ValueError("Mode must be '{}' or '{}'".format(self.ADSR, self.PULSE))
         if duration <= 0:
             raise ValueError("Duration must be positive")
         if not (0 <= sustain <= 1):
             raise ValueError("Sustain must be between 0 and 1")
         
         # Convert times to frames
-        self._duration_frames = int(self._duration * self._frame_rate)
-        self._attack_frames = int(self._attack * self._frame_rate)
-        self._decay_frames = int(self._decay * self._frame_rate)
-        self._release_frames = int(self._release * self._frame_rate)
+        # For PULSE mode, use exact frame count to maintain precise period
+        if mode == self.PULSE:
+            self._duration_frames = self._duration * self._frame_rate  # Keep as float for exact timing
+        else:
+            self._duration_frames = int(self._duration * self._frame_rate)
+        
+        self._attack_frames = self._attack * self._frame_rate
+        self._decay_frames = self._decay * self._frame_rate  
+        self._release_frames = self._release * self._frame_rate
         
         # Calculate ADSR phase boundaries and final value
         self._attack_end = self._attack_frames
         self._decay_end = self._attack_end + self._decay_frames
-        self._sustain_end = max(self._decay_end, self._duration_frames - self._release_frames)
-        self._release_end = self._duration_frames
+        if mode == self.ADSR:
+            self._sustain_end = max(self._decay_end, int(self._duration_frames) - self._release_frames)
+            self._release_end = int(self._duration_frames)
+        else:
+            # For PULSE mode, these aren't used but set them anyway
+            self._sustain_end = max(self._decay_end, self._duration_frames - self._release_frames)
+            self._release_end = self._duration_frames
         
         # Determine final envelope value for ADSR mode
         self._final_value = self._calculate_final_value()
@@ -142,17 +152,31 @@ class EnvPE(PygGen):
     
     def _pulse_value_at(self, frame):
         """Calculate PULSE envelope value at a specific frame (with looping)."""
-        # Apply modulo to create looping behavior
+        # Apply modulo to create looping behavior with duration as the mathematical period
         local_frame = frame % self._duration_frames
         
-        if local_frame <= self._attack_frames:
-            return self._lerp_pulse_attack(local_frame)
-        elif local_frame <= self._attack_frames + self._release_frames:
-            return self._lerp_pulse_release(local_frame)
+        # Total envelope segment duration
+        total_envelope_frames = self._attack_frames + self._release_frames
+        
+        if total_envelope_frames > self._duration_frames:
+            # If envelope segments exceed duration, compress them to fit within duration
+            # Scale the local frame to fit within the compressed envelope
+            compressed_frame = local_frame * total_envelope_frames / self._duration_frames
+            
+            if compressed_frame <= self._attack_frames:
+                return self._lerp_pulse_attack(compressed_frame)
+            else:
+                return self._lerp_pulse_release(compressed_frame)
         else:
-            return 0.0
+            # Normal case: envelope fits within duration, fill remainder with zeros
+            if local_frame <= self._attack_frames:
+                return self._lerp_pulse_attack(local_frame)
+            elif local_frame <= total_envelope_frames:
+                return self._lerp_pulse_release(local_frame)
+            else:
+                return 0.0
     
-    def render(self, requested: Extent):
+    def render(self, requested):
         """Render envelope for the requested extent."""
         t0 = requested.start()
         t1 = requested.end()
@@ -193,7 +217,7 @@ class EnvPE(PygGen):
         """Return the extent of this generator."""
         if self._mode == self.ADSR:
             # ADSR has finite extent - exactly the duration specified
-            return Extent(0, self._duration_frames)
+            return Extent(0, int(self._duration_frames))
         else:
             # PULSE mode has infinite extent and loops the pattern
             return Extent(0, Extent.PINF)
