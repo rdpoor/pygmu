@@ -53,6 +53,7 @@ class EnvPE(PygGen):
         # Pre-calculate envelope shape for optimization
         self._envelope_cache = None
         self._cache_duration_frames = None
+        self._final_envelope_value = 0.0  # Track final value for ADSR mode
         self._generate_envelope_cache()
     
     def _generate_envelope_cache(self):
@@ -97,7 +98,13 @@ class EnvPE(PygGen):
         
         # Release phase: sustain level to 0
         if idx < duration_frames and release_frames > 0:
-            envelope[idx:] = np.linspace(self._sustain, 0, duration_frames - idx)
+            remaining_frames = duration_frames - idx
+            envelope[idx:] = np.linspace(self._sustain, 0, remaining_frames)
+            # Final value is the last computed value
+            self._final_envelope_value = envelope[-1] if remaining_frames > 0 else self._sustain
+        else:
+            # No release phase or not enough time for release - hold at sustain level
+            self._final_envelope_value = self._sustain if idx > 0 else envelope[-1] if duration_frames > 0 else 0.0
         
         return envelope.reshape(1, -1)
     
@@ -135,24 +142,24 @@ class EnvPE(PygGen):
         duration_samples = t1 - t0
         
         if self._mode == self.ADSR:
-            # ADSR mode: envelope plays once, then silence
+            # ADSR mode: envelope plays once, then holds final value
             if t0 >= self._cache_duration_frames:
-                # Past the envelope duration, return silence
-                return ut.const_frames(0.0, 1, duration_samples)
+                # Past the envelope duration, return final envelope value
+                return ut.const_frames(self._final_envelope_value, 1, duration_samples)
             
             # Clip to envelope duration
             effective_t1 = min(t1, self._cache_duration_frames)
             effective_duration = effective_t1 - t0
             
             if effective_duration <= 0:
-                return ut.const_frames(0.0, 1, duration_samples)
+                return ut.const_frames(self._final_envelope_value, 1, duration_samples)
             
             # Extract the relevant portion of the cached envelope
             result = self._envelope_cache[:, t0:effective_t1].copy()
             
-            # Pad with zeros if needed
+            # Pad with final envelope value if needed
             if effective_duration < duration_samples:
-                padding = ut.const_frames(0.0, 1, duration_samples - effective_duration)
+                padding = ut.const_frames(self._final_envelope_value, 1, duration_samples - effective_duration)
                 result = np.concatenate([result, padding], axis=1)
             
             return result
@@ -169,12 +176,9 @@ class EnvPE(PygGen):
     
     def extent(self):
         """Return the extent of this generator."""
-        if self._mode == self.ADSR:
-            # ADSR has finite duration
-            return Extent(0, self._cache_duration_frames)
-        else:
-            # PULSE mode is infinite
-            return Extent(0, Extent.PINF)
+        # Both ADSR and PULSE modes are infinite duration
+        # ADSR holds its final value after the envelope completes
+        return Extent(0, Extent.PINF)
     
     def channel_count(self):
         return 1

@@ -78,8 +78,11 @@ def main(mode="adsr", duration=2.0, attack=0.1, decay=0.2, sustain=0.7, release=
             release=release,
             frame_rate=48000
         )
-        # Crop source to envelope duration
-        src = src.crop(envelope.extent())
+        # For ADSR mode, crop source to a reasonable test duration
+        # (envelope now has infinite extent but holds final value)
+        test_duration = max(duration * 1.5, 3.0)  # At least 1.5x envelope duration or 3s
+        src_extent = pg.Extent(0, stof(test_duration))
+        src = src.crop(src_extent)
     
     # Apply envelope to source
     enveloped = pg.MulPE(src, envelope)
