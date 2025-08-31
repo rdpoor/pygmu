@@ -19,6 +19,7 @@ from crop_pe import CropPE
 from time_shift_pe import TimeShiftPE
 from exp_lim_pe import ExpanderLimiterPE
 from env_detect_pe import EnvDetectPE
+from env_pe import EnvPE
 from extent import Extent
 from filter_pe import FilterPE
 from fts_transport import FtsTransport
@@ -62,4 +63,4 @@ from warp_speed_pe import WarpSpeedPE
 from wav_reader_pe import WavReaderPE
 from wav_writer_pe import WavWriterPE
 from waveshape_pe import WaveShapePE
-from pygplayer import PygPlayer
+#from pygplayer import PygPlayer # not good on the server
