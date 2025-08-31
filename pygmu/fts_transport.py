@@ -18,11 +18,17 @@ class FtsTransport(object):
     def play(self):
         extent = self._src_pe.extent()
         frame_rate = self._src_pe.frame_rate()
-        dur_str = 'file duration: {0:.2f} '.format(extent.end() / frame_rate)
+        
+        # Safety check: don't try to render infinite extents
         if extent.is_indefinite():
-            s = 0
-        else:
-            s = int(extent.start())
+            raise pyx.IndefiniteExtent(
+                f"FtsTransport cannot render infinite extent. "
+                f"Please crop your processing element to a finite duration before using FtsTransport. "
+                f"For example: my_pe.crop(pg.Extent(0, desired_length_in_frames))"
+            )
+        
+        dur_str = 'file duration: {0:.2f} '.format(extent.end() / frame_rate)
+        s = int(extent.start())
         ut.show_cursor(False)
         while s < extent.end():
             e = int(min(extent.end(), s + frame_rate)) # render up to 1 second

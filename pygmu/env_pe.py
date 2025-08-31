@@ -2,13 +2,12 @@ import numpy as np
 from extent import Extent
 from pyg_gen import PygGen
 import pyg_exceptions as pyx
-import utils as ut
 
 class EnvPE(PygGen):
     """
-    Envelope generator with ADSR and PULSE modes.
+    Envelope generator with ADSR and PULSE modes, following RampPE's idiomatic patterns.
     
-    ADSR mode: Attack-Decay-Sustain-Release envelope that plays once
+    ADSR mode: Attack-Decay-Sustain-Release envelope that holds final value after completion
     PULSE mode: Attack-Release envelope that loops continuously
     
     All timing parameters are in seconds.
@@ -50,90 +49,108 @@ class EnvPE(PygGen):
         if not (0 <= sustain <= 1):
             raise ValueError("Sustain must be between 0 and 1")
         
-        # Pre-calculate envelope shape for optimization
-        self._envelope_cache = None
-        self._cache_duration_frames = None
-        self._final_envelope_value = 0.0  # Track final value for ADSR mode
-        self._generate_envelope_cache()
+        # Convert times to frames
+        self._duration_frames = int(self._duration * self._frame_rate)
+        self._attack_frames = int(self._attack * self._frame_rate)
+        self._decay_frames = int(self._decay * self._frame_rate)
+        self._release_frames = int(self._release * self._frame_rate)
+        
+        # Calculate ADSR phase boundaries and final value
+        self._attack_end = self._attack_frames
+        self._decay_end = self._attack_end + self._decay_frames
+        self._sustain_end = max(self._decay_end, self._duration_frames - self._release_frames)
+        self._release_end = self._duration_frames
+        
+        # Determine final envelope value for ADSR mode
+        self._final_value = self._calculate_final_value()
     
-    def _generate_envelope_cache(self):
-        """Pre-generate envelope shape for efficiency."""
-        duration_frames = int(self._duration * self._frame_rate)
-        self._cache_duration_frames = duration_frames
+    def _calculate_final_value(self):
+        """Calculate the final envelope value at the end of the duration."""
+        if self._mode == self.PULSE:
+            return 0.0  # PULSE always ends at 0
         
-        if self._mode == self.ADSR:
-            self._envelope_cache = self._generate_adsr_envelope(duration_frames)
-        else:  # PULSE mode
-            self._envelope_cache = self._generate_pulse_envelope(duration_frames)
-    
-    def _generate_adsr_envelope(self, duration_frames):
-        """Generate ADSR envelope shape."""
-        attack_frames = int(self._attack * self._frame_rate)
-        decay_frames = int(self._decay * self._frame_rate)
-        release_frames = int(self._release * self._frame_rate)
-        
-        # Calculate sustain duration
-        sustain_frames = max(0, duration_frames - attack_frames - decay_frames - release_frames)
-        
-        envelope = np.zeros(duration_frames, dtype=np.float32)
-        idx = 0
-        
-        # Attack phase: 0 to 1
-        if attack_frames > 0:
-            attack_end = min(idx + attack_frames, duration_frames)
-            envelope[idx:attack_end] = np.linspace(0, 1, attack_end - idx)
-            idx = attack_end
-        
-        # Decay phase: 1 to sustain level
-        if idx < duration_frames and decay_frames > 0:
-            decay_end = min(idx + decay_frames, duration_frames)
-            envelope[idx:decay_end] = np.linspace(1, self._sustain, decay_end - idx)
-            idx = decay_end
-        
-        # Sustain phase: constant sustain level
-        if idx < duration_frames and sustain_frames > 0:
-            sustain_end = min(idx + sustain_frames, duration_frames)
-            envelope[idx:sustain_end] = self._sustain
-            idx = sustain_end
-        
-        # Release phase: sustain level to 0
-        if idx < duration_frames and release_frames > 0:
-            remaining_frames = duration_frames - idx
-            envelope[idx:] = np.linspace(self._sustain, 0, remaining_frames)
-            # Final value is the last computed value
-            self._final_envelope_value = envelope[-1] if remaining_frames > 0 else self._sustain
+        # For ADSR, determine where we end up at duration_frames
+        if self._duration_frames <= self._attack_end:
+            # Ends during attack phase
+            return self._lerp_attack(self._duration_frames)
+        elif self._duration_frames <= self._decay_end:
+            # Ends during decay phase
+            return self._lerp_decay(self._duration_frames)
+        elif self._duration_frames <= self._sustain_end:
+            # Ends during sustain phase
+            return self._sustain
         else:
-            # No release phase or not enough time for release - hold at sustain level
-            self._final_envelope_value = self._sustain if idx > 0 else envelope[-1] if duration_frames > 0 else 0.0
-        
-        return envelope.reshape(1, -1)
+            # Ends during release phase
+            return self._lerp_release(self._duration_frames)
     
-    def _generate_pulse_envelope(self, duration_frames):
-        """Generate PULSE envelope shape (attack-release)."""
-        attack_frames = int(self._attack * self._frame_rate)
-        release_frames = int(self._release * self._frame_rate)
+    def _lerp_attack(self, frame):
+        """Linear interpolation during attack phase."""
+        if self._attack_frames == 0:
+            return 1.0
+        progress = frame / self._attack_frames
+        return progress
+    
+    def _lerp_decay(self, frame):
+        """Linear interpolation during decay phase."""
+        if self._decay_frames == 0:
+            return self._sustain
+        progress = (frame - self._attack_end) / self._decay_frames
+        return 1.0 + progress * (self._sustain - 1.0)
+    
+    def _lerp_release(self, frame):
+        """Linear interpolation during release phase."""
+        if self._release_frames == 0:
+            return 0.0
+        progress = (frame - self._sustain_end) / self._release_frames
+        return self._sustain + progress * (0.0 - self._sustain)
+    
+    def _lerp_pulse_attack(self, frame):
+        """Linear interpolation during pulse attack phase."""
+        if self._attack_frames == 0:
+            return 1.0
+        progress = frame / self._attack_frames
+        return progress
+    
+    def _lerp_pulse_release(self, frame):
+        """Linear interpolation during pulse release phase."""
+        if self._release_frames == 0:
+            return 0.0
+        progress = (frame - self._attack_frames) / self._release_frames
+        return 1.0 + progress * (0.0 - 1.0)
+    
+    def _envelope_value_at(self, frame):
+        """Calculate envelope value at a specific frame."""
+        if self._mode == self.ADSR:
+            return self._adsr_value_at(frame)
+        else:
+            return self._pulse_value_at(frame)
+    
+    def _adsr_value_at(self, frame):
+        """Calculate ADSR envelope value at a specific frame."""
+        if frame < 0:
+            return 0.0
+        elif frame >= self._duration_frames:
+            return self._final_value
+        elif frame <= self._attack_end:
+            return self._lerp_attack(frame)
+        elif frame <= self._decay_end:
+            return self._lerp_decay(frame)
+        elif frame <= self._sustain_end:
+            return self._sustain
+        else:
+            return self._lerp_release(frame)
+    
+    def _pulse_value_at(self, frame):
+        """Calculate PULSE envelope value at a specific frame (with looping)."""
+        # Apply modulo to create looping behavior
+        local_frame = frame % self._duration_frames
         
-        # Ensure we don't exceed duration
-        total_env_frames = attack_frames + release_frames
-        if total_env_frames > duration_frames:
-            # Scale down proportionally
-            scale = duration_frames / total_env_frames
-            attack_frames = int(attack_frames * scale)
-            release_frames = duration_frames - attack_frames
-        
-        envelope = np.zeros(duration_frames, dtype=np.float32)
-        idx = 0
-        
-        # Attack phase: 0 to 1
-        if attack_frames > 0:
-            envelope[idx:idx + attack_frames] = np.linspace(0, 1, attack_frames)
-            idx += attack_frames
-        
-        # Release phase: 1 to 0
-        if idx < duration_frames and release_frames > 0:
-            envelope[idx:idx + release_frames] = np.linspace(1, 0, release_frames)
-        
-        return envelope.reshape(1, -1)
+        if local_frame <= self._attack_frames:
+            return self._lerp_pulse_attack(local_frame)
+        elif local_frame <= self._attack_frames + self._release_frames:
+            return self._lerp_pulse_release(local_frame)
+        else:
+            return 0.0
     
     def render(self, requested: Extent):
         """Render envelope for the requested extent."""
@@ -142,48 +159,43 @@ class EnvPE(PygGen):
         duration_samples = t1 - t0
         
         if self._mode == self.ADSR:
-            # ADSR mode: envelope plays once, then holds final value
-            if t0 >= self._cache_duration_frames:
-                # Past the envelope duration, return final envelope value
-                return ut.const_frames(self._final_envelope_value, 1, duration_samples)
+            # ADSR mode: finite envelope, pad with zeros outside extent
+            overlap = requested.intersect(self.extent())
+            if overlap.is_empty():
+                # No overlap - return zeros
+                return np.zeros((1, requested.duration()), dtype=np.float32)
             
-            # Clip to envelope duration
-            effective_t1 = min(t1, self._cache_duration_frames)
-            effective_duration = effective_t1 - t0
+            # Generate frame positions for overlap
+            frames = np.arange(overlap.start(), overlap.end(), dtype=np.float32)
+            overlap_buf = np.zeros(len(frames), dtype=np.float32)
             
-            if effective_duration <= 0:
-                return ut.const_frames(self._final_envelope_value, 1, duration_samples)
+            for i, frame in enumerate(frames):
+                overlap_buf[i] = self._adsr_value_at(frame)
             
-            # Extract the relevant portion of the cached envelope
-            result = self._envelope_cache[:, t0:effective_t1].copy()
-            
-            # Pad with final envelope value if needed
-            if effective_duration < duration_samples:
-                padding = ut.const_frames(self._final_envelope_value, 1, duration_samples - effective_duration)
-                result = np.concatenate([result, padding], axis=1)
-            
-            return result
+            # Pad with zeros to match requested duration
+            dst_buf = np.zeros(requested.duration(), dtype=np.float32)
+            offset = overlap.start() - requested.start()
+            dst_buf[offset:offset + len(overlap_buf)] = overlap_buf
             
         else:  # PULSE mode
-            # PULSE mode: envelope loops continuously
-            result = np.zeros((1, duration_samples), dtype=np.float32)
+            # PULSE mode: infinite extent, loop the envelope pattern
+            frames = np.arange(t0, t1, dtype=np.float32)
+            dst_buf = np.zeros(duration_samples, dtype=np.float32)
             
-            for i in range(duration_samples):
-                sample_time = (t0 + i) % self._cache_duration_frames
-                result[0, i] = self._envelope_cache[0, sample_time]
-            
-            return result
+            for i, frame in enumerate(frames):
+                dst_buf[i] = self._pulse_value_at(frame)
+        
+        # Reshape to 2D array
+        dst_buf.shape = (1, -1)
+        return dst_buf
     
     def extent(self):
         """Return the extent of this generator."""
         if self._mode == self.ADSR:
-            # ADSR has finite extent - envelope duration plus some extra time
-            # This prevents infinite file generation while allowing the envelope to complete
-            extra_time = max(self._duration, 1.0)  # At least 1 second or duration, whichever is larger
-            total_frames = int((self._duration + extra_time) * self._frame_rate)
-            return Extent(0, total_frames)
+            # ADSR has finite extent - exactly the duration specified
+            return Extent(0, self._duration_frames)
         else:
-            # PULSE mode is infinite (but will be cropped by user)
+            # PULSE mode has infinite extent and loops the pattern
             return Extent(0, Extent.PINF)
     
     def channel_count(self):
