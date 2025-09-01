@@ -58,6 +58,7 @@ from t2 import T2
 from timewarp_pe import TimewarpPE
 from tralfam_pe import TralfamPE
 from transport import Transport
+from trim_pe import TrimPE
 import utils
 from warp_speed_pe import WarpSpeedPE
 from wav_reader_pe import WavReaderPE
