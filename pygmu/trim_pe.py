@@ -4,6 +4,7 @@ from extent import Extent
 from pyg_pe import PygPE
 from env_detect_pe import EnvDetectPE
 from crop_pe import CropPE
+from splice_pe import SplicePE
 import utils as ut
 
 class TrimPE(PygPE):
@@ -106,7 +107,35 @@ class TrimPE(PygPE):
         
         # Create cropped PE with trimmed extent
         trimmed_extent = Extent(start_frame, end_frame)
-        self._cropped_pe = CropPE(self._src_pe, trimmed_extent)
+        cropped_pe = CropPE(self._src_pe, trimmed_extent)
+        
+        # Calculate ramp durations based on attack/release coefficients
+        # Convert coefficients to time constants (higher coefficient = shorter ramp)
+        # Use frame rate to convert to sample counts
+        frame_rate = self._src_pe.frame_rate()
+        if frame_rate is None:
+            frame_rate = 48000  # fallback
+        
+        # Calculate ramp durations - use inverse relationship with coefficients
+        # Higher attack/release = shorter ramp for smoother transitions
+        fade_in_duration = int((1.0 - self._attack) * frame_rate * 0.1)  # max 0.1 sec
+        fade_out_duration = int((1.0 - self._release) * frame_rate * 0.1)  # max 0.1 sec
+        
+        # Ensure ramps don't exceed half the trimmed duration
+        trimmed_duration = trimmed_extent.duration()
+        max_ramp = trimmed_duration // 2
+        fade_in_duration = min(fade_in_duration, max_ramp)
+        fade_out_duration = min(fade_out_duration, max_ramp)
+        
+        # Apply splice to add fade-in/fade-out if we actually trimmed
+        original_start = self._src_pe.extent().start()
+        original_end = self._src_pe.extent().end()
+        
+        # Only add ramps if we actually trimmed from that end
+        up_dur = fade_in_duration if start_frame > original_start else 0
+        dn_dur = fade_out_duration if end_frame < original_end else 0
+        
+        self._cropped_pe = SplicePE(cropped_pe, up_dur=up_dur, dn_dur=dn_dur)
     
     def render(self, requested):
         return self._cropped_pe.render(requested)
