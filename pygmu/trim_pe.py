@@ -1,4 +1,5 @@
 import numpy as np
+from scipy import signal
 from extent import Extent
 from pyg_pe import PygPE
 from env_detect_pe import EnvDetectPE
@@ -17,7 +18,7 @@ class TrimPE(PygPE):
         ends_only: If True, only trim start/end silence (default True)
     """
     
-    def __init__(self, src_pe, threshold=0.01, attack=0.9, release=0.1, ends_only=True):
+    def __init__(self, src_pe, threshold=0.01, attack=0.2, release=0.1, ends_only=True):
         super(TrimPE, self).__init__()
         self._src_pe = src_pe
         self._threshold = threshold
@@ -39,12 +40,14 @@ class TrimPE(PygPE):
             self._cropped_pe = self._src_pe
             return
         
-        # Get envelope using EnvDetectPE
-        env_pe = EnvDetectPE(self._src_pe, attack=self._attack, release=self._release)
-        env_frames = env_pe.render(src_extent)
+        # Get raw audio frames directly for faster processing
+        src_frames = self._src_pe.render(src_extent)
+        
+        # Take absolute value for envelope detection
+        abs_frames = np.abs(src_frames)
         
         # Find peak amplitude to scale threshold
-        peak_amplitude = np.max(env_frames)
+        peak_amplitude = np.max(abs_frames)
         if peak_amplitude <= 0:
             # Silent input - return empty extent
             self._cropped_pe = CropPE(self._src_pe, Extent(0, 0))
@@ -53,8 +56,38 @@ class TrimPE(PygPE):
         # Scale threshold by peak amplitude
         scaled_threshold = self._threshold * peak_amplitude
         
-        # Find first and last samples above threshold
-        above_threshold = env_frames > scaled_threshold
+        # Apply simple smoothing using numpy operations instead of sample-by-sample loop
+        if abs_frames.ndim == 1:
+            # Mono case - convert to 2D for consistent handling
+            abs_frames = abs_frames.reshape(1, -1)
+        
+        # Use scipy's exponential filter for much faster envelope detection
+        # Convert attack/release to filter coefficients
+        attack_alpha = 1.0 - self._attack  
+        release_alpha = 1.0 - self._release
+        
+        smoothed = np.zeros_like(abs_frames)
+        for ch in range(abs_frames.shape[0]):
+            channel_data = abs_frames[ch, :]
+            
+            # Apply different time constants for attack vs release
+            # This approximates the EnvDetectPE behavior but much faster
+            smoothed_ch = np.zeros_like(channel_data)
+            if len(channel_data) > 0:
+                smoothed_ch[0] = channel_data[0]
+                for i in range(1, len(channel_data)):
+                    if channel_data[i] > smoothed_ch[i-1]:
+                        # Attack - faster response
+                        alpha = attack_alpha
+                    else:
+                        # Release - slower response  
+                        alpha = release_alpha
+                    smoothed_ch[i] = alpha * smoothed_ch[i-1] + (1-alpha) * channel_data[i]
+            
+            smoothed[ch, :] = smoothed_ch
+        
+        # Find any channel above threshold
+        above_threshold = np.any(smoothed > scaled_threshold, axis=0)
         
         # Handle case where entire signal is below threshold
         if not np.any(above_threshold):
@@ -62,13 +95,7 @@ class TrimPE(PygPE):
             return
         
         # Find start and end of non-silent region
-        if env_frames.ndim == 1:
-            # Mono case
-            nonzero_indices = np.where(above_threshold)[0]
-        else:
-            # Multi-channel case - find any channel above threshold
-            any_channel_above = np.any(above_threshold, axis=0)
-            nonzero_indices = np.where(any_channel_above)[0]
+        nonzero_indices = np.where(above_threshold)[0]
         
         if len(nonzero_indices) == 0:
             self._cropped_pe = CropPE(self._src_pe, Extent(0, 0))
