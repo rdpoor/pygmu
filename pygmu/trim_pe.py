@@ -16,7 +16,7 @@ class TrimPE(PygPE):
         threshold: Threshold level (0.0-1.0, will be scaled to peak amplitude)
         attack: Attack coefficient for envelope detector (default 0.9)
         release: Release coefficient for envelope detector (default 0.1) 
-        ends_only: If True, only trim start/end silence (default True)
+        ends_only: If True, only trim start/end silence (default True)  TODO not yet implemented !!!
     """
     
     def __init__(self, src_pe, threshold=0.01, attack=0.2, release=0.1, ends_only=True):
