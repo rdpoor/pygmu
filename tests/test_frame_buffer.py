@@ -1,3 +1,4 @@
+# tests/test_frame_buffer.py
 import unittest
 import numpy as np
 
@@ -5,6 +6,8 @@ from pygmu import FrameBuffer, Extent
 
 
 class TestFrameBuffer(unittest.TestCase):
+    # ---------- Construction & properties ----------
+
     def test_basic_construction_and_props(self):
         data = np.zeros((2, 10), dtype=np.float32)
         ext = Extent(100, 110)
@@ -20,6 +23,10 @@ class TestFrameBuffer(unittest.TestCase):
         self.assertEqual(arr.shape, (2, 10))
         self.assertEqual(arr.dtype, np.float32)
 
+    def test_constructor_rejects_non_2d(self):
+        with self.assertRaises(ValueError):
+            FrameBuffer(np.zeros((10,), dtype=np.float32), 48000, Extent(0, 10))  # 1-D array
+
     def test_constructor_coerces_dtype_to_float32(self):
         data = np.zeros((1, 5), dtype=np.float64)  # not float32 on purpose
         ext = Extent(0, 5)
@@ -28,29 +35,49 @@ class TestFrameBuffer(unittest.TestCase):
         self.assertEqual(fb.channels, 1)
         self.assertEqual(fb.nframes, 5)
 
-    def test_extent_must_be_finite(self):
-        data = np.zeros((1, 4), dtype=np.float32)
-        with self.assertRaises(ValueError):
-            FrameBuffer(data, 48000, Extent(Extent.NINF, 10))
-        with self.assertRaises(ValueError):
-            FrameBuffer(data, 48000, Extent(0, Extent.PINF))
+    def test_np_asarray_with_dtype_argument_casts_view(self):
+        fb = FrameBuffer.zeros(1, 3, 48000, Extent(0, 3))
+        arr64 = np.asarray(fb, dtype=np.float64)
+        self.assertEqual(arr64.dtype, np.float64)
+        # original remains float32
+        self.assertEqual(np.asarray(fb).dtype, np.float32)
 
-    def test_data_length_must_match_extent_length(self):
-        data = np.zeros((2, 8), dtype=np.float32)
-        # Extent length 10 but data has 8 frames
-        with self.assertRaises(ValueError):
-            FrameBuffer(data, 48000, Extent(0, 10))
+    # ---------- Factories ----------
 
     def test_zeros_factory(self):
         fb = FrameBuffer.zeros(channels=2, nframes=12, frame_rate=48000, extent=Extent(50, 62))
         self.assertEqual(fb.channels, 2)
         self.assertEqual(fb.nframes, 12)
         self.assertTrue(np.allclose(np.asarray(fb), 0.0))
-        self.assertEqual(fb.extent.start(), 50)
-        self.assertEqual(fb.extent.end(), 62)
+        self.assertEqual((fb.extent.start(), fb.extent.end()), (50, 62))
 
+    def test_empty_factory(self):
+        ext = Extent(10, 20)
+        fb = FrameBuffer.empty(2, 10, 48000, ext)
+        self.assertEqual(fb.channels, 2)
+        self.assertEqual(fb.nframes, 10)
+        self.assertEqual(np.asarray(fb).shape, (2, 10))
+        self.assertEqual(np.asarray(fb).dtype, np.float32)
+
+    def test_factory_guardrails_channels_and_nframes(self):
         with self.assertRaises(ValueError):
-            FrameBuffer.zeros(1, 10, 48000, Extent(0, Extent.PINF))
+            FrameBuffer.zeros(0, 10, 48000, Extent(0, 10))  # channels must be >= 1
+        with self.assertRaises(ValueError):
+            FrameBuffer.empty(1, -1, 48000, Extent(0, 0))   # nframes must be >= 0
+        with self.assertRaises(ValueError):
+            FrameBuffer.zeros(1, 5, 48000, Extent(0, 6))    # nframes must match extent duration
+
+    def test_factories_return_subclass_when_overridden(self):
+        class MyFB(FrameBuffer):
+            pass
+
+        ext = Extent(0, 4)
+        fb1 = MyFB.zeros(1, 4, 48000, ext)
+        fb2 = MyFB.empty(1, 4, 48000, ext)
+        self.assertIsInstance(fb1, MyFB)
+        self.assertIsInstance(fb2, MyFB)
+
+    # ---------- slice_time() semantics ----------
 
     def test_slice_time_inside(self):
         data = np.vstack([np.arange(10), np.arange(100, 110)]).astype(np.float32)
@@ -91,19 +118,9 @@ class TestFrameBuffer(unittest.TestCase):
         self.assertEqual(sub.nframes, 8)
         self.assertEqual(sub.extent, Extent(10, 18))
 
-    def test_quantize_mode_affects_extent_rounding(self):
-        data = np.zeros((1, 5), dtype=np.float32)
-        fb_floor = FrameBuffer(data, 48000, Extent(1.9, 6.2), quantize_mode="floor")
-        self.assertEqual(fb_floor.extent, Extent(1, 6))
-        self.assertEqual(fb_floor.nframes, 5)
-
-        fb_round = FrameBuffer(data, 48000, Extent(1.6, 6.6), quantize_mode="round")
-        self.assertEqual(fb_round.extent, Extent(2, 7))
-        self.assertEqual(fb_round.nframes, 5)
-
     def test_slice_time_empty_request_returns_zero_length(self):
         fb = FrameBuffer.zeros(1, 6, 48000, Extent(0, 6))
-        # no need to fill data; we're only checking length/extent
+        # Only checking length/extent; content irrelevant
         sub = fb.slice_time(Extent(3, 3))  # duration = 0
         self.assertEqual(sub.channels, 1)
         self.assertEqual(sub.nframes, 0)
@@ -141,37 +158,6 @@ class TestFrameBuffer(unittest.TestCase):
         self.assertTrue(np.allclose(arr[0, 2:], 0.0))
         self.assertEqual(sub.extent, Extent(13, 18))
 
-    def test_constructor_rejects_non_2d():
-        from pygmu import FrameBuffer, Extent
-        with self.assertRaises(ValueError):
-            FrameBuffer(np.zeros((10,), dtype=np.float32), 48000, Extent(0, 10))  # 1-D
-
-    def test_constructor_coerces_dtype_no_copy_when_already_float32():
-        from pygmu import FrameBuffer, Extent
-        data = np.zeros((1, 4), dtype=np.float32)
-        fb = FrameBuffer(data, 48000, Extent(0, 4))
-        self.assertEqual(np.asarray(fb).dtype, np.float32)
-
-    def test_np_asarray_with_dtype_argument_casts_view():
-        from pygmu import FrameBuffer, Extent
-        fb = FrameBuffer.zeros(1, 3, 48000, Extent(0, 3))
-        arr64 = np.asarray(fb, dtype=np.float64)
-        self.assertEqual(arr64.dtype, np.float64)
-        self.assertEqual(np.asarray(fb).dtype, np.float32)  # original unchanged
-
-    def test_factory_guardrails_channels_and_nframes():
-        from pygmu import FrameBuffer, Extent
-        with self.assertRaises(ValueError):
-            FrameBuffer.zeros(0, 1, 48000, Extent(0, 1))
-        with self.assertRaises(ValueError):
-            FrameBuffer.empty(1, -1, 48000, Extent(0, 0))
-
-    def test_slice_time_no_overlap_returns_zeros_and_skips_copy():
-        from pygmu import FrameBuffer, Extent
-        fb = FrameBuffer.zeros(2, 5, 48000, Extent(10, 15))
-        sub = fb.slice_time(Extent(0, 5))
-        self.assertTrue(np.allclose(np.asarray(sub), 0.0))
-        self.assertEqual(sub.extent, Extent(0, 5))
 
 if __name__ == "__main__":
     unittest.main()

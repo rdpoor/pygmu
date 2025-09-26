@@ -1,184 +1,171 @@
+# tests/test_extent.py
 import unittest
 
 from pygmu import Extent
 
+
 class TestExtentBasics(unittest.TestCase):
-    def test_ctor_defaults_and_str(self):
-        e = Extent()
+    def test_ctor_and_str(self):
+        e = Extent(0, 10)
+        self.assertEqual(e.start(), 0)
+        self.assertEqual(e.end(), 10)
+        self.assertFalse(e.is_indefinite())
+        self.assertFalse(e.is_empty())
+        self.assertEqual(e.duration(), 10)
+        s = str(e)
+        self.assertIn("[0,", s)
+        self.assertIn(", 10)", s)
+
+    def test_indefinite_ctor_and_duration(self):
+        e = Extent(Extent.NINF, 5)
         self.assertTrue(e.is_indefinite())
-        self.assertEqual(str(e), "[NINF, PINF)")
+        self.assertEqual(e.duration(), Extent.INDEFINITE_DURATION)
+        e2 = Extent(0, Extent.PINF)
+        self.assertTrue(e2.is_indefinite())
 
-    def test_ctor_with_duration_from_start(self):
-        e = Extent(start=10, duration=5)
-        self.assertEqual(e.start(), 10)
-        self.assertEqual(e.end(), 15)
-        self.assertAlmostEqual(e.duration(), 5)
-
-    def test_ctor_with_duration_from_end(self):
-        e = Extent(end=20, duration=7)
-        self.assertEqual(e.start(), 13)
-        self.assertEqual(e.end(), 20)
-        self.assertAlmostEqual(e.duration(), 7)
-
-    def test_ctor_conflicting_duration_raises(self):
-        with self.assertRaises(ValueError):
-            Extent(0, 10, duration=11)
-
-    def test_empty_and_point(self):
+    def test_empty_and_null(self):
         e = Extent(5, 5)
         self.assertTrue(e.is_empty())
-        self.assertTrue(e.is_point())
         self.assertEqual(e.duration(), 0.0)
+        self.assertEqual(Extent.null(), Extent(0, 0))
 
-    def test_is_finite(self):
-        self.assertTrue(Extent(0, 1).is_finite())
-        self.assertFalse(Extent(Extent.NINF, 1).is_finite())
-        self.assertFalse(Extent(0, Extent.PINF).is_finite())
+    def test_ctor_with_duration_resolution(self):
+        self.assertEqual(Extent(end=10, duration=3), Extent(7, 10))
+        self.assertEqual(Extent(start=5, duration=2), Extent(5, 7))
+        with self.assertRaises(ValueError):
+            _ = Extent(Extent.NINF, Extent.PINF, duration=1)
+        with self.assertRaises(ValueError):
+            _ = Extent(0, 10, duration=-1)
+        with self.assertRaises(ValueError):
+            _ = Extent(0, 10, duration=11)  # conflicts with start/end
 
-    def test_offset(self):
-        e = Extent(3, 7).offset(10)
-        self.assertEqual((e.start(), e.end()), (13, 17))
+    def test_type_and_order_validation(self):
+        with self.assertRaises(TypeError):
+            _ = Extent("a", 5)  # type: ignore
+        with self.assertRaises(TypeError):
+            _ = Extent(0, 5, duration="x")  # type: ignore
+        with self.assertRaises(ValueError):
+            _ = Extent(10, 0)
 
-    def test_with_start_end(self):
-        e = Extent(10, 20).with_start(2)
-        self.assertEqual((e.start(), e.end()), (2, 20))
-        e2 = Extent(10, 20).with_end(25)
-        self.assertEqual((e2.start(), e2.end()), (10, 25))
+    def test_offset_and_duration_ops(self):
+        self.assertEqual(Extent(0, 10).offset(5), Extent(5, 15))
 
-    def test_contains_time(self):
-        e = Extent(10, 20)
-        self.assertTrue(e.contains_time(10))
-        self.assertTrue(e.contains_time(19.999))
-        self.assertFalse(e.contains_time(20))
-        self.assertFalse(e.contains_time(9.999))
+        # set_duration
+        self.assertEqual(Extent(0, 10).set_duration(5, anchor="start"), Extent(0, 5))
+        self.assertEqual(Extent(0, 10).set_duration(5, anchor="end"), Extent(5, 10))
+        self.assertEqual(Extent(0, 10).set_duration(4, anchor="center"), Extent(3, 7))
+        with self.assertRaises(ValueError):
+            _ = Extent(Extent.NINF, 10).set_duration(1)  # indefinite not allowed
+        with self.assertRaises(TypeError):
+            _ = Extent(0, 10).set_duration("x")  # type: ignore
+
+        # extend
+        # start anchored: start fixed, end moves
+        self.assertEqual(Extent(0, 10).extend(-3, anchor="start"), Extent(0, 7))
+        # end anchored: end fixed, start moves
+        self.assertEqual(Extent(0, 10).extend(-3, anchor="end"), Extent(3, 10))
+        # center anchored: center fixed, both ends move symmetrically
+        self.assertEqual(Extent(0, 10).extend(+4, anchor="center"), Extent(-2, 12))
+        with self.assertRaises(ValueError):
+            _ = Extent(0, 10).extend(-11)
+        with self.assertRaises(ValueError):
+            _ = Extent(Extent.NINF, 10).extend(+1)  # indefinite not allowed
+        with self.assertRaises(TypeError):
+            _ = Extent(0, 10).extend(None)  # type: ignore
+
+        # stretch
+        self.assertEqual(Extent(0, 10).stretch(2.0, anchor="start"), Extent(0, 20))
+        self.assertEqual(Extent(0, 10).stretch(0.5, anchor="end"), Extent(5, 10))
+        with self.assertRaises(ValueError):
+            _ = Extent(0, 10).stretch(0)
+        with self.assertRaises(ValueError):
+            _ = Extent(Extent.NINF, 10).stretch(2.0)
+        with self.assertRaises(TypeError):
+            _ = Extent(0, 10).stretch("x")  # type: ignore
+
+    def test_pad(self):
+        e = Extent(10, 20).pad(left=2.5, right=1.0)
+        self.assertEqual(e, Extent(7.5, 21.0))
+        with self.assertRaises(ValueError):
+            _ = Extent(10, 20).pad(left=-0.1)
+        with self.assertRaises(ValueError):
+            _ = Extent(10, 20).pad(right=-0.1)
 
 
-class TestRelations(unittest.TestCase):
-    def test_precedes_follows(self):
+class TestLogicalRelations(unittest.TestCase):
+    def test_relations_with_extents(self):
         a = Extent(0, 10)
         b = Extent(10, 20)
         c = Extent(5, 15)
         self.assertTrue(a.precedes(b))
         self.assertTrue(b.follows(a))
-        self.assertFalse(a.precedes(c))
-        self.assertFalse(c.follows(a))
+        self.assertFalse(a.overlaps(b))
+        self.assertTrue(a.overlaps(c))
+        self.assertTrue(b.spans(Extent(12, 13)))
+        self.assertFalse(a.spans(b))
 
-    def test_overlaps_spans_equals(self):
-        a = Extent(0, 10)
-        b = Extent(5, 15)
-        c = Extent(2, 8)
-        self.assertTrue(a.overlaps(b))
-        self.assertTrue(b.overlaps(a))
-        self.assertTrue(a.spans(c))
-        self.assertFalse(c.spans(a))
-        self.assertTrue(Extent(1, 2).equals(Extent(1, 2)))
-        self.assertFalse(Extent(1, 2).equals(Extent(1, 3)))
-
-    def test_is_adjacent_and_overlap_length(self):
-        a = Extent(0, 10)
-        b = Extent(10, 20)
-        c = Extent(8, 12)
-        self.assertTrue(a.is_adjacent(b))
-        self.assertEqual(a.overlap_length(b), 0.0)
-        self.assertAlmostEqual(a.overlap_length(c), 2.0)
-
-
-class TestLogicalOps(unittest.TestCase):
-    def test_union_and_union_all(self):
-        a = Extent(0, 10)
-        b = Extent(5, 20)
-        u = a.union(b)
-        self.assertEqual((u.start(), u.end()), (0, 20))
-        u2 = Extent.union_all([Extent(1, 2), Extent(-1, 0), Extent(1.5, 3)])
-        self.assertEqual((u2.start(), u2.end()), (-1, 3))
-
-    def test_intersect_and_intersect_all(self):
-        a = Extent(0, 10)
-        b = Extent(5, 20)
-        i = a.intersect(b)
-        self.assertEqual((i.start(), i.end()), (5, 10))
-        i2 = Extent.intersect_all([Extent(0, 10), Extent(3, 8), Extent(4, 20)])
-        self.assertEqual((i2.start(), i2.end()), (4, 8))
-        i3 = Extent(0, 1).intersect(Extent(1, 2))
-        self.assertTrue(i3.is_empty())
-
-    def test_clamp_to(self):
-        e = Extent(0, 10).clamp_to(Extent(3, 6))
-        self.assertEqual((e.start(), e.end()), (3, 6))
-        e2 = Extent(0, 2).clamp_to(Extent(3, 4))
-        self.assertTrue(e2.is_empty())
-
-    def test_difference(self):
-        a = Extent(0, 10)
-        b = Extent(3, 7)
-        parts = a.difference(b)
-        self.assertEqual(len(parts), 2)
-        self.assertEqual((parts[0].start(), parts[0].end()), (0, 3))
-        self.assertEqual((parts[1].start(), parts[1].end()), (7, 10))
-        # Non-overlapping
-        self.assertEqual(Extent(0, 5).difference(Extent(6, 7))[0], Extent(0, 5))
-
-    def test_split_at(self):
-        e = Extent(0, 10)
-        parts = e.split_at([2, 5, 9, -1, 20])  # outside cuts ignored
-        self.assertEqual([(p.start(), p.end()) for p in parts],
-                         [(0, 2), (2, 5), (5, 9), (9, 10)])
-
-    def test_pad(self):
-        e = Extent(10, 20).pad(left=2.5, right=1.0)
-        self.assertEqual((e.start(), e.end()), (7.5, 21.0))
-        with self.assertRaises(ValueError):
-            Extent().pad(1, 1)  # indefinite
-
-    def test_quantize(self):
-        e = Extent(1.9, 10.2).quantize(step=1.0, mode="floor")
-        self.assertEqual((e.start(), e.end()), (1.0, 10.0))
-        e2 = Extent(1.2, 10.8).quantize(step=0.5, mode="ceil")
-        self.assertEqual((e2.start(), e2.end()), (1.5, 11.0))
-        e3 = Extent(Extent.NINF, 10.3).quantize(1.0)
-        self.assertEqual(e3.start(), Extent.NINF)
-        self.assertEqual(e3.end(), 10.0)
-        with self.assertRaises(ValueError):
-            Extent(0, 1).quantize(step=0.0)
-
-    def test_bounded(self):
-        e = Extent(Extent.NINF, Extent.PINF).bounded(-100, 200)
-        self.assertEqual((e.start(), e.end()), (-100, 200))
-
-    def test_next_prev_edge(self):
+    def test_relations_with_scalars(self):
         e = Extent(10, 20)
-        self.assertEqual(e.next_edge_after(0), 10)
-        self.assertEqual(e.next_edge_after(15), 20)
-        self.assertIsNone(e.next_edge_after(25))
-        self.assertEqual(e.prev_edge_before(25), 20)
-        self.assertEqual(e.prev_edge_before(15), 10)
-        self.assertIsNone(e.prev_edge_before(5))
+        self.assertTrue(e.precedes(20))
+        self.assertFalse(e.precedes(19))
+        self.assertTrue(e.follows(5))
+        self.assertFalse(e.follows(19))
+        self.assertTrue(e.overlaps(10))
+        self.assertTrue(e.overlaps(19.999))
+        self.assertFalse(e.overlaps(20))
+        self.assertTrue(e.spans(15))
+        self.assertFalse(e.spans(25))
+
+    def test_equals_method_typecheck(self):
+        self.assertTrue(Extent(0, 1).equals(Extent(0, 1)))
+        with self.assertRaises(TypeError):
+            _ = Extent(0, 1).equals(123)  # type: ignore
 
 
 class TestCollections(unittest.TestCase):
-    def test_find_gaps(self):
+    def test_union_and_intersect(self):
+        e1 = Extent(0, 5)
+        e2 = Extent(3, 7)
+        self.assertEqual(e1.union(e2), Extent(0, 7))
+        self.assertEqual(e1.intersect(e2), Extent(3, 5))
+
+    def test_union_intersect_all_empty(self):
+        self.assertEqual(Extent.union_all([]), Extent.null())
+        self.assertEqual(Extent.intersect_all([]), Extent.null())
+
+    def test_find_gaps_sorted_non_overlapping(self):
         xs = [Extent(0, 5), Extent(7, 10), Extent(12, 14)]
         gaps = Extent.find_gaps(xs)
-        self.assertEqual([(g.start(), g.end()) for g in gaps], [(5, 7), (10, 12)])
-        # Overlap should raise
-        with self.assertRaises(ValueError):
-            Extent.find_gaps([Extent(0, 5), Extent(4, 6)])
+        self.assertEqual(gaps, [Extent(5, 7), Extent(10, 12)])
 
-    def test_merge_adjacent(self):
-        xs = [Extent(0, 5), Extent(5, 7), Extent(10, 12), Extent(11, 20)]
-        merged = Extent.merge_adjacent(xs, eps=0.0)
-        self.assertEqual([(m.start(), m.end()) for m in merged], [(0, 7), (10, 20)])
+    def test_find_gaps_overlap_raises(self):
+        with self.assertRaises(ValueError):
+            _ = Extent.find_gaps([Extent(0, 5), Extent(4, 6)])
 
     def test_total_covered_length(self):
         xs = [Extent(0, 5), Extent(4, 10), Extent(12, 15)]
-        self.assertAlmostEqual(Extent.total_covered_length(xs), 10 + 3)  # [0,10) U [12,15) => 13
+        self.assertAlmostEqual(Extent.total_covered_length(xs), 13.0)
+        self.assertAlmostEqual(Extent.total_covered_length([]), 0.0)
+        self.assertAlmostEqual(Extent.total_covered_length([Extent(1, 4)]), 3.0)
 
-class TestFactories(unittest.TestCase):
-    def test_null_and_infinite(self):
-        self.assertTrue(Extent.null().is_empty())
-        inf = Extent.infinite()
-        self.assertTrue(inf.is_indefinite())
-        self.assertFalse(inf.is_finite())
+
+class TestQuantize(unittest.TestCase):
+    def test_quantize_floor_and_ceil(self):
+        e = Extent(1.9, 10.2).quantize(step=1.0, mode="floor")
+        self.assertEqual(e, Extent(1.0, 10.0))
+        e2 = Extent(1.2, 10.8).quantize(step=0.5, mode="ceil")
+        self.assertEqual(e2, Extent(1.5, 11.0))
+
+    def test_quantize_handles_infinity(self):
+        e = Extent(Extent.NINF, 10.3).quantize(step=1.0)
+        self.assertEqual(e.start(), Extent.NINF)
+        self.assertEqual(e.end(), 10.0)
+
+    def test_quantize_errors(self):
+        with self.assertRaises(ValueError):
+            _ = Extent(10, 20).quantize(step=0.0)
+        with self.assertRaises(ValueError):
+            _ = Extent(10, 20).quantize(step=1.0, mode="bogus")
 
 
 if __name__ == "__main__":

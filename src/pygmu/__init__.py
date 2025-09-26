@@ -4,6 +4,13 @@ from .frame_buffer import FrameBuffer
 from .processing_element import ProcessingElement
 from .base_transport import BaseTransport
 from .offline_transport import OfflineTransport
+from .exceptions import (
+    PygmuError,
+    InvalidExtentError,
+    FrameRateMismatchError,
+    ChannelMismatchError,
+    ContractViolationError,
+)
 
 __all__ = [
     "Extent",
