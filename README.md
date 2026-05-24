@@ -9,7 +9,7 @@ pygmu is designed more for composers than for performers -- unlike GarageBand or
 There are three fundamental objects upon which all of pygmu is built:
 * **Extent:** An Extent encapsulates a starting time (measured in samples) and an ending time (also measured in samples).
 * **Processing Element:**: Each processing element has a constructor, where you specificy parameters, and a `render(extent)` function which, when invoked, asks the processing element to produce sample data between `extent.start()` and `extent.end()`.  
-* **frames:** Sample data is passed around as a two-dimensional array, where each row is a channel (e.g. stereo frames will have two rows) and each columm is an individual sample (mono, stereo or multi-channel).
+* **Frame Buffer:** Sample data is passed around as a two-dimensional array, where each row is a channel (e.g. stereo frames will have two rows) and each columm is an individual sample (mono, stereo or multi-channel).
 
 ## A taste of pygmu
 

@@ -73,7 +73,7 @@ class OfflineTransport(BaseTransport):
             if ce is None or not ce.is_finite():
                 raise ValueError("end is None and content extent is unknown/indefinite")
             start = int(start)
-            end = int(ce.end()) if start <= ce.end() else start
+            end = int(ce.end) if start <= ce.end else start
 
         if self.try_single_shot:
             fb = self.root.render(Extent(int(start), int(end)))
@@ -83,47 +83,3 @@ class OfflineTransport(BaseTransport):
         if not blocks:
             return np.zeros((self.root.channels(), 0), dtype=np.float32)
         return np.concatenate(blocks, axis=1)
-
-    def test_base_transport_rejects_non_positive_block_size():
-        from pygmu import BaseTransport, ProcessingElement, Extent, FrameBuffer
-        class P(ProcessingElement):
-            def frame_rate(self): return 48000
-            def channels(self): return 1
-            def render(self, ex): return FrameBuffer.zeros(1, int(ex.duration()), 48000, ex)
-        with self.assertRaises(ValueError):
-            _ = BaseTransport(P(), block_size=0)
-        with self.assertRaises(ValueError):
-            _ = BaseTransport(P(), block_size=-128)
-
-    def test_base_transport_end_none_and_unknown_content_extent_raises():
-        from pygmu import BaseTransport, ProcessingElement
-        class P(ProcessingElement):
-            def frame_rate(self): return 48000
-            def channels(self): return 1
-            def content_extent(self): return None  # unknown
-            def render(self, ex): raise AssertionError("should not render")
-        t = BaseTransport(P(), block_size=256)
-        with self.assertRaises(ValueError):
-            t.render(0, None, lambda arr, fr: None)
-
-    def test_offline_transport_single_shot_calls_sink_once():
-        from pygmu import OfflineTransport, ProcessingElement, Extent, FrameBuffer
-        class P(ProcessingElement):
-            def frame_rate(self): return 48000
-            def channels(self): return 2
-            def render(self, ex): return FrameBuffer.zeros(2, int(ex.duration()), 48000, ex)
-        root = P()
-        t = OfflineTransport(root, try_single_shot=True)
-        calls = []
-        t.render(100, 200, lambda arr, fr: calls.append((arr.shape, fr)))
-        assert calls == [((2, 100), 48000)]
-
-    def test_offline_transport_render_to_array_empty_range():
-        from pygmu import OfflineTransport, ProcessingElement, Extent, FrameBuffer
-        class P(ProcessingElement):
-            def frame_rate(self): return 48000
-            def channels(self): return 1
-            def render(self, ex): return FrameBuffer.zeros(1, int(ex.duration()), 48000, ex)
-        t = OfflineTransport(P(), try_single_shot=False, block_size=256)
-        out = t.render_to_array(1000, 1000)
-        assert out.shape == (1, 0)

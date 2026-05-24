@@ -30,7 +30,7 @@ class BaseTransport:
         root.content_extent(); if unavailable/indefinite, raise ValueError.
 
         Safety guards:
-          - If a PE returns 0 frames for a non-empty request, raise RuntimeError
+          - If a PE returns 0 frames for a non-empty request, raise TransportError
             to avoid infinite loops.
           - If a PE returns fewer frames than requested, advance by what we got.
         """
@@ -53,22 +53,31 @@ class BaseTransport:
         while cur < final:
             req_end = min(cur + self.block_size, final)
             fb = self.root.render(Extent(cur, req_end))
+            if STRICT:
+                validate_framebuffer(pe=self.root, fb=fb, requested=Extent(cur, req_end))
             arr = np.asarray(fb)
 
             if arr.ndim != 2:
-                raise TypeError("ProcessingElement.render must return 2-D (C, N) data")
+                raise TransportError("ProcessingElement.render must return 2-D (C, N) data")
 
             got = int(arr.shape[1])
 
+
+            # ---- STRICT MODE: enforce contiguous output
+            if STRICT and fb.extent.start != cur:
+                raise TransportError(
+                    f"{self.root.__class__.__name__}.render returned extent starting at "
+                    f"{fb.extent.start}, expected {cur} — cannot skip frames"
+                )
+
             # ---- SAFETY GUARD: prevent infinite loop on 0-length output
             if got == 0 and req_end > cur:
-                raise RuntimeError(
+                raise TransportError(
                     f"ProcessingElement.render returned 0 frames for non-empty request [{cur},{req_end})"
                 )
             # -------------------------------------------------------------
 
             sink(arr, fr)
 
-            # If PE returns fewer than requested, advance by what we got.
-            # This still guarantees forward progress and eventual termination.
-            cur += got if got > 0 else (req_end - cur)
+            # Forward progress is guaranteed because got>0 or we raised above
+            cur += got

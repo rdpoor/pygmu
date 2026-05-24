@@ -1,4 +1,11 @@
-# src/pygmu/__init__.py
+"""Pygmu – Python generative-music framework (composer-first, pull-render graph).
+
+Public API:
+    Extent, FrameBuffer, ProcessingElement,
+    BaseTransport, OfflineTransport,
+    PygmuError and subclasses
+"""
+
 from .extent import Extent
 from .frame_buffer import FrameBuffer
 from .processing_element import ProcessingElement
@@ -13,9 +20,9 @@ from .exceptions import (
 )
 
 __all__ = [
-    "Extent",
-    "FrameBuffer",
-    "ProcessingElement",
-    "BaseTransport",
-    "OfflineTransport",
+    "Extent", "FrameBuffer", "ProcessingElement",
+    "BaseTransport", "OfflineTransport",
+    "PygmuError", "InvalidExtentError",
+    "FrameRateMismatchError", "ChannelMismatchError",
+    "ContractViolationError",
 ]

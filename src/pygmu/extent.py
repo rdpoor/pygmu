@@ -1,7 +1,7 @@
 # src/pygmu/extent.py
 import math
+import warnings
 from typing import Union, Optional, List, Iterable
-
 
 class Extent:
     """
@@ -41,6 +41,24 @@ class Extent:
         self.s, self.e = start, end
 
     # ------------------------------------------------------------------
+    # Properties
+    @property
+    def start(self) -> float:
+        return self.s
+
+    @property
+    def end(self) -> float:
+        return self.e
+
+    @property
+    def duration(self) -> float:
+        if self.is_indefinite():
+            return self.INDEFINITE_DURATION
+        if self.is_empty():
+            return 0.0
+        return self.e - self.s
+
+    # ------------------------------------------------------------------
     # Representations
     def __str__(self) -> str:
         s = "NINF" if self.s == self.NINF else str(self.s)
@@ -57,25 +75,17 @@ class Extent:
         return hash((self.s, self.e))
 
     # ------------------------------------------------------------------
-    # Basic accessors
-    def start(self) -> float: return self.s
-    def end(self) -> float: return self.e
-
+    # Basic predicates
     def is_indefinite(self) -> bool:
-        return self.s == self.NINF or self.e == self.PINF
+        """True if either bound is infinite."""
+        return not self.is_finite()F
 
     def is_finite(self) -> bool:
+        """True if both bounds are finite."""
         return math.isfinite(self.s) and math.isfinite(self.e)
 
     def is_empty(self) -> bool:
         return self.s >= self.e
-
-    def duration(self) -> float:
-        if self.is_indefinite():
-            return self.INDEFINITE_DURATION
-        if self.is_empty():
-            return 0.0
-        return self.e - self.s
 
     # ------------------------------------------------------------------
     # Simple transforms
@@ -115,7 +125,7 @@ class Extent:
     def extend(self, delta: float, anchor: str = "start") -> "Extent":
         if not isinstance(delta, (int, float)):
             raise TypeError("delta must be numeric")
-        cur = self.duration()
+        cur = self.duration
         if cur is self.INDEFINITE_DURATION:
             raise ValueError("cannot extend indefinite extent")
         new = cur + float(delta)
@@ -128,7 +138,7 @@ class Extent:
             raise TypeError("factor must be numeric")
         if factor <= 0:
             raise ValueError("factor must be > 0")
-        cur = self.duration()
+        cur = self.duration
         if cur is self.INDEFINITE_DURATION:
             raise ValueError("cannot stretch indefinite extent")
         return self._modify_duration(cur * float(factor), anchor)
